@@ -228,7 +228,17 @@ export default function StatsForm({
       {renderTeamTable(homeTeamName, homePlayers)}
       {renderTeamTable(awayTeamName, awayPlayers)}
 
-      {message && <p className="text-green-400 mb-4">{message}</p>}
+      {message && (
+        <div className="mb-4 flex items-center gap-4">
+          <p className="text-green-400">{message}</p>
+          <a
+            href="/admin"
+            className="text-sm text-bsh-orange hover:underline"
+          >
+            ← Retour aux matchs
+          </a>
+        </div>
+      )}
 
       <button
         type="submit"
