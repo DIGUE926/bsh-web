@@ -35,6 +35,9 @@ export default async function LeaguePage({
         <Link href={`/${slug}/matchs`} className="hover:text-bsh-orange">
           Matchs
         </Link>
+        <Link href={`/${slug}/classement`} className="hover:text-bsh-orange">
+          Classement
+        </Link>
       </div>
 
       <h2 className="font-display text-xl text-bsh-gold mb-4 tracking-wide">
