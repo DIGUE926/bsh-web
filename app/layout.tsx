@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "BSH | Basketball Stats Haïti",
+  title: "BSH | BallSoHard",
   description: "La plateforme de stats basketball multi-ligues en Haïti, avec l'AHBB, la SUBLE et plus à venir.",
 };
 
@@ -27,7 +27,7 @@ export default function RootLayout({
         </nav>
         <main className="flex-1">{children}</main>
         <footer className="border-t border-white/10 py-6 text-center text-sm text-white/40">
-          BSH · Basketball Stats Haïti
+          BSH | BallSoHard
         </footer>
       </body>
     </html>
