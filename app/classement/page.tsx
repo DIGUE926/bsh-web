@@ -14,7 +14,7 @@ export default async function ClassementGlobalPage() {
         CLASSEMENT GLOBAL
       </h1>
       <p className="text-white/50 mb-10">
-        Toutes ligues confondues — classé par PIR
+        Toutes ligues confondues, classé par PIR
       </p>
 
       {rankings && rankings.length > 0 ? (

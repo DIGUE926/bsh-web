@@ -16,8 +16,8 @@ export default async function Home() {
           BSH
         </h1>
         <p className="text-white/70 text-lg max-w-xl mx-auto">
-          Basketball Stats Haïti — la plateforme officielle de statistiques
-          multi-ligues.
+          La plateforme officielle de statistiques basketball multi-ligues
+          en Haïti.
         </p>
       </section>
 
