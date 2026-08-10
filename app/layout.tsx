@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import BackButton from "./BackButton";
 
 export const metadata: Metadata = {
   title: "BSH | BallSoHard",
@@ -25,6 +26,7 @@ export default function RootLayout({
             </div>
           </div>
         </nav>
+        <BackButton />
         <main className="flex-1">{children}</main>
         <footer className="border-t border-white/10 py-6 text-center text-sm text-white/40">
           BSH | BallSoHard

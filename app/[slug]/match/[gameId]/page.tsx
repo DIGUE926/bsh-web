@@ -1,5 +1,4 @@
 import { supabase } from "@/lib/supabase";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 
 export const revalidate = 60;
@@ -97,13 +96,6 @@ export default async function MatchDetailPage({
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-12">
-      <Link
-        href={`/${slug}/matchs`}
-        className="text-sm text-white/50 hover:text-bsh-orange mb-6 inline-block"
-      >
-        ← Tous les matchs
-      </Link>
-
       <div className="mb-2">
         <h1 className="font-display text-3xl text-bsh-orange tracking-wide">
           {homeTeam.name} VS {awayTeam.name}
