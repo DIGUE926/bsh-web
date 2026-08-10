@@ -1,0 +1,57 @@
+import { ImageResponse } from "next/og";
+
+export const size = { width: 1200, height: 630 };
+export const contentType = "image/png";
+
+export default function OGImage() {
+  return new ImageResponse(
+    (
+      <div
+        style={{
+          width: "100%",
+          height: "100%",
+          background: "#0D0D0D",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        <div
+          style={{
+            color: "#FF6B00",
+            fontSize: 160,
+            fontWeight: 900,
+            fontFamily: "sans-serif",
+            letterSpacing: -4,
+          }}
+        >
+          BSH
+        </div>
+        <div
+          style={{
+            color: "#FFD60A",
+            fontSize: 32,
+            fontWeight: 700,
+            fontFamily: "sans-serif",
+            marginTop: 10,
+            letterSpacing: 2,
+          }}
+        >
+          BALLSOHARD
+        </div>
+        <div
+          style={{
+            color: "rgba(255,255,255,0.5)",
+            fontSize: 22,
+            fontFamily: "sans-serif",
+            marginTop: 24,
+          }}
+        >
+          Stats basketball multi-ligues en Haïti
+        </div>
+      </div>
+    ),
+    { ...size }
+  );
+}

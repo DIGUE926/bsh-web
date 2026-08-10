@@ -3,6 +3,7 @@ import "./globals.css";
 import BackButton from "./BackButton";
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://bsh-web-one.vercel.app"),
   title: "BSH | BallSoHard",
   description: "La plateforme de stats basketball multi-ligues en Haïti, avec l'AHBB, la SUBLE et plus à venir.",
 };
