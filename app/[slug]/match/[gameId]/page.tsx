@@ -1,5 +1,6 @@
 import { supabase } from "@/lib/supabase";
 import { notFound } from "next/navigation";
+import Breadcrumb from "@/app/Breadcrumb";
 
 export const revalidate = 60;
 
@@ -30,6 +31,12 @@ export default async function MatchDetailPage({
 
   if (!game) notFound();
 
+  const { data: league } = await supabase
+    .from("leagues")
+    .select("name")
+    .eq("slug", slug)
+    .single();
+
   const homeTeam = game.home_team as unknown as { id: string; name: string };
   const awayTeam = game.away_team as unknown as { id: string; name: string };
 
@@ -44,6 +51,20 @@ export default async function MatchDetailPage({
   const awayStats = (stats ?? []).filter(
     (s) => (s.player as unknown as { team_id: string })?.team_id === awayTeam.id
   ) as unknown as PlayerStatRow[];
+
+  const allStats = [...homeStats, ...awayStats];
+  const playerOfGame = allStats.reduce<PlayerStatRow | null>((best, s) => {
+    const score =
+      (s.pts ?? 0) + (s.reb ?? 0) + (s.ast ?? 0) + (s.stl ?? 0) + (s.blk ?? 0);
+    const bestScore = best
+      ? (best.pts ?? 0) +
+        (best.reb ?? 0) +
+        (best.ast ?? 0) +
+        (best.stl ?? 0) +
+        (best.blk ?? 0)
+      : -1;
+    return score > bestScore ? s : best;
+  }, null);
 
   function renderTable(teamName: string, rows: PlayerStatRow[]) {
     return (
@@ -96,6 +117,13 @@ export default async function MatchDetailPage({
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-12">
+      <Breadcrumb
+        items={[
+          { label: league?.name ?? "Ligue", href: `/${slug}` },
+          { label: "Matchs", href: `/${slug}/matchs` },
+          { label: `${homeTeam.name} vs ${awayTeam.name}` },
+        ]}
+      />
       <div className="mb-2">
         <h1 className="font-display text-3xl text-bsh-orange tracking-wide">
           {homeTeam.name} VS {awayTeam.name}
@@ -109,6 +137,25 @@ export default async function MatchDetailPage({
         <p className="font-display text-4xl text-bsh-gold mb-10">
           {game.home_score} - {game.away_score}
         </p>
+      )}
+
+      {playerOfGame && playerOfGame.player && (
+        <div className="border border-bsh-orange/40 bg-bsh-orange/5 rounded-lg p-4 mb-10 flex items-center gap-4">
+          <span className="text-2xl">⭐</span>
+          <div>
+            <p className="text-xs text-bsh-gold uppercase tracking-wide font-semibold">
+              Joueur du match
+            </p>
+            <p className="font-display text-lg">
+              #{playerOfGame.player.jersey_number ?? "-"}{" "}
+              {playerOfGame.player.name}
+            </p>
+            <p className="text-sm text-white/60">
+              {playerOfGame.pts ?? 0} PTS · {playerOfGame.reb ?? 0} REB ·{" "}
+              {playerOfGame.ast ?? 0} AST
+            </p>
+          </div>
+        </div>
       )}
 
       {renderTable(homeTeam.name, homeStats)}

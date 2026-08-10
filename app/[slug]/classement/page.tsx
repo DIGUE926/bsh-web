@@ -1,6 +1,7 @@
 import { supabase } from "@/lib/supabase";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import Breadcrumb from "@/app/Breadcrumb";
 
 export const revalidate = 60;
 
@@ -81,6 +82,12 @@ export default async function LeagueClassementPage({
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-12">
+      <Breadcrumb
+        items={[
+          { label: league.name, href: `/${slug}` },
+          { label: "Classement" },
+        ]}
+      />
       <h1 className="font-display text-4xl text-bsh-orange mb-2 tracking-wide">
         {league.name}
       </h1>

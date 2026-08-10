@@ -1,5 +1,6 @@
 import { supabase } from "@/lib/supabase";
 import { notFound } from "next/navigation";
+import Breadcrumb from "@/app/Breadcrumb";
 
 export const revalidate = 60;
 
@@ -19,7 +20,7 @@ export default async function TeamPage({
 }: {
   params: Promise<{ slug: string; teamId: string }>;
 }) {
-  const { teamId } = await params;
+  const { slug, teamId } = await params;
 
   const { data: team } = await supabase
     .from("teams")
@@ -28,6 +29,12 @@ export default async function TeamPage({
     .single();
 
   if (!team) notFound();
+
+  const { data: league } = await supabase
+    .from("leagues")
+    .select("name")
+    .eq("slug", slug)
+    .single();
 
   const { data: players } = await supabase
     .from("players")
@@ -65,6 +72,12 @@ export default async function TeamPage({
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-12">
+      <Breadcrumb
+        items={[
+          { label: league?.name ?? "Ligue", href: `/${slug}` },
+          { label: team.name },
+        ]}
+      />
       <div className="flex items-center gap-4 mb-10">
         <h1 className="font-display text-4xl text-bsh-orange tracking-wide">
           {team.name}

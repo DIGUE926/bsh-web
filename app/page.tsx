@@ -18,6 +18,15 @@ export default async function Home() {
     .order("game_date", { ascending: false })
     .limit(5);
 
+  const { data: upcomingGames } = await supabase
+    .from("games")
+    .select(
+      "*, home_team:home_team_id(name), away_team:away_team_id(name), league:league_id(slug)"
+    )
+    .eq("status", "scheduled")
+    .order("game_date", { ascending: true })
+    .limit(5);
+
   return (
     <div className="max-w-6xl mx-auto px-4 py-16">
       <section className="text-center mb-16">
@@ -55,6 +64,31 @@ export default async function Home() {
                     </p>
                     <p className="text-xs text-white/40">{game.game_date}</p>
                   </div>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {upcomingGames && upcomingGames.length > 0 && (
+        <section className="mb-16">
+          <h2 className="font-display text-2xl text-bsh-gold mb-6 tracking-wide">
+            À VENIR
+          </h2>
+          <div className="space-y-3">
+            {upcomingGames.map((game) => (
+              <Link
+                key={game.id}
+                href={`/${game.league?.slug}/match/${game.id}`}
+                className="block border border-white/10 rounded-lg p-4 hover:border-bsh-orange transition-colors bg-white/5"
+              >
+                <div className="flex items-center justify-between">
+                  <p className="font-semibold">
+                    {game.home_team?.name ?? "?"} vs{" "}
+                    {game.away_team?.name ?? "?"}
+                  </p>
+                  <p className="text-xs text-white/40">{game.game_date}</p>
                 </div>
               </Link>
             ))}
