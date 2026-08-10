@@ -46,11 +46,35 @@ export default async function TeamPage({
     (seasonStats ?? []).map((s) => [s.player_id, s as SeasonStat])
   );
 
+  const { data: games } = await supabase
+    .from("games")
+    .select("home_team_id, away_team_id, home_score, away_score")
+    .or(`home_team_id.eq.${teamId},away_team_id.eq.${teamId}`)
+    .eq("status", "completed");
+
+  let wins = 0;
+  let losses = 0;
+  (games ?? []).forEach((g) => {
+    if (g.home_score === null || g.away_score === null) return;
+    const isHome = g.home_team_id === teamId;
+    const teamScore = isHome ? g.home_score : g.away_score;
+    const oppScore = isHome ? g.away_score : g.home_score;
+    if (teamScore > oppScore) wins += 1;
+    else if (oppScore > teamScore) losses += 1;
+  });
+
   return (
     <div className="max-w-6xl mx-auto px-4 py-12">
-      <h1 className="font-display text-4xl text-bsh-orange mb-10 tracking-wide">
-        {team.name}
-      </h1>
+      <div className="flex items-center gap-4 mb-10">
+        <h1 className="font-display text-4xl text-bsh-orange tracking-wide">
+          {team.name}
+        </h1>
+        {wins + losses > 0 && (
+          <span className="text-sm font-semibold text-white/50">
+            {wins}V-{losses}D
+          </span>
+        )}
+      </div>
 
       <h2 className="font-display text-xl text-bsh-gold mb-4 tracking-wide">
         ROSTER
