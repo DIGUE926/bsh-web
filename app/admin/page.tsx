@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
+import DeleteGameButton from "./DeleteGameButton";
 
 export const dynamic = "force-dynamic";
 
@@ -43,13 +44,16 @@ export default async function AdminDashboard() {
                   {game.game_date} · {game.phase ?? "Saison régulière"}
                 </p>
               </div>
-              <div className="text-right">
-                <p className="font-display text-lg text-bsh-gold">
-                  {game.home_score ?? "-"} / {game.away_score ?? "-"}
-                </p>
-                <p className="text-xs text-white/40 uppercase">
-                  {game.status}
-                </p>
+              <div className="flex items-center gap-4">
+                <div className="text-right">
+                  <p className="font-display text-lg text-bsh-gold">
+                    {game.home_score ?? "-"} / {game.away_score ?? "-"}
+                  </p>
+                  <p className="text-xs text-white/40 uppercase">
+                    {game.status}
+                  </p>
+                </div>
+                <DeleteGameButton gameId={game.id} />
               </div>
             </div>
           </Link>
