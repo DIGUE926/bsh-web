@@ -30,9 +30,12 @@ export default async function LeaguePage({
       <h1 className="font-display text-4xl text-bsh-orange mb-2 tracking-wide">
         {league.name}
       </h1>
-      <p className="text-white/50 mb-10 uppercase text-sm tracking-widest">
-        {slug}
-      </p>
+      <div className="flex gap-4 text-sm text-white/50 mb-10">
+        <span className="text-bsh-gold font-semibold">Équipes</span>
+        <Link href={`/${slug}/matchs`} className="hover:text-bsh-orange">
+          Matchs
+        </Link>
+      </div>
 
       <h2 className="font-display text-xl text-bsh-gold mb-4 tracking-wide">
         ÉQUIPES
