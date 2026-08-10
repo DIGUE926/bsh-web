@@ -1,0 +1,29 @@
+import { createClient } from "@/lib/supabase/server";
+import { redirect } from "next/navigation";
+import SignOutButton from "./SignOutButton";
+
+export default async function AdminLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) redirect("/login");
+
+  return (
+    <div className="max-w-6xl mx-auto px-4 py-8">
+      <div className="flex items-center justify-between mb-8 pb-4 border-b border-white/10">
+        <div>
+          <p className="text-sm text-white/50">Connecté en tant que</p>
+          <p className="font-semibold">{user.email}</p>
+        </div>
+        <SignOutButton />
+      </div>
+      {children}
+    </div>
+  );
+}
