@@ -24,6 +24,13 @@ body {
   background-attachment: fixed, fixed, fixed;
 }
 
+@media (max-width: 640px) {
+  body {
+    background-position: center, center, center 25%;
+    background-size: 100% 100%, 100% 100%, 420% auto;
+  }
+}
+
 select {
   color-scheme: dark;
 }
