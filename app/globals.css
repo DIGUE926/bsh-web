@@ -17,8 +17,9 @@ body {
   background-image:
     radial-gradient(circle at 15% 20%, rgba(255, 107, 0, 0.10) 0%, transparent 35%),
     radial-gradient(circle at 85% 75%, rgba(255, 107, 0, 0.08) 0%, transparent 40%),
-    linear-gradient(rgba(255, 107, 0, 0.05) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 107, 0, 0.05) 1px, transparent 1px);
-  background-size: 100% 100%, 100% 100%, 48px 48px, 48px 48px;
-  background-attachment: fixed;
+    url('/court-pattern.svg');
+  background-repeat: no-repeat, no-repeat, no-repeat;
+  background-position: center, center, center 15%;
+  background-size: 100% 100%, 100% 100%, 180% auto;
+  background-attachment: fixed, fixed, fixed;
 }
