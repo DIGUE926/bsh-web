@@ -46,7 +46,7 @@ export default function NavMenu({ leagues }: { leagues: League[] }) {
           </button>
 
           {open && (
-            <div className="absolute left-0 top-full mt-2 w-64 bg-bsh-black border border-white/10 rounded-lg shadow-xl overflow-hidden">
+            <div className="absolute left-0 top-full mt-2 w-[85vw] max-w-64 bg-bsh-black border border-white/10 rounded-lg shadow-xl overflow-hidden max-h-[80vh] overflow-y-auto">
               <Link
                 href="/"
                 onClick={() => setOpen(false)}
@@ -102,7 +102,7 @@ export default function NavMenu({ leagues }: { leagues: League[] }) {
           )}
         </div>
 
-        <div className="flex gap-6 text-sm font-semibold">
+        <div className="hidden sm:flex gap-6 text-sm font-semibold">
           <Link href="/suble" className="hover:text-bsh-orange transition-colors">
             SUBLE
           </Link>

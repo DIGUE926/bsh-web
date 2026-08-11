@@ -1,5 +1,6 @@
 import { supabase } from "@/lib/supabase";
 import { notFound } from "next/navigation";
+import Link from "next/link";
 import Breadcrumb from "@/app/Breadcrumb";
 
 export const revalidate = 60;
@@ -89,7 +90,12 @@ export default async function MatchDetailPage({
               {rows.map((s, i) => (
                 <tr key={i} className="border-b border-white/5">
                   <td className="py-2 pr-4 font-semibold whitespace-nowrap">
-                    #{s.player?.jersey_number ?? "-"} {s.player?.name}
+                    <Link
+                      href={`/${slug}/joueur/${s.player?.id}`}
+                      className="hover:text-bsh-orange"
+                    >
+                      #{s.player?.jersey_number ?? "-"} {s.player?.name}
+                    </Link>
                   </td>
                   <td className="py-2 px-2 text-center">{s.min ?? "-"}</td>
                   <td className="py-2 px-2 text-center text-bsh-orange font-bold">

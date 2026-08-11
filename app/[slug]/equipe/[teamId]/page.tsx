@@ -1,5 +1,6 @@
 import { supabase } from "@/lib/supabase";
 import { notFound } from "next/navigation";
+import Link from "next/link";
 import Breadcrumb from "@/app/Breadcrumb";
 
 export const revalidate = 60;
@@ -119,7 +120,12 @@ export default async function TeamPage({
                       {p.jersey_number ?? "-"}
                     </td>
                     <td className="py-3 pr-4 font-semibold whitespace-nowrap">
-                      {p.name}
+                      <Link
+                        href={`/${slug}/joueur/${p.id}`}
+                        className="hover:text-bsh-orange"
+                      >
+                        {p.name}
+                      </Link>
                     </td>
                     <td className="py-3 pr-4 text-white/60">
                       {p.position ?? "-"}
