@@ -2,6 +2,7 @@ import { supabase } from "@/lib/supabase";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import Breadcrumb from "@/app/Breadcrumb";
+import Avatar from "@/app/Avatar";
 
 export const revalidate = 60;
 
@@ -78,13 +79,16 @@ export default async function LeaguePage({
               href={`/${slug}/equipe/${team.id}`}
               className="border border-white/10 rounded-lg p-4 hover:border-bsh-orange transition-colors bg-white/5"
             >
-              <div className="flex items-center justify-between">
-                <h3 className="font-display text-lg">{team.name}</h3>
-                {hasGames && (
-                  <span className="text-xs font-semibold text-white/50 whitespace-nowrap ml-2">
-                    {record!.wins}V-{record!.losses}D
-                  </span>
-                )}
+              <div className="flex items-center gap-3">
+                <Avatar name={team.name} src={team.logo_url} size={36} rounded="rounded-lg" />
+                <div className="flex items-center justify-between flex-1">
+                  <h3 className="font-display text-lg">{team.name}</h3>
+                  {hasGames && (
+                    <span className="text-xs font-semibold text-white/50 whitespace-nowrap ml-2">
+                      {record!.wins}V-{record!.losses}D
+                    </span>
+                  )}
+                </div>
               </div>
             </Link>
           );

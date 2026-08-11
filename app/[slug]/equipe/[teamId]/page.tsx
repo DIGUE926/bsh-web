@@ -2,6 +2,7 @@ import { supabase } from "@/lib/supabase";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import Breadcrumb from "@/app/Breadcrumb";
+import Avatar from "@/app/Avatar";
 
 export const revalidate = 60;
 
@@ -80,6 +81,7 @@ export default async function TeamPage({
         ]}
       />
       <div className="flex items-center gap-4 mb-6">
+        <Avatar name={team.name} src={team.logo_url} size={48} rounded="rounded-lg" />
         <h1 className="font-display text-2xl text-bsh-orange tracking-wide">
           {team.name}
         </h1>
@@ -122,8 +124,9 @@ export default async function TeamPage({
                     <td className="py-3 pr-4 font-semibold whitespace-nowrap">
                       <Link
                         href={`/${slug}/joueur/${p.id}`}
-                        className="hover:text-bsh-orange"
+                        className="hover:text-bsh-orange flex items-center gap-2"
                       >
+                        <Avatar name={p.name} src={p.photo_url} size={28} />
                         {p.name}
                       </Link>
                     </td>

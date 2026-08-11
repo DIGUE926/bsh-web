@@ -2,6 +2,7 @@ import { supabase } from "@/lib/supabase";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import Breadcrumb from "@/app/Breadcrumb";
+import Avatar from "@/app/Avatar";
 
 export const revalidate = 60;
 
@@ -86,12 +87,15 @@ export default async function PlayerPage({
       />
 
       <div className="flex items-center gap-4 mb-2">
-        <h1 className="font-display text-2xl text-bsh-orange tracking-wide">
-          {player.name}
-        </h1>
-        <span className="text-white/50 text-sm">
-          #{player.jersey_number ?? "-"} · {player.position ?? "-"}
-        </span>
+        <Avatar name={player.name} src={player.photo_url} size={56} />
+        <div>
+          <h1 className="font-display text-2xl text-bsh-orange tracking-wide">
+            {player.name}
+          </h1>
+          <span className="text-white/50 text-sm">
+            #{player.jersey_number ?? "-"} · {player.position ?? "-"}
+          </span>
+        </div>
       </div>
       {team && (
         <Link
