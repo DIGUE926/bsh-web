@@ -26,8 +26,28 @@ export default async function RootLayout({
         <NavMenu leagues={leagues ?? []} />
         <BackButton />
         <main className="flex-1">{children}</main>
-        <footer className="border-t border-white/10 py-6 text-center text-sm text-white/40">
-          BSH | BallSoHard
+        <footer className="border-t border-white/10 py-8 text-center text-sm text-white/40">
+          <p className="mb-3">BSH | BallSoHard</p>
+          <a
+            href="https://www.instagram.com/ballsohardx2/?__pwa=1"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 hover:text-bsh-orange transition-colors"
+          >
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
+              <rect x="2" y="2" width="20" height="20" rx="5" />
+              <circle cx="12" cy="12" r="4" />
+              <circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none" />
+            </svg>
+            <span>@ballsohardx2</span>
+          </a>
         </footer>
       </body>
     </html>
