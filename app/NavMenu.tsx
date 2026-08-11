@@ -20,7 +20,7 @@ export default function NavMenu({ leagues }: { leagues: League[] }) {
   }, []);
 
   return (
-    <nav className="border-b border-white/10 bg-bsh-black sticky top-0 z-50">
+    <nav className="border-b border-white/10 bg-bsh-black/80 backdrop-blur-md sticky top-0 z-50">
       <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between relative">
         <div ref={ref} className="relative">
           <button
