@@ -91,6 +91,27 @@ export default function NavMenu({ leagues }: { leagues: League[] }) {
               >
                 Classement Global
               </Link>
+              <a
+                href="https://www.instagram.com/ballsohardx2/?__pwa=1"
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => setOpen(false)}
+                className="flex items-center gap-2 px-4 py-3 hover:bg-white/5 text-sm text-white/60 border-b border-white/10"
+              >
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
+                  <rect x="2" y="2" width="20" height="20" rx="5" />
+                  <circle cx="12" cy="12" r="4" />
+                  <circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none" />
+                </svg>
+                @ballsohardx2
+              </a>
               <Link
                 href="/login"
                 onClick={() => setOpen(false)}
