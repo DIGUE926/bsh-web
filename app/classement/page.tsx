@@ -9,11 +9,11 @@ export default async function ClassementGlobalPage() {
     .limit(100);
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-12">
-      <h1 className="font-display text-4xl text-bsh-orange mb-2 tracking-wide">
+    <div className="max-w-5xl mx-auto px-4 py-8">
+      <h1 className="font-display text-2xl text-bsh-orange mb-1 tracking-wide">
         CLASSEMENT GLOBAL
       </h1>
-      <p className="text-white/50 mb-10">
+      <p className="text-white/50 mb-6">
         Toutes ligues confondues, classé par PIR
       </p>
 

@@ -76,7 +76,7 @@ export default async function PlayerPage({
   const rows = (gameLog ?? []) as unknown as GameLogRow[];
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-12">
+    <div className="max-w-5xl mx-auto px-4 py-8">
       <Breadcrumb
         items={[
           { label: league?.name ?? "Ligue", href: `/${slug}` },
@@ -86,7 +86,7 @@ export default async function PlayerPage({
       />
 
       <div className="flex items-center gap-4 mb-2">
-        <h1 className="font-display text-4xl text-bsh-orange tracking-wide">
+        <h1 className="font-display text-2xl text-bsh-orange tracking-wide">
           {player.name}
         </h1>
         <span className="text-white/50 text-sm">
@@ -128,7 +128,7 @@ export default async function PlayerPage({
         ))}
       </div>
 
-      <h2 className="font-display text-xl text-bsh-gold mb-4 tracking-wide">
+      <h2 className="font-display text-base text-bsh-gold mb-3 tracking-wide">
         HISTORIQUE DES MATCHS
       </h2>
 

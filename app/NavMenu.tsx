@@ -21,11 +21,11 @@ export default function NavMenu({ leagues }: { leagues: League[] }) {
 
   return (
     <nav className="border-b border-white/10 bg-bsh-black sticky top-0 z-50">
-      <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between relative">
+      <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between relative">
         <div ref={ref} className="relative">
           <button
             onClick={() => setOpen((v) => !v)}
-            className="font-display text-2xl text-bsh-orange tracking-wide flex items-center gap-2"
+            className="font-display text-lg text-bsh-orange tracking-wide flex items-center gap-2"
           >
             BSH
             <svg

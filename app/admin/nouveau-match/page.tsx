@@ -71,7 +71,7 @@ export default function NouveauMatchPage() {
 
   return (
     <div>
-      <h1 className="font-display text-3xl text-bsh-orange mb-8 tracking-wide">
+      <h1 className="font-display text-xl text-bsh-orange mb-4 tracking-wide">
         NOUVEAU MATCH
       </h1>
       <form onSubmit={handleSubmit} className="space-y-4 max-w-md">

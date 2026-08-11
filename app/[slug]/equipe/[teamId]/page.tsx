@@ -72,15 +72,15 @@ export default async function TeamPage({
   });
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-12">
+    <div className="max-w-5xl mx-auto px-4 py-8">
       <Breadcrumb
         items={[
           { label: league?.name ?? "Ligue", href: `/${slug}` },
           { label: team.name },
         ]}
       />
-      <div className="flex items-center gap-4 mb-10">
-        <h1 className="font-display text-4xl text-bsh-orange tracking-wide">
+      <div className="flex items-center gap-4 mb-6">
+        <h1 className="font-display text-2xl text-bsh-orange tracking-wide">
           {team.name}
         </h1>
         {wins + losses > 0 && (
@@ -90,7 +90,7 @@ export default async function TeamPage({
         )}
       </div>
 
-      <h2 className="font-display text-xl text-bsh-gold mb-4 tracking-wide">
+      <h2 className="font-display text-base text-bsh-gold mb-3 tracking-wide">
         ROSTER
       </h2>
 

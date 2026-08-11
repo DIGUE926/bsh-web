@@ -50,12 +50,12 @@ export default async function LeaguePage({
   });
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-12">
+    <div className="max-w-5xl mx-auto px-4 py-8">
       <Breadcrumb items={[{ label: league.name }]} />
-      <h1 className="font-display text-4xl text-bsh-orange mb-2 tracking-wide">
+      <h1 className="font-display text-2xl text-bsh-orange mb-1 tracking-wide">
         {league.name}
       </h1>
-      <div className="flex gap-4 text-sm text-white/50 mb-10">
+      <div className="flex gap-4 text-sm text-white/50 mb-6">
         <span className="text-bsh-gold font-semibold">Équipes</span>
         <Link href={`/${slug}/matchs`} className="hover:text-bsh-orange">
           Matchs
@@ -65,10 +65,10 @@ export default async function LeaguePage({
         </Link>
       </div>
 
-      <h2 className="font-display text-xl text-bsh-gold mb-4 tracking-wide">
+      <h2 className="font-display text-base text-bsh-gold mb-3 tracking-wide">
         ÉQUIPES
       </h2>
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
         {teams?.map((team) => {
           const record = records.get(team.id);
           const hasGames = record && record.wins + record.losses > 0;
@@ -76,7 +76,7 @@ export default async function LeaguePage({
             <Link
               key={team.id}
               href={`/${slug}/equipe/${team.id}`}
-              className="border border-white/10 rounded-lg p-6 hover:border-bsh-orange transition-colors bg-white/5"
+              className="border border-white/10 rounded-lg p-4 hover:border-bsh-orange transition-colors bg-white/5"
             >
               <div className="flex items-center justify-between">
                 <h3 className="font-display text-lg">{team.name}</h3>

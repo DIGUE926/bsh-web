@@ -16,7 +16,7 @@ export default async function AdminDashboard() {
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="font-display text-3xl text-bsh-orange tracking-wide">
+        <h1 className="font-display text-xl text-bsh-orange tracking-wide">
           MATCHS
         </h1>
         <Link
@@ -44,7 +44,7 @@ export default async function AdminDashboard() {
                   {game.game_date} · {game.phase ?? "Saison régulière"}
                 </p>
               </div>
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2">
                 <div className="text-right">
                   <p className="font-display text-lg text-bsh-gold">
                     {game.home_score ?? "-"} / {game.away_score ?? "-"}

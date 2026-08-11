@@ -42,7 +42,7 @@ export default async function MatchStatsPage({
 
   return (
     <div>
-      <h1 className="font-display text-3xl text-bsh-orange mb-2 tracking-wide">
+      <h1 className="font-display text-xl text-bsh-orange mb-1 tracking-wide">
         {game.home_team.name} VS {game.away_team.name}
       </h1>
       <p className="text-white/50 mb-8">{game.game_date}</p>

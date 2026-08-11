@@ -28,38 +28,38 @@ export default async function Home() {
     .limit(5);
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-16">
-      <section className="text-center mb-16">
-        <h1 className="font-display text-5xl md:text-6xl text-bsh-orange mb-4 tracking-wide">
+    <div className="max-w-5xl mx-auto px-4 py-10">
+      <section className="text-center mb-10">
+        <h1 className="font-display text-3xl md:text-4xl text-bsh-orange mb-2 tracking-wide">
           BSH
         </h1>
-        <p className="text-white/70 text-lg max-w-xl mx-auto">
+        <p className="text-white/60 text-sm max-w-xl mx-auto">
           La plateforme officielle de statistiques basketball multi-ligues
           en Haïti.
         </p>
       </section>
 
       {recentGames && recentGames.length > 0 && (
-        <section className="mb-16">
-          <h2 className="font-display text-2xl text-bsh-gold mb-6 tracking-wide">
+        <section className="mb-10">
+          <h2 className="font-display text-base text-bsh-gold mb-3 tracking-wide">
             DERNIERS RÉSULTATS
           </h2>
-          <div className="space-y-3">
+          <div className="space-y-2">
             {recentGames.map((game) => (
               <Link
                 key={game.id}
                 href={`/${
                   game.league?.slug
                 }/match/${game.id}`}
-                className="block border border-white/10 rounded-lg p-4 hover:border-bsh-orange transition-colors bg-white/5"
+                className="block border border-white/10 rounded-lg p-3 hover:border-bsh-orange transition-colors bg-white/5"
               >
                 <div className="flex items-center justify-between">
-                  <p className="font-semibold">
+                  <p className="font-semibold text-sm">
                     {game.home_team?.name ?? "?"} vs{" "}
                     {game.away_team?.name ?? "?"}
                   </p>
                   <div className="flex items-center gap-4">
-                    <p className="font-display text-lg text-bsh-gold">
+                    <p className="font-display text-base text-bsh-gold">
                       {game.home_score} - {game.away_score}
                     </p>
                     <p className="text-xs text-white/40">{game.game_date}</p>
@@ -72,19 +72,19 @@ export default async function Home() {
       )}
 
       {upcomingGames && upcomingGames.length > 0 && (
-        <section className="mb-16">
-          <h2 className="font-display text-2xl text-bsh-gold mb-6 tracking-wide">
+        <section className="mb-10">
+          <h2 className="font-display text-base text-bsh-gold mb-3 tracking-wide">
             À VENIR
           </h2>
-          <div className="space-y-3">
+          <div className="space-y-2">
             {upcomingGames.map((game) => (
               <Link
                 key={game.id}
                 href={`/${game.league?.slug}/match/${game.id}`}
-                className="block border border-white/10 rounded-lg p-4 hover:border-bsh-orange transition-colors bg-white/5"
+                className="block border border-white/10 rounded-lg p-3 hover:border-bsh-orange transition-colors bg-white/5"
               >
                 <div className="flex items-center justify-between">
-                  <p className="font-semibold">
+                  <p className="font-semibold text-sm">
                     {game.home_team?.name ?? "?"} vs{" "}
                     {game.away_team?.name ?? "?"}
                   </p>
@@ -97,17 +97,17 @@ export default async function Home() {
       )}
 
       <section>
-        <h2 className="font-display text-2xl text-bsh-gold mb-6 tracking-wide">
+        <h2 className="font-display text-base text-bsh-gold mb-3 tracking-wide">
           LIGUES
         </h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
           {leagues?.map((league) => (
             <Link
               key={league.id}
               href={`/${league.slug}`}
-              className="border border-white/10 rounded-lg p-6 hover:border-bsh-orange transition-colors bg-white/5"
+              className="border border-white/10 rounded-lg p-4 hover:border-bsh-orange transition-colors bg-white/5"
             >
-              <h3 className="font-display text-xl">{league.name}</h3>
+              <h3 className="font-display text-base">{league.name}</h3>
             </Link>
           ))}
           {(!leagues || leagues.length === 0) && (

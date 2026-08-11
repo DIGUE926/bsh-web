@@ -69,8 +69,8 @@ export default async function MatchDetailPage({
 
   function renderTable(teamName: string, rows: PlayerStatRow[]) {
     return (
-      <div className="mb-10">
-        <h2 className="font-display text-xl text-bsh-gold mb-4 tracking-wide">
+      <div className="mb-6">
+        <h2 className="font-display text-base text-bsh-gold mb-3 tracking-wide">
           {teamName}
         </h2>
         <div className="overflow-x-auto">
@@ -122,7 +122,7 @@ export default async function MatchDetailPage({
   }
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-12">
+    <div className="max-w-5xl mx-auto px-4 py-8">
       <Breadcrumb
         items={[
           { label: league?.name ?? "Ligue", href: `/${slug}` },
@@ -131,7 +131,7 @@ export default async function MatchDetailPage({
         ]}
       />
       <div className="mb-2">
-        <h1 className="font-display text-3xl text-bsh-orange tracking-wide">
+        <h1 className="font-display text-xl text-bsh-orange tracking-wide">
           {homeTeam.name} VS {awayTeam.name}
         </h1>
       </div>
@@ -140,13 +140,13 @@ export default async function MatchDetailPage({
       </p>
 
       {game.status === "completed" && (
-        <p className="font-display text-4xl text-bsh-gold mb-10">
+        <p className="font-display text-2xl text-bsh-gold mb-4">
           {game.home_score} - {game.away_score}
         </p>
       )}
 
       {playerOfGame && playerOfGame.player && (
-        <div className="border border-bsh-orange/40 bg-bsh-orange/5 rounded-lg p-4 mb-10 flex items-center gap-4">
+        <div className="border border-bsh-orange/40 bg-bsh-orange/5 rounded-lg p-4 mb-10 flex items-center gap-2">
           <span className="text-2xl">⭐</span>
           <div>
             <p className="text-xs text-bsh-gold uppercase tracking-wide font-semibold">

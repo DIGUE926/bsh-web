@@ -29,17 +29,17 @@ export default async function MatchsPage({
     .order("game_date", { ascending: false });
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-12">
+    <div className="max-w-5xl mx-auto px-4 py-8">
       <Breadcrumb
         items={[
           { label: league.name, href: `/${slug}` },
           { label: "Matchs" },
         ]}
       />
-      <h1 className="font-display text-4xl text-bsh-orange mb-2 tracking-wide">
+      <h1 className="font-display text-2xl text-bsh-orange mb-1 tracking-wide">
         {league.name}
       </h1>
-      <div className="flex gap-4 text-sm text-white/50 mb-10">
+      <div className="flex gap-4 text-sm text-white/50 mb-6">
         <Link href={`/${slug}`} className="hover:text-bsh-orange">
           Équipes
         </Link>
