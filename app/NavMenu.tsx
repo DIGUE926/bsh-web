@@ -89,7 +89,9 @@ export default function NavMenu({ leagues }: { leagues: League[] }) {
                 onClick={() => setOpen(false)}
                 className="block px-4 py-3 hover:bg-white/5 font-semibold border-b border-white/10"
               >
-a
+                Classement SUBLE
+              </Link>
+              <a
                 href="https://www.instagram.com/ballsohardx2/?__pwa=1"
                 target="_blank"
                 rel="noopener noreferrer"
