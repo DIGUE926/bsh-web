@@ -77,7 +77,10 @@ export default async function LeagueClassementPage({
     const pctA = a.wins + a.losses > 0 ? a.wins / (a.wins + a.losses) : 0;
     const pctB = b.wins + b.losses > 0 ? b.wins / (b.wins + b.losses) : 0;
     if (pctB !== pctA) return pctB - pctA;
-    return b.wins - a.wins;
+    if (b.wins !== a.wins) return b.wins - a.wins;
+    const diffA = a.pointsFor - a.pointsAgainst;
+    const diffB = b.pointsFor - b.pointsAgainst;
+    return diffB - diffA;
   });
 
   return (
