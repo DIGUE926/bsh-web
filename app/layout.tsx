@@ -33,8 +33,8 @@ export default async function RootLayout({
       <body className="antialiased min-h-screen flex flex-col">
         <NavMenu leagues={leagues ?? []} />
         <BackButton />
-        <main>{children}</main>
-        <footer className="border-t border-white/10 py-6 text-center text-sm text-white/40">
+        <main className="flex-1">{children}</main>
+        <footer className="border-t border-white/10 pt-4 pb-6 text-center text-sm text-white/40">
           <p className="mb-3">BSH | BallSoHard</p>
           <a
             href="https://www.instagram.com/ballsohardx2/?__pwa=1"
