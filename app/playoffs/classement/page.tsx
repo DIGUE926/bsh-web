@@ -28,6 +28,12 @@ export default async function PlayoffClassementPage() {
         >
           Bracket
         </Link>
+        <Link
+          href="/playoffs/equipes"
+          className="px-4 py-2 rounded-lg bg-white/5 text-white/60 hover:bg-white/10 whitespace-nowrap transition-colors"
+        >
+          Équipes
+        </Link>
         <span className="px-4 py-2 rounded-lg bg-bsh-orange text-black whitespace-nowrap">
           Leaders playoffs
         </span>
