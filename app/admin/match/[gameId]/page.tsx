@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { notFound } from "next/navigation";
+import Link from "next/link";
 import StatsForm from "./StatsForm";
 
 export const dynamic = "force-dynamic";
@@ -42,9 +43,17 @@ export default async function MatchStatsPage({
 
   return (
     <div>
-      <h1 className="font-display text-xl text-bsh-orange mb-1 tracking-wide">
-        {game.home_team.name} VS {game.away_team.name}
-      </h1>
+      <div className="flex items-center justify-between mb-1">
+        <h1 className="font-display text-xl text-bsh-orange tracking-wide">
+          {game.home_team.name} VS {game.away_team.name}
+        </h1>
+        <Link
+          href={`/admin/historique?game=${gameId}`}
+          className="text-sm text-bsh-gold hover:underline"
+        >
+          Voir l&apos;historique des modifs
+        </Link>
+      </div>
       <p className="text-white/50 mb-8">{game.game_date}</p>
 
       <StatsForm

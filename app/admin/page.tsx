@@ -27,12 +27,20 @@ export default async function AdminDashboard() {
         </Link>
       </div>
 
-      <Link
-        href="/admin/playoffs"
-        className="text-sm text-bsh-gold hover:underline mb-6 inline-block"
-      >
-        → Gérer les matchs playoffs
-      </Link>
+      <div className="flex items-center gap-4 mb-6">
+        <Link
+          href="/admin/playoffs"
+          className="text-sm text-bsh-gold hover:underline inline-block"
+        >
+          → Gérer les matchs playoffs
+        </Link>
+        <Link
+          href="/admin/historique"
+          className="text-sm text-bsh-gold hover:underline inline-block"
+        >
+          → Historique des modifications
+        </Link>
+      </div>
 
       <div className="space-y-3">
         {games?.map((game) => (
