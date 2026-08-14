@@ -8,7 +8,7 @@ export default async function ClassementRPGPage() {
     .from("global_rankings")
     .select("*")
     .eq("league_slug", "suble")
-    .order("rpg", { ascending: false })
+    .order("rpg", { ascending: false, nullsFirst: false })
     .limit(100);
 
   return (

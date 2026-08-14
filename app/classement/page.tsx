@@ -8,7 +8,7 @@ export default async function ClassementGlobalPage() {
     .from("global_rankings")
     .select("*")
     .eq("league_slug", "suble")
-    .order("pir", { ascending: false })
+    .order("pir", { ascending: false, nullsFirst: false })
     .limit(100);
 
   return (

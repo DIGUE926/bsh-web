@@ -8,7 +8,7 @@ export default async function ClassementAPGPage() {
     .from("global_rankings")
     .select("*")
     .eq("league_slug", "suble")
-    .order("apg", { ascending: false })
+    .order("apg", { ascending: false, nullsFirst: false })
     .limit(100);
 
   return (

@@ -8,7 +8,7 @@ export default async function PlayoffClassementPage() {
   const { data: leaders } = await supabase
     .from("playoff_player_totals")
     .select("*")
-    .order("ppg", { ascending: false })
+    .order("ppg", { ascending: false, nullsFirst: false })
     .limit(50);
 
   return (
