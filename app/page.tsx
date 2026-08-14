@@ -1,5 +1,6 @@
 import { supabase } from "@/lib/supabase";
 import Link from "next/link";
+import Avatar from "@/app/Avatar";
 
 export const revalidate = 60;
 
@@ -239,8 +240,14 @@ export default async function Home() {
             <Link
               key={league.id}
               href={`/${league.slug}`}
-              className="border border-white/10 rounded-lg p-4 hover:border-bsh-orange transition-colors bg-white/5"
+              className="flex items-center gap-3 border border-white/10 rounded-lg p-4 hover:border-bsh-orange transition-colors bg-white/5"
             >
+              <Avatar
+                name={league.name}
+                src={league.logo_url}
+                size={44}
+                rounded="rounded-lg"
+              />
               <h3 className="font-display text-base">{league.name}</h3>
             </Link>
           ))}

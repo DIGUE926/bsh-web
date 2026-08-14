@@ -2,8 +2,9 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import Avatar from "./Avatar";
 
-type League = { name: string; slug: string };
+type League = { name: string; slug: string; logo_url?: string | null };
 
 export default function NavMenu({ leagues }: { leagues: League[] }) {
   const [open, setOpen] = useState(false);
@@ -57,9 +58,17 @@ export default function NavMenu({ leagues }: { leagues: League[] }) {
 
               {leagues.map((league) => (
                 <div key={league.slug} className="border-b border-white/5">
-                  <p className="px-4 pt-3 pb-1 text-xs uppercase text-white/40 tracking-wide">
-                    {league.name}
-                  </p>
+                  <div className="flex items-center gap-2 px-4 pt-3 pb-1">
+                    <Avatar
+                      name={league.name}
+                      src={league.logo_url}
+                      size={18}
+                      rounded="rounded"
+                    />
+                    <p className="text-xs uppercase text-white/40 tracking-wide">
+                      {league.name}
+                    </p>
+                  </div>
                   <Link
                     href={`/${league.slug}`}
                     onClick={() => setOpen(false)}

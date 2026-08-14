@@ -17,7 +17,7 @@ export default async function RootLayout({
 }>) {
   const { data: leagues } = await supabase
     .from("leagues")
-    .select("name, slug")
+    .select("name, slug, logo_url")
     .order("name");
 
   return (

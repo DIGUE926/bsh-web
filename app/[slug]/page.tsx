@@ -53,9 +53,17 @@ export default async function LeaguePage({
   return (
     <div className="max-w-5xl mx-auto px-4 py-8">
       <Breadcrumb items={[{ label: league.name }]} />
-      <h1 className="font-display text-2xl text-bsh-orange mb-1 tracking-wide">
-        {league.name}
-      </h1>
+      <div className="flex items-center gap-3 mb-1">
+        <Avatar
+          name={league.name}
+          src={league.logo_url}
+          size={48}
+          rounded="rounded-lg"
+        />
+        <h1 className="font-display text-2xl text-bsh-orange tracking-wide">
+          {league.name}
+        </h1>
+      </div>
       <div className="flex gap-4 text-sm text-white/50 mb-6">
         <span className="text-bsh-gold font-semibold">Équipes</span>
         <Link href={`/${slug}/matchs`} className="hover:text-bsh-orange">
