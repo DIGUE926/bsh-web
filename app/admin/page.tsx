@@ -27,20 +27,12 @@ export default async function AdminDashboard() {
         </Link>
       </div>
 
-      <div className="flex items-center gap-4 mb-6">
-        <Link
-          href="/admin/playoffs"
-          className="text-sm text-bsh-gold hover:underline inline-block"
-        >
-          → Gérer les matchs playoffs
-        </Link>
-        <Link
-          href="/admin/historique"
-          className="text-sm text-bsh-gold hover:underline inline-block"
-        >
-          → Historique des modifications
-        </Link>
-      </div>
+      <Link
+        href="/admin/playoffs"
+        className="text-sm text-bsh-gold hover:underline mb-6 inline-block"
+      >
+        → Gérer les matchs playoffs
+      </Link>
 
       <div className="space-y-3">
         {games?.map((game) => (
@@ -76,6 +68,15 @@ export default async function AdminDashboard() {
         {(!games || games.length === 0) && (
           <p className="text-white/50">Aucun match pour le moment.</p>
         )}
+      </div>
+
+      <div className="mt-10 pt-4 border-t border-white/5">
+        <Link
+          href="/admin/historique"
+          className="text-xs text-white/30 hover:text-white/60 transition-colors"
+        >
+          Historique des modifications
+        </Link>
       </div>
     </div>
   );
