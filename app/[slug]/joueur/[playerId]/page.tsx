@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import Breadcrumb from "@/app/Breadcrumb";
 import Avatar from "@/app/Avatar";
+import PlayerTrendChart from "./PlayerTrendChart";
 
 export const revalidate = 60;
 
@@ -76,6 +77,20 @@ export default async function PlayerPage({
 
   const rows = (gameLog ?? []) as unknown as GameLogRow[];
 
+  const chartData = [...rows]
+    .filter((r) => r.game)
+    .reverse() // du plus ancien au plus récent pour le graphique
+    .map((r) => ({
+      date: r.game!.game_date,
+      label: new Date(r.game!.game_date).toLocaleDateString("fr-FR", {
+        day: "2-digit",
+        month: "2-digit",
+      }),
+      pts: r.pts,
+      reb: r.reb,
+      ast: r.ast,
+    }));
+
   return (
     <div className="max-w-5xl mx-auto px-4 py-8">
       <Breadcrumb
@@ -131,6 +146,8 @@ export default async function PlayerPage({
           </div>
         ))}
       </div>
+
+      <PlayerTrendChart data={chartData} />
 
       <h2 className="font-display text-base text-bsh-gold mb-3 tracking-wide">
         HISTORIQUE DES MATCHS
