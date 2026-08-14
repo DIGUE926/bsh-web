@@ -84,6 +84,13 @@ export default function NavMenu({ leagues }: { leagues: League[] }) {
                     Matchs
                   </Link>
                   <Link
+                    href={`/${league.slug}/matchs`}
+                    onClick={() => setOpen(false)}
+                    className="block px-6 py-2 text-sm hover:bg-white/5"
+                  >
+                    Archives
+                  </Link>
+                  <Link
                     href={`/${league.slug}/classement`}
                     onClick={() => setOpen(false)}
                     className="block px-6 py-2 text-sm hover:bg-white/5"
