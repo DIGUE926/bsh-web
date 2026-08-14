@@ -1,4 +1,5 @@
 import { supabase } from "@/lib/supabase";
+import Link from "next/link";
 import ClassementTabs from "../ClassementTabs";
 
 export const revalidate = 60;
@@ -40,7 +41,16 @@ export default async function ClassementBPGPage() {
                     {i + 1}
                   </td>
                   <td className="py-3 pr-4 font-semibold whitespace-nowrap">
-                    {String(r.player_name ?? "—")}
+                    {r.player_id && r.league_slug ? (
+                      <Link
+                        href={`/${String(r.league_slug)}/joueur/${String(r.player_id)}`}
+                        className="hover:text-bsh-orange"
+                      >
+                        {String(r.player_name ?? "—")}
+                      </Link>
+                    ) : (
+                      String(r.player_name ?? "—")
+                    )}
                   </td>
                   <td className="py-3 pr-4 text-white/60 whitespace-nowrap">
                     {String(r.team_name ?? "—")}
