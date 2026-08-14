@@ -40,6 +40,12 @@ export default async function AdminLayout({
         >
           Historique des modifs
         </Link>
+        <Link
+          href="/admin/changelog"
+          className="text-white/60 hover:text-bsh-orange"
+        >
+          Mises à jour du site
+        </Link>
       </nav>
       {children}
     </div>
