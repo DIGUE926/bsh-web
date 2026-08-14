@@ -91,6 +91,13 @@ export default function NavMenu({ leagues }: { leagues: League[] }) {
               >
                 Classement SUBLE
               </Link>
+              <Link
+                href="/playoffs"
+                onClick={() => setOpen(false)}
+                className="block px-4 py-3 hover:bg-white/5 font-semibold border-b border-white/10"
+              >
+                Playoffs
+              </Link>
               <a
                 href="https://www.instagram.com/ballsohardx2/?__pwa=1"
                 target="_blank"
@@ -129,6 +136,9 @@ export default function NavMenu({ leagues }: { leagues: League[] }) {
           </Link>
           <Link href="/classement" className="hover:text-bsh-orange transition-colors">
             Classement SUBLE
+          </Link>
+          <Link href="/playoffs" className="hover:text-bsh-orange transition-colors">
+            Playoffs
           </Link>
         </div>
       </div>
