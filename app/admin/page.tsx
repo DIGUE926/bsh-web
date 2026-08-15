@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
 import DeleteGameButton from "./DeleteGameButton";
+import QuickStartButton from "./QuickStartButton";
 
 export const dynamic = "force-dynamic";
 
@@ -59,10 +60,13 @@ export default async function AdminDashboard() {
                 </div>
                 <Link
                   href={`/admin/match/${game.id}`}
-                  className="text-xs bg-white/10 text-white/70 rounded px-2 py-1 hover:bg-white/20"
+                  className="relative z-10 text-xs bg-white/10 text-white/70 rounded px-2 py-1 hover:bg-white/20"
                 >
                   Corriger
                 </Link>
+                {game.status === "scheduled" && (
+                  <QuickStartButton gameId={game.id} />
+                )}
                 <DeleteGameButton gameId={game.id} />
               </div>
             </div>
