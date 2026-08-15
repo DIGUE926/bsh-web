@@ -2,6 +2,7 @@ import { supabase } from "@/lib/supabase";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import Breadcrumb from "@/app/Breadcrumb";
+import LiveScoreboard from "./LiveScoreboard";
 
 export const revalidate = 60;
 
@@ -44,6 +45,11 @@ export default async function MatchDetailPage({
   const { data: stats } = await supabase
     .from("player_game_stats")
     .select("pts, reb, ast, stl, blk, min, player:player_id(id, name, jersey_number, team_id)")
+    .eq("game_id", gameId);
+
+  const { data: shots } = await supabase
+    .from("shot_events")
+    .select("x, y, made, shot_type")
     .eq("game_id", gameId);
 
   const homeStats = (stats ?? []).filter(
@@ -144,6 +150,20 @@ export default async function MatchDetailPage({
           {game.home_score} - {game.away_score}
         </p>
       )}
+
+      <LiveScoreboard
+        gameId={gameId}
+        homeTeamName={homeTeam.name}
+        awayTeamName={awayTeam.name}
+        initialGame={{
+          home_score: game.home_score,
+          away_score: game.away_score,
+          status: game.status,
+          current_period: game.current_period,
+          clock_display: game.clock_display,
+        }}
+        initialShots={shots ?? []}
+      />
 
       {playerOfGame && playerOfGame.player && (
         <div className="border border-bsh-orange/40 bg-bsh-orange/5 rounded-lg p-4 mb-10 flex items-center gap-2">

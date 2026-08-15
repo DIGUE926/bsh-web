@@ -53,6 +53,13 @@ export default async function AdminDashboard() {
                     {game.status}
                   </p>
                 </div>
+                <Link
+                  href={`/admin/match/${game.id}/live`}
+                  onClick={(e) => e.stopPropagation()}
+                  className="text-xs bg-red-600/20 text-red-400 rounded px-2 py-1 hover:bg-red-600/30"
+                >
+                  ● Live
+                </Link>
                 <DeleteGameButton gameId={game.id} />
               </div>
             </div>
