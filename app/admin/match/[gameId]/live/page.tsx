@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import LiveControls from "@/app/admin/LiveControls";
+import { isLiveScoringEnabled } from "@/lib/settings";
 
 export const dynamic = "force-dynamic";
 
@@ -12,6 +13,27 @@ export default async function LiveMatchPage({
 }) {
   const { gameId } = await params;
   const supabase = await createClient();
+
+  if (!(await isLiveScoringEnabled())) {
+    return (
+      <div>
+        <div className="border border-red-500/40 bg-red-500/10 rounded-lg p-6 text-center">
+          <p className="text-red-300 font-semibold mb-2">
+            Scoreboard Live temporairement désactivé
+          </p>
+          <p className="text-sm text-white/50 mb-4">
+            La saisie en direct est coupée pendant la maintenance. Le reste du site fonctionne normalement.
+          </p>
+          <Link
+            href={`/admin/match/${gameId}`}
+            className="text-bsh-gold hover:underline text-sm"
+          >
+            Saisir les stats manuellement →
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   const { data: game } = await supabase
     .from("games")

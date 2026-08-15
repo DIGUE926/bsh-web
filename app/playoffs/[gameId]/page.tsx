@@ -3,6 +3,9 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import Breadcrumb from "@/app/Breadcrumb";
 import LiveScoreboard from "@/app/LiveScoreboard";
+import CourtDiagram from "@/app/CourtDiagram";
+import PlayByPlay, { PlayByPlayEvent } from "@/app/PlayByPlay";
+import { isLiveScoringEnabled } from "@/lib/settings";
 
 export const revalidate = 60;
 
@@ -56,6 +59,17 @@ export default async function PlayoffMatchPage({
     .eq("game_id", gameId)
     .eq("game_type", "playoff")
     .in("event_type", ["2PT", "3PT"]);
+
+  const { data: allEvents } = await supabase
+    .from("game_events")
+    .select(
+      "id, event_type, made, period, created_at, player:player_id(name, jersey_number, team_id)"
+    )
+    .eq("game_id", gameId)
+    .eq("game_type", "playoff")
+    .order("created_at", { ascending: false });
+
+  const liveEnabled = await isLiveScoringEnabled();
 
   const homeStats = (stats ?? []).filter(
     (s) => (s.player as unknown as { team_id: string })?.team_id === homeTeam.id
@@ -156,20 +170,35 @@ export default async function PlayoffMatchPage({
         </p>
       )}
 
-      <LiveScoreboard
-        gameType="playoff"
-        gameId={gameId}
-        homeTeamName={homeTeam.name}
-        awayTeamName={awayTeam.name}
-        initialGame={{
-          home_score: game.home_score,
-          away_score: game.away_score,
-          status: game.status,
-          current_period: game.current_period,
-          clock_display: game.clock_display,
-        }}
-        initialShots={shots ?? []}
-      />
+      {liveEnabled && (
+        <LiveScoreboard
+          gameType="playoff"
+          gameId={gameId}
+          homeTeamName={homeTeam.name}
+          awayTeamName={awayTeam.name}
+          initialGame={{
+            home_score: game.home_score,
+            away_score: game.away_score,
+            status: game.status,
+            current_period: game.current_period,
+            clock_display: game.clock_display,
+          }}
+          initialShots={shots ?? []}
+        />
+      )}
+
+      {shots &&
+        shots.length > 0 &&
+        !(liveEnabled && game.status === "live") && (
+          <div className="mb-10">
+            <p className="text-xs text-white/40 uppercase tracking-wide mb-2">
+              Shot chart
+            </p>
+            <div className="max-w-md">
+              <CourtDiagram shots={shots} />
+            </div>
+          </div>
+        )}
 
       {playerOfGame && playerOfGame.player && (
         <div className="border border-bsh-orange/40 bg-bsh-orange/5 rounded-lg p-4 mb-10 flex items-center gap-2">
@@ -192,6 +221,18 @@ export default async function PlayoffMatchPage({
 
       {renderTable(homeTeam.name, homeStats)}
       {renderTable(awayTeam.name, awayStats)}
+
+      <div className="mb-10">
+        <h2 className="font-display text-base text-bsh-gold mb-3 tracking-wide">
+          Play-by-play
+        </h2>
+        <PlayByPlay
+          events={(allEvents ?? []) as unknown as PlayByPlayEvent[]}
+          homeTeamId={homeTeam.id}
+          homeTeamName={homeTeam.name}
+          awayTeamName={awayTeam.name}
+        />
+      </div>
     </div>
   );
 }

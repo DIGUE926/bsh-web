@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
 import QuickStartButton from "@/app/admin/QuickStartButton";
+import { isLiveScoringEnabled } from "@/lib/settings";
 
 const ROUND_LABELS: Record<string, string> = {
   demi_finale_1: "Demi-finale 1",
@@ -13,6 +14,7 @@ export const dynamic = "force-dynamic";
 
 export default async function AdminPlayoffsDashboard() {
   const supabase = await createClient();
+  const liveEnabled = await isLiveScoringEnabled();
 
   const { data: games } = await supabase
     .from("playoff_games")
@@ -42,6 +44,12 @@ export default async function AdminPlayoffsDashboard() {
         ← Matchs saison régulière
       </Link>
 
+      {!liveEnabled && (
+        <div className="border border-red-500/40 bg-red-500/10 rounded-lg px-4 py-3 mb-4 text-sm text-red-300">
+          Scoreboard Live désactivé (voir le switch sur le dashboard principal).
+        </div>
+      )}
+
       <div className="space-y-3">
         {games?.map((game) => (
           <div
@@ -49,9 +57,13 @@ export default async function AdminPlayoffsDashboard() {
             className="relative block border border-white/10 rounded-lg p-4 hover:border-bsh-orange transition-colors bg-white/5"
           >
             <Link
-              href={`/admin/playoffs/match/${game.id}/live`}
+              href={
+                liveEnabled
+                  ? `/admin/playoffs/match/${game.id}/live`
+                  : `/admin/playoffs/match/${game.id}`
+              }
               className="absolute inset-0"
-              aria-label={`Enregistrer ${game.team_home?.name ?? "?"} vs ${game.team_away?.name ?? "?"}`}
+              aria-label={`${liveEnabled ? "Enregistrer" : "Corriger"} ${game.team_home?.name ?? "?"} vs ${game.team_away?.name ?? "?"}`}
             />
             <div className="flex items-center justify-between">
               <div>
@@ -80,7 +92,11 @@ export default async function AdminPlayoffsDashboard() {
                   Corriger
                 </Link>
                 {game.status === "scheduled" && (
-                  <QuickStartButton gameId={game.id} gameType="playoff" />
+                  <QuickStartButton
+                    gameId={game.id}
+                    gameType="playoff"
+                    disabled={!liveEnabled}
+                  />
                 )}
               </div>
             </div>

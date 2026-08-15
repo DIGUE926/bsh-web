@@ -2,11 +2,14 @@ import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
 import DeleteGameButton from "./DeleteGameButton";
 import QuickStartButton from "./QuickStartButton";
+import LiveKillSwitch from "./LiveKillSwitch";
+import { isLiveScoringEnabled } from "@/lib/settings";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminDashboard() {
   const supabase = await createClient();
+  const liveEnabled = await isLiveScoringEnabled();
 
   const { data: games } = await supabase
     .from("games")
@@ -28,6 +31,8 @@ export default async function AdminDashboard() {
         </Link>
       </div>
 
+      <LiveKillSwitch initialEnabled={liveEnabled} />
+
       <div className="space-y-3">
         {games?.map((game) => (
           <div
@@ -35,9 +40,13 @@ export default async function AdminDashboard() {
             className="relative block border border-white/10 rounded-lg p-4 hover:border-bsh-orange transition-colors bg-white/5"
           >
             <Link
-              href={`/admin/match/${game.id}/live`}
+              href={
+                liveEnabled
+                  ? `/admin/match/${game.id}/live`
+                  : `/admin/match/${game.id}`
+              }
               className="absolute inset-0"
-              aria-label={`Enregistrer ${game.home_team?.name ?? "?"} vs ${game.away_team?.name ?? "?"}`}
+              aria-label={`${liveEnabled ? "Enregistrer" : "Corriger"} ${game.home_team?.name ?? "?"} vs ${game.away_team?.name ?? "?"}`}
             />
             <div className="flex items-center justify-between">
               <div>
@@ -65,7 +74,7 @@ export default async function AdminDashboard() {
                   Corriger
                 </Link>
                 {game.status === "scheduled" && (
-                  <QuickStartButton gameId={game.id} />
+                  <QuickStartButton gameId={game.id} disabled={!liveEnabled} />
                 )}
                 <DeleteGameButton gameId={game.id} />
               </div>

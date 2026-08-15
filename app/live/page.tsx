@@ -1,10 +1,31 @@
 import { supabase } from "@/lib/supabase";
 import Link from "next/link";
 import LiveBadge from "@/app/LiveBadge";
+import { isLiveScoringEnabled } from "@/lib/settings";
 
 export const dynamic = "force-dynamic";
 
 export default async function LivePage() {
+  const liveEnabled = await isLiveScoringEnabled();
+
+  if (!liveEnabled) {
+    return (
+      <div className="max-w-5xl mx-auto px-4 py-10">
+        <h1 className="font-display text-xl text-bsh-orange tracking-wide mb-6">
+          MATCHS EN DIRECT
+        </h1>
+        <div className="border border-white/10 rounded-lg p-8 text-center bg-white/5">
+          <p className="text-white/60 mb-3">
+            Le suivi en direct est temporairement indisponible.
+          </p>
+          <Link href="/" className="text-bsh-orange hover:underline text-sm">
+            ← Retour à l&apos;accueil
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
   const { data: liveGames } = await supabase
     .from("games")
     .select(
