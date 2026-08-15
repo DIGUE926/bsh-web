@@ -55,6 +55,14 @@ export default function NavMenu({ leagues }: { leagues: League[] }) {
               >
                 Accueil
               </Link>
+              <Link
+                href="/live"
+                onClick={() => setOpen(false)}
+                className="flex items-center gap-2 px-4 py-3 hover:bg-white/5 font-semibold border-b border-white/10 text-red-400"
+              >
+                <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+                Live
+              </Link>
 
               {leagues.map((league) => (
                 <div key={league.slug} className="border-b border-white/5">
@@ -146,7 +154,11 @@ export default function NavMenu({ leagues }: { leagues: League[] }) {
           )}
         </div>
 
-        <div className="hidden sm:flex gap-6 text-sm font-semibold">
+        <div className="hidden sm:flex gap-6 text-sm font-semibold items-center">
+          <Link href="/live" className="flex items-center gap-1.5 text-red-400 hover:text-red-300 transition-colors">
+            <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
+            Live
+          </Link>
           <Link href="/suble" className="hover:text-bsh-orange transition-colors">
             SUBLE
           </Link>

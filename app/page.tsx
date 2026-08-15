@@ -1,6 +1,7 @@
 import { supabase } from "@/lib/supabase";
 import Link from "next/link";
 import Avatar from "@/app/Avatar";
+import LiveBadge from "@/app/LiveBadge";
 
 export const revalidate = 60;
 
@@ -9,6 +10,13 @@ export default async function Home() {
     .from("leagues")
     .select("*")
     .order("name");
+
+  const { data: liveGames } = await supabase
+    .from("games")
+    .select(
+      "id, home_score, away_score, home_team:home_team_id(name), away_team:away_team_id(name), league:league_id(slug)"
+    )
+    .eq("status", "live");
 
   const { data: recentGames } = await supabase
     .from("games")
@@ -104,6 +112,37 @@ export default async function Home() {
           en Haïti.
         </p>
       </section>
+
+      {liveGames && liveGames.length > 0 && (
+        <section className="mb-10">
+          <div className="flex items-center gap-2 mb-3">
+            <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+            <h2 className="font-display text-base text-red-400 tracking-wide">
+              EN DIRECT
+            </h2>
+          </div>
+          <div className="space-y-2">
+            {(liveGames as unknown as Array<{
+              id: string;
+              home_score: number | null;
+              away_score: number | null;
+              home_team: { name: string } | null;
+              away_team: { name: string } | null;
+              league: { slug: string } | null;
+            }>).map((g) => (
+              <LiveBadge
+                key={g.id}
+                gameId={g.id}
+                homeTeamName={g.home_team?.name ?? "?"}
+                awayTeamName={g.away_team?.name ?? "?"}
+                initialHomeScore={g.home_score}
+                initialAwayScore={g.away_score}
+                href={`/${g.league?.slug}/match/${g.id}`}
+              />
+            ))}
+          </div>
+        </section>
+      )}
 
       {(matchDuJour || nextPlayoffGame || playoffsList.length > 0) && (
         <section className="mb-10">
