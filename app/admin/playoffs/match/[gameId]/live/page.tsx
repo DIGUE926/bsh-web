@@ -5,7 +5,7 @@ import LiveControls from "@/app/admin/LiveControls";
 
 export const dynamic = "force-dynamic";
 
-export default async function LiveMatchPage({
+export default async function PlayoffLiveMatchPage({
   params,
 }: {
   params: Promise<{ gameId: string }>;
@@ -14,15 +14,15 @@ export default async function LiveMatchPage({
   const supabase = await createClient();
 
   const { data: game } = await supabase
-    .from("games")
-    .select("*, home_team:home_team_id(id,name), away_team:away_team_id(id,name)")
+    .from("playoff_games")
+    .select("*, team_home:team_home_id(id,name), team_away:team_away_id(id,name)")
     .eq("id", gameId)
     .single();
 
   if (!game) notFound();
 
-  const homeTeam = game.home_team as unknown as { id: string; name: string };
-  const awayTeam = game.away_team as unknown as { id: string; name: string };
+  const homeTeam = game.team_home as unknown as { id: string; name: string };
+  const awayTeam = game.team_away as unknown as { id: string; name: string };
 
   const { data: homePlayers } = await supabase
     .from("players")
@@ -40,22 +40,22 @@ export default async function LiveMatchPage({
     .from("game_events")
     .select("*")
     .eq("game_id", gameId)
-    .eq("game_type", "regular")
+    .eq("game_type", "playoff")
     .order("created_at", { ascending: true });
 
   const { data: existingStats } = await supabase
-    .from("player_game_stats")
+    .from("playoff_player_stats")
     .select("*")
-    .eq("game_id", gameId);
+    .eq("playoff_game_id", gameId);
 
   return (
     <div>
       <div className="flex items-center justify-between mb-1">
         <h1 className="font-display text-xl text-bsh-orange tracking-wide">
-          {homeTeam.name} VS {awayTeam.name} — Live
+          {homeTeam.name} VS {awayTeam.name} — Live (Playoffs)
         </h1>
         <Link
-          href={`/admin/match/${gameId}`}
+          href={`/admin/playoffs/match/${gameId}`}
           className="text-sm text-bsh-gold hover:underline"
         >
           Corriger manuellement →
@@ -64,7 +64,7 @@ export default async function LiveMatchPage({
       <p className="text-white/50 mb-6">{game.game_date}</p>
 
       <LiveControls
-        gameType="regular"
+        gameType="playoff"
         gameId={gameId}
         homeTeam={homeTeam}
         awayTeam={awayTeam}

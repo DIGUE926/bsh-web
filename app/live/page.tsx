@@ -12,6 +12,13 @@ export default async function LivePage() {
     )
     .eq("status", "live");
 
+  const { data: livePlayoffGames } = await supabase
+    .from("playoff_games")
+    .select(
+      "id, home_score, away_score, team_home:team_home_id(name), team_away:team_away_id(name)"
+    )
+    .eq("status", "live");
+
   const games = (liveGames ?? []) as unknown as Array<{
     id: string;
     home_score: number | null;
@@ -20,6 +27,16 @@ export default async function LivePage() {
     away_team: { name: string } | null;
     league: { slug: string } | null;
   }>;
+
+  const playoffGames = (livePlayoffGames ?? []) as unknown as Array<{
+    id: string;
+    home_score: number | null;
+    away_score: number | null;
+    team_home: { name: string } | null;
+    team_away: { name: string } | null;
+  }>;
+
+  const total = games.length + playoffGames.length;
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-10">
@@ -30,7 +47,7 @@ export default async function LivePage() {
         </h1>
       </div>
 
-      {games.length === 0 ? (
+      {total === 0 ? (
         <div className="border border-white/10 rounded-lg p-8 text-center bg-white/5">
           <p className="text-white/60 mb-3">Aucun match en direct actuellement.</p>
           <Link href="/" className="text-bsh-orange hover:underline text-sm">
@@ -48,6 +65,18 @@ export default async function LivePage() {
               initialHomeScore={g.home_score}
               initialAwayScore={g.away_score}
               href={`/${g.league?.slug}/match/${g.id}`}
+            />
+          ))}
+          {playoffGames.map((g) => (
+            <LiveBadge
+              key={g.id}
+              gameType="playoff"
+              gameId={g.id}
+              homeTeamName={g.team_home?.name ?? "?"}
+              awayTeamName={g.team_away?.name ?? "?"}
+              initialHomeScore={g.home_score}
+              initialAwayScore={g.away_score}
+              href={`/playoffs/${g.id}`}
             />
           ))}
         </div>

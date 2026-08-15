@@ -13,9 +13,10 @@ type GameEvent = ShotPoint & {
   team_id: string;
   period: number;
 };
+type GameType = "regular" | "playoff";
 
 type BoxRow = {
-  id: string | null; // id de la ligne player_game_stats, null si pas encore créée
+  id: string | null; // id de la ligne de stats, null si pas encore créée
   pts: number;
   reb: number;
   ast: number;
@@ -53,6 +54,7 @@ function pointsFor(eventType: EventType, made: boolean): number {
 }
 
 export default function LiveControls({
+  gameType,
   gameId,
   homeTeam,
   awayTeam,
@@ -66,6 +68,7 @@ export default function LiveControls({
   initialShots,
   existingStats,
 }: {
+  gameType: GameType;
   gameId: string;
   homeTeam: Team;
   awayTeam: Team;
@@ -80,6 +83,9 @@ export default function LiveControls({
   existingStats: Array<{ id: string; player_id: string } & Record<string, number | null>>;
 }) {
   const supabase = createClient();
+  const scoreTable = gameType === "regular" ? "games" : "playoff_games";
+  const statsTable = gameType === "regular" ? "player_game_stats" : "playoff_player_stats";
+  const statsFk = gameType === "regular" ? "game_id" : "playoff_game_id";
 
   const [homeScore, setHomeScore] = useState(initialHomeScore);
   const [awayScore, setAwayScore] = useState(initialAwayScore);
@@ -116,7 +122,7 @@ export default function LiveControls({
     setHomeScore(newHome);
     setAwayScore(newAway);
     await supabase
-      .from("games")
+      .from(scoreTable)
       .update({ home_score: newHome, away_score: newAway })
       .eq("id", gameId);
   }
@@ -129,25 +135,25 @@ export default function LiveControls({
 
   async function goLive() {
     setStatus("live");
-    await supabase.from("games").update({ status: "live" }).eq("id", gameId);
+    await supabase.from(scoreTable).update({ status: "live" }).eq("id", gameId);
   }
 
   async function endGame() {
     setStatus("completed");
-    await supabase.from("games").update({ status: "completed" }).eq("id", gameId);
+    await supabase.from(scoreTable).update({ status: "completed" }).eq("id", gameId);
   }
 
   async function changePeriod(delta: number) {
     const next = Math.max(1, period + delta);
     setPeriod(next);
-    await supabase.from("games").update({ current_period: next }).eq("id", gameId);
+    await supabase.from(scoreTable).update({ current_period: next }).eq("id", gameId);
   }
 
   async function saveClock() {
-    await supabase.from("games").update({ clock_display: clock }).eq("id", gameId);
+    await supabase.from(scoreTable).update({ clock_display: clock }).eq("id", gameId);
   }
 
-  // Applique un delta au box score local + DB, retourne les nouvelles valeurs absolues
+  // Applique un delta au box score local + DB
   async function applyDelta(playerId: string, delta: StatDelta) {
     const current = box[playerId] ?? { id: null, ...EMPTY_ROW };
     const next: BoxRow = {
@@ -162,8 +168,8 @@ export default function LiveControls({
     };
     setBox((prev) => ({ ...prev, [playerId]: next }));
 
-    const payload = {
-      game_id: gameId,
+    const payload: Record<string, string | number> = {
+      [statsFk]: gameId,
       player_id: playerId,
       pts: next.pts,
       reb: next.reb,
@@ -175,9 +181,9 @@ export default function LiveControls({
     };
 
     if (current.id) {
-      await supabase.from("player_game_stats").update(payload).eq("id", current.id);
+      await supabase.from(statsTable).update(payload).eq("id", current.id);
     } else {
-      const { data } = await supabase.from("player_game_stats").insert(payload).select("id").single();
+      const { data } = await supabase.from(statsTable).insert(payload).select("id").single();
       if (data) {
         setBox((prev) => ({ ...prev, [playerId]: { ...prev[playerId], id: data.id } }));
       }
@@ -192,6 +198,7 @@ export default function LiveControls({
       .from("game_events")
       .insert({
         game_id: gameId,
+        game_type: gameType,
         player_id: selectedPlayerId,
         team_id: selectedTeamId,
         period,

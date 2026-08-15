@@ -13,18 +13,21 @@ type GameState = {
 };
 
 export default function LiveScoreboard({
+  gameType = "regular",
   gameId,
   homeTeamName,
   awayTeamName,
   initialGame,
   initialShots,
 }: {
+  gameType?: "regular" | "playoff";
   gameId: string;
   homeTeamName: string;
   awayTeamName: string;
   initialGame: GameState;
   initialShots: ShotPoint[];
 }) {
+  const scoreTable = gameType === "regular" ? "games" : "playoff_games";
   const [game, setGame] = useState<GameState>(initialGame);
   const [shots, setShots] = useState<ShotPoint[]>(initialShots);
 
@@ -32,18 +35,18 @@ export default function LiveScoreboard({
     const supabase = createClient();
 
     const channel = supabase
-      .channel(`game-${gameId}`)
+      .channel(`game-${gameType}-${gameId}`)
       .on(
         "postgres_changes",
-        { event: "UPDATE", schema: "public", table: "games", filter: `id=eq.${gameId}` },
+        { event: "UPDATE", schema: "public", table: scoreTable, filter: `id=eq.${gameId}` },
         (payload) => setGame(payload.new as GameState)
       )
       .on(
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "game_events", filter: `game_id=eq.${gameId}` },
         (payload) => {
-          const ev = payload.new as ShotPoint & { event_type: string };
-          if (ev.event_type === "2PT" || ev.event_type === "3PT") {
+          const ev = payload.new as ShotPoint & { event_type: string; game_type: string };
+          if (ev.game_type === gameType && (ev.event_type === "2PT" || ev.event_type === "3PT")) {
             setShots((prev) => [...prev, ev]);
           }
         }
@@ -57,6 +60,7 @@ export default function LiveScoreboard({
             .from("game_events")
             .select("x,y,made,event_type")
             .eq("game_id", gameId)
+            .eq("game_type", gameType)
             .in("event_type", ["2PT", "3PT"])
             .then(({ data }) => setShots((data as ShotPoint[]) ?? []));
         }
@@ -66,7 +70,7 @@ export default function LiveScoreboard({
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [gameId]);
+  }, [gameId, gameType, scoreTable]);
 
   if (game.status !== "live") return null;
 

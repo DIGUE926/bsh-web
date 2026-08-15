@@ -2,6 +2,7 @@ import { supabase } from "@/lib/supabase";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import Breadcrumb from "@/app/Breadcrumb";
+import LiveScoreboard from "@/app/LiveScoreboard";
 
 export const revalidate = 60;
 
@@ -48,6 +49,13 @@ export default async function PlayoffMatchPage({
       "pts, reb, ast, stl, blk, min, player:player_id(id, name, jersey_number, team_id)"
     )
     .eq("playoff_game_id", gameId);
+
+  const { data: shots } = await supabase
+    .from("game_events")
+    .select("x, y, made, event_type")
+    .eq("game_id", gameId)
+    .eq("game_type", "playoff")
+    .in("event_type", ["2PT", "3PT"]);
 
   const homeStats = (stats ?? []).filter(
     (s) => (s.player as unknown as { team_id: string })?.team_id === homeTeam.id
@@ -147,6 +155,21 @@ export default async function PlayoffMatchPage({
           {game.home_score} - {game.away_score}
         </p>
       )}
+
+      <LiveScoreboard
+        gameType="playoff"
+        gameId={gameId}
+        homeTeamName={homeTeam.name}
+        awayTeamName={awayTeam.name}
+        initialGame={{
+          home_score: game.home_score,
+          away_score: game.away_score,
+          status: game.status,
+          current_period: game.current_period,
+          clock_display: game.clock_display,
+        }}
+        initialShots={shots ?? []}
+      />
 
       {playerOfGame && playerOfGame.player && (
         <div className="border border-bsh-orange/40 bg-bsh-orange/5 rounded-lg p-4 mb-10 flex items-center gap-2">

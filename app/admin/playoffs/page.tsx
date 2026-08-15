@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
+import QuickStartButton from "@/app/admin/QuickStartButton";
 
 const ROUND_LABELS: Record<string, string> = {
   demi_finale_1: "Demi-finale 1",
@@ -43,11 +44,15 @@ export default async function AdminPlayoffsDashboard() {
 
       <div className="space-y-3">
         {games?.map((game) => (
-          <Link
+          <div
             key={game.id}
-            href={`/admin/playoffs/match/${game.id}`}
-            className="block border border-white/10 rounded-lg p-4 hover:border-bsh-orange transition-colors bg-white/5"
+            className="relative block border border-white/10 rounded-lg p-4 hover:border-bsh-orange transition-colors bg-white/5"
           >
+            <Link
+              href={`/admin/playoffs/match/${game.id}/live`}
+              className="absolute inset-0"
+              aria-label={`Enregistrer ${game.team_home?.name ?? "?"} vs ${game.team_away?.name ?? "?"}`}
+            />
             <div className="flex items-center justify-between">
               <div>
                 <p className="font-semibold">
@@ -59,16 +64,27 @@ export default async function AdminPlayoffsDashboard() {
                   · Match {game.game_number}
                 </p>
               </div>
-              <div className="text-right">
-                <p className="font-display text-lg text-bsh-gold">
-                  {game.home_score ?? "-"} / {game.away_score ?? "-"}
-                </p>
-                <p className="text-xs text-white/40 uppercase">
-                  {game.status}
-                </p>
+              <div className="relative z-10 flex items-center gap-2">
+                <div className="text-right">
+                  <p className="font-display text-lg text-bsh-gold">
+                    {game.home_score ?? "-"} / {game.away_score ?? "-"}
+                  </p>
+                  <p className="text-xs text-white/40 uppercase">
+                    {game.status}
+                  </p>
+                </div>
+                <Link
+                  href={`/admin/playoffs/match/${game.id}`}
+                  className="relative z-10 text-xs bg-white/10 text-white/70 rounded px-2 py-1 hover:bg-white/20"
+                >
+                  Corriger
+                </Link>
+                {game.status === "scheduled" && (
+                  <QuickStartButton gameId={game.id} gameType="playoff" />
+                )}
               </div>
             </div>
-          </Link>
+          </div>
         ))}
         {(!games || games.length === 0) && (
           <p className="text-white/50">Aucun match playoff pour le moment.</p>

@@ -18,6 +18,13 @@ export default async function Home() {
     )
     .eq("status", "live");
 
+  const { data: livePlayoffGames } = await supabase
+    .from("playoff_games")
+    .select(
+      "id, home_score, away_score, team_home:team_home_id(name), team_away:team_away_id(name)"
+    )
+    .eq("status", "live");
+
   const { data: recentGames } = await supabase
     .from("games")
     .select(
@@ -113,7 +120,7 @@ export default async function Home() {
         </p>
       </section>
 
-      {liveGames && liveGames.length > 0 && (
+      {((liveGames && liveGames.length > 0) || (livePlayoffGames && livePlayoffGames.length > 0)) && (
         <section className="mb-10">
           <div className="flex items-center gap-2 mb-3">
             <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
@@ -129,7 +136,7 @@ export default async function Home() {
               home_team: { name: string } | null;
               away_team: { name: string } | null;
               league: { slug: string } | null;
-            }>).map((g) => (
+            }> ?? []).map((g) => (
               <LiveBadge
                 key={g.id}
                 gameId={g.id}
@@ -138,6 +145,24 @@ export default async function Home() {
                 initialHomeScore={g.home_score}
                 initialAwayScore={g.away_score}
                 href={`/${g.league?.slug}/match/${g.id}`}
+              />
+            ))}
+            {(livePlayoffGames as unknown as Array<{
+              id: string;
+              home_score: number | null;
+              away_score: number | null;
+              team_home: { name: string } | null;
+              team_away: { name: string } | null;
+            }> ?? []).map((g) => (
+              <LiveBadge
+                key={g.id}
+                gameType="playoff"
+                gameId={g.id}
+                homeTeamName={g.team_home?.name ?? "?"}
+                awayTeamName={g.team_away?.name ?? "?"}
+                initialHomeScore={g.home_score}
+                initialAwayScore={g.away_score}
+                href={`/playoffs/${g.id}`}
               />
             ))}
           </div>

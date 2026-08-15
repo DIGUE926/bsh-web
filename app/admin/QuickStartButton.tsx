@@ -3,15 +3,23 @@
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
-export default function QuickStartButton({ gameId }: { gameId: string }) {
+export default function QuickStartButton({
+  gameId,
+  gameType = "regular",
+}: {
+  gameId: string;
+  gameType?: "regular" | "playoff";
+}) {
   const router = useRouter();
+  const table = gameType === "regular" ? "games" : "playoff_games";
+  const path = gameType === "regular" ? `/admin/match/${gameId}/live` : `/admin/playoffs/match/${gameId}/live`;
 
   async function start(e: React.MouseEvent) {
     e.preventDefault();
     e.stopPropagation();
     const supabase = createClient();
-    await supabase.from("games").update({ status: "live" }).eq("id", gameId);
-    router.push(`/admin/match/${gameId}/live`);
+    await supabase.from(table).update({ status: "live" }).eq("id", gameId);
+    router.push(path);
   }
 
   return (

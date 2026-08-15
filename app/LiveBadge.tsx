@@ -5,6 +5,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 
 export default function LiveBadge({
+  gameType = "regular",
   gameId,
   homeTeamName,
   awayTeamName,
@@ -12,6 +13,7 @@ export default function LiveBadge({
   initialAwayScore,
   href,
 }: {
+  gameType?: "regular" | "playoff";
   gameId: string;
   homeTeamName: string;
   awayTeamName: string;
@@ -19,16 +21,17 @@ export default function LiveBadge({
   initialAwayScore: number | null;
   href: string;
 }) {
+  const table = gameType === "regular" ? "games" : "playoff_games";
   const [homeScore, setHomeScore] = useState(initialHomeScore ?? 0);
   const [awayScore, setAwayScore] = useState(initialAwayScore ?? 0);
 
   useEffect(() => {
     const supabase = createClient();
     const channel = supabase
-      .channel(`live-badge-${gameId}`)
+      .channel(`live-badge-${gameType}-${gameId}`)
       .on(
         "postgres_changes",
-        { event: "UPDATE", schema: "public", table: "games", filter: `id=eq.${gameId}` },
+        { event: "UPDATE", schema: "public", table, filter: `id=eq.${gameId}` },
         (payload) => {
           const row = payload.new as { home_score: number | null; away_score: number | null };
           setHomeScore(row.home_score ?? 0);
@@ -40,7 +43,7 @@ export default function LiveBadge({
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [gameId]);
+  }, [gameId, gameType, table]);
 
   return (
     <Link

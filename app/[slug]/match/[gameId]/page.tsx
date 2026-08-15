@@ -2,7 +2,7 @@ import { supabase } from "@/lib/supabase";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import Breadcrumb from "@/app/Breadcrumb";
-import LiveScoreboard from "./LiveScoreboard";
+import LiveScoreboard from "@/app/LiveScoreboard";
 
 export const revalidate = 60;
 
@@ -51,6 +51,7 @@ export default async function MatchDetailPage({
     .from("game_events")
     .select("x, y, made, event_type")
     .eq("game_id", gameId)
+    .eq("game_type", "regular")
     .in("event_type", ["2PT", "3PT"]);
 
   const homeStats = (stats ?? []).filter(
