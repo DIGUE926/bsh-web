@@ -358,29 +358,20 @@ export default function LiveControls({
               transform: "translate(-50%, 8px)",
             }}
           >
+            <p className="text-xs text-bsh-gold font-bold text-center mb-1">{guess}</p>
             <div className="flex gap-1">
-              {(["2PT", "3PT"] as const).map((t) => (
-                <button
-                  key={t}
-                  onClick={() => recordEvent(t, true, pendingShot.x, pendingShot.y)}
-                  className={`text-xs px-2 py-1 rounded ${
-                    t === guess ? "bg-green-600 text-white font-bold" : "bg-white/10 text-white/70"
-                  }`}
-                >
-                  {t} ✓
-                </button>
-              ))}
-            </div>
-            <div className="flex gap-1">
-              {(["2PT", "3PT"] as const).map((t) => (
-                <button
-                  key={t}
-                  onClick={() => recordEvent(t, false, pendingShot.x, pendingShot.y)}
-                  className="text-xs px-2 py-1 rounded bg-white/10 text-white/70"
-                >
-                  {t} ✗
-                </button>
-              ))}
+              <button
+                onClick={() => recordEvent(guess, true, pendingShot.x, pendingShot.y)}
+                className="text-xs px-3 py-1.5 rounded bg-green-600 text-white font-bold"
+              >
+                Réussi ✓
+              </button>
+              <button
+                onClick={() => recordEvent(guess, false, pendingShot.x, pendingShot.y)}
+                className="text-xs px-3 py-1.5 rounded bg-red-600/80 text-white font-bold"
+              >
+                Raté ✗
+              </button>
             </div>
             <button onClick={() => setPendingShot(null)} className="text-xs text-white/40">
               annuler
