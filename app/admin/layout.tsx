@@ -52,6 +52,12 @@ export default async function AdminLayout({
         >
           Mises à jour du site
         </Link>
+        <Link
+          href="/admin/social"
+          className="text-white/60 hover:text-bsh-orange"
+        >
+          📸 Réseaux sociaux
+        </Link>
       </nav>
       {children}
     </div>
