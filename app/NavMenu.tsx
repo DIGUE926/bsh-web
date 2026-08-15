@@ -61,7 +61,7 @@ export default function NavMenu({ leagues }: { leagues: League[] }) {
                 className="flex items-center gap-2 px-4 py-3 hover:bg-white/5 font-semibold border-b border-white/10 text-red-400"
               >
                 <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
-                Live
+                Scoreboard Live
               </Link>
 
               {leagues.map((league) => (
@@ -157,7 +157,7 @@ export default function NavMenu({ leagues }: { leagues: League[] }) {
         <div className="hidden sm:flex gap-6 text-sm font-semibold items-center">
           <Link href="/live" className="flex items-center gap-1.5 text-red-400 hover:text-red-300 transition-colors">
             <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
-            Live
+            Scoreboard Live
           </Link>
           <Link href="/suble" className="hover:text-bsh-orange transition-colors">
             SUBLE
