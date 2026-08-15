@@ -29,11 +29,15 @@ export default async function AdminDashboard() {
 
       <div className="space-y-3">
         {games?.map((game) => (
-          <Link
+          <div
             key={game.id}
-            href={`/admin/match/${game.id}`}
-            className="block border border-white/10 rounded-lg p-4 hover:border-bsh-orange transition-colors bg-white/5"
+            className="relative block border border-white/10 rounded-lg p-4 hover:border-bsh-orange transition-colors bg-white/5"
           >
+            <Link
+              href={`/admin/match/${game.id}`}
+              className="absolute inset-0"
+              aria-label={`Feuille de stats ${game.home_team?.name ?? "?"} vs ${game.away_team?.name ?? "?"}`}
+            />
             <div className="flex items-center justify-between">
               <div>
                 <p className="font-semibold">
@@ -44,7 +48,7 @@ export default async function AdminDashboard() {
                   {game.game_date} · {game.phase ?? "Saison régulière"}
                 </p>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="relative z-10 flex items-center gap-2">
                 <div className="text-right">
                   <p className="font-display text-lg text-bsh-gold">
                     {game.home_score ?? "-"} / {game.away_score ?? "-"}
@@ -55,7 +59,6 @@ export default async function AdminDashboard() {
                 </div>
                 <Link
                   href={`/admin/match/${game.id}/live`}
-                  onClick={(e) => e.stopPropagation()}
                   className="text-xs bg-red-600/20 text-red-400 rounded px-2 py-1 hover:bg-red-600/30"
                 >
                   ● Live
@@ -63,7 +66,7 @@ export default async function AdminDashboard() {
                 <DeleteGameButton gameId={game.id} />
               </div>
             </div>
-          </Link>
+          </div>
         ))}
         {(!games || games.length === 0) && (
           <p className="text-white/50">Aucun match pour le moment.</p>
