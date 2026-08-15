@@ -34,9 +34,9 @@ export default async function AdminDashboard() {
             className="relative block border border-white/10 rounded-lg p-4 hover:border-bsh-orange transition-colors bg-white/5"
           >
             <Link
-              href={`/admin/match/${game.id}`}
+              href={`/admin/match/${game.id}/live`}
               className="absolute inset-0"
-              aria-label={`Feuille de stats ${game.home_team?.name ?? "?"} vs ${game.away_team?.name ?? "?"}`}
+              aria-label={`Enregistrer ${game.home_team?.name ?? "?"} vs ${game.away_team?.name ?? "?"}`}
             />
             <div className="flex items-center justify-between">
               <div>
@@ -58,10 +58,10 @@ export default async function AdminDashboard() {
                   </p>
                 </div>
                 <Link
-                  href={`/admin/match/${game.id}/live`}
-                  className="text-xs bg-red-600/20 text-red-400 rounded px-2 py-1 hover:bg-red-600/30"
+                  href={`/admin/match/${game.id}`}
+                  className="text-xs bg-white/10 text-white/70 rounded px-2 py-1 hover:bg-white/20"
                 >
-                  ● Live
+                  Corriger
                 </Link>
                 <DeleteGameButton gameId={game.id} />
               </div>

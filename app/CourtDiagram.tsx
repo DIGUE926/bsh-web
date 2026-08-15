@@ -4,7 +4,7 @@ export type ShotPoint = {
   x: number;
   y: number;
   made: boolean;
-  shot_type: "2PT" | "3PT" | "FT";
+  event_type: "2PT" | "3PT" | "FT" | "REB" | "AST";
 };
 
 const HOOP = { x: 50, y: 7 };
@@ -66,7 +66,9 @@ export default function CourtDiagram({
       {/* Half-court line */}
       <line x1="1" y1="99" x2="99" y2="99" stroke="rgba(255,255,255,0.15)" strokeWidth="0.5" />
 
-      {shots.map((s, i) => (
+      {shots
+        .filter((s) => s.x != null && s.y != null)
+        .map((s, i) => (
         <g key={i}>
           {s.made ? (
             <circle cx={s.x} cy={s.y} r="1.6" fill="#22c55e" stroke="#0D0D0D" strokeWidth="0.3" />

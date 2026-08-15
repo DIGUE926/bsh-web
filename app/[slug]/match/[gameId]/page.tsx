@@ -48,9 +48,10 @@ export default async function MatchDetailPage({
     .eq("game_id", gameId);
 
   const { data: shots } = await supabase
-    .from("shot_events")
-    .select("x, y, made, shot_type")
-    .eq("game_id", gameId);
+    .from("game_events")
+    .select("x, y, made, event_type")
+    .eq("game_id", gameId)
+    .in("event_type", ["2PT", "3PT"]);
 
   const homeStats = (stats ?? []).filter(
     (s) => (s.player as unknown as { team_id: string })?.team_id === homeTeam.id

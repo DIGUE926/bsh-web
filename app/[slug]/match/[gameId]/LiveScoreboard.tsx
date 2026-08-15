@@ -40,18 +40,24 @@ export default function LiveScoreboard({
       )
       .on(
         "postgres_changes",
-        { event: "INSERT", schema: "public", table: "shot_events", filter: `game_id=eq.${gameId}` },
-        (payload) => setShots((prev) => [...prev, payload.new as ShotPoint])
+        { event: "INSERT", schema: "public", table: "game_events", filter: `game_id=eq.${gameId}` },
+        (payload) => {
+          const ev = payload.new as ShotPoint & { event_type: string };
+          if (ev.event_type === "2PT" || ev.event_type === "3PT") {
+            setShots((prev) => [...prev, ev]);
+          }
+        }
       )
       .on(
         "postgres_changes",
-        { event: "DELETE", schema: "public", table: "shot_events", filter: `game_id=eq.${gameId}` },
+        { event: "DELETE", schema: "public", table: "game_events", filter: `game_id=eq.${gameId}` },
         () => {
-          // Un tir a été annulé côté admin — on recharge la liste complète pour rester synchro
+          // Une action a été annulée côté admin — on recharge pour rester synchro
           supabase
-            .from("shot_events")
-            .select("x,y,made,shot_type")
+            .from("game_events")
+            .select("x,y,made,event_type")
             .eq("game_id", gameId)
+            .in("event_type", ["2PT", "3PT"])
             .then(({ data }) => setShots((data as ShotPoint[]) ?? []));
         }
       )

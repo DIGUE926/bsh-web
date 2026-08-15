@@ -6,12 +6,51 @@ import CourtDiagram, { ShotPoint, guessShotType } from "@/app/CourtDiagram";
 
 type Team = { id: string; name: string };
 type Player = { id: string; name: string; jersey_number: number | null };
-type ShotEvent = ShotPoint & {
+type EventType = "2PT" | "3PT" | "FT" | "REB" | "AST";
+type GameEvent = ShotPoint & {
   id: string;
   player_id: string;
   team_id: string;
   period: number;
 };
+
+type BoxRow = {
+  id: string | null; // id de la ligne player_game_stats, null si pas encore créée
+  pts: number;
+  reb: number;
+  ast: number;
+  fgm: number;
+  fga: number;
+  ftm: number;
+  fta: number;
+};
+
+type StatDelta = Partial<Omit<BoxRow, "id">>;
+
+const EMPTY_ROW: Omit<BoxRow, "id"> = { pts: 0, reb: 0, ast: 0, fgm: 0, fga: 0, ftm: 0, fta: 0 };
+
+function deltaFor(eventType: EventType, made: boolean): StatDelta {
+  switch (eventType) {
+    case "2PT":
+      return made ? { pts: 2, fgm: 1, fga: 1 } : { fga: 1 };
+    case "3PT":
+      return made ? { pts: 3, fgm: 1, fga: 1 } : { fga: 1 };
+    case "FT":
+      return made ? { pts: 1, ftm: 1, fta: 1 } : { fta: 1 };
+    case "REB":
+      return { reb: 1 };
+    case "AST":
+      return { ast: 1 };
+  }
+}
+
+function pointsFor(eventType: EventType, made: boolean): number {
+  if (!made) return 0;
+  if (eventType === "3PT") return 3;
+  if (eventType === "2PT") return 2;
+  if (eventType === "FT") return 1;
+  return 0;
+}
 
 export default function LiveControls({
   gameId,
@@ -25,6 +64,7 @@ export default function LiveControls({
   initialPeriod,
   initialClock,
   initialShots,
+  existingStats,
 }: {
   gameId: string;
   homeTeam: Team;
@@ -36,7 +76,8 @@ export default function LiveControls({
   initialStatus: string;
   initialPeriod: number;
   initialClock: string;
-  initialShots: ShotEvent[];
+  initialShots: GameEvent[];
+  existingStats: Array<{ id: string; player_id: string } & Record<string, number | null>>;
 }) {
   const supabase = createClient();
 
@@ -45,13 +86,31 @@ export default function LiveControls({
   const [status, setStatus] = useState(initialStatus);
   const [period, setPeriod] = useState(initialPeriod);
   const [clock, setClock] = useState(initialClock);
-  const [shots, setShots] = useState<ShotEvent[]>(initialShots);
+  const [events, setEvents] = useState<GameEvent[]>(initialShots);
+
+  const [box, setBox] = useState<Record<string, BoxRow>>(() => {
+    const map: Record<string, BoxRow> = {};
+    for (const s of existingStats) {
+      map[s.player_id] = {
+        id: s.id,
+        pts: s.pts ?? 0,
+        reb: s.reb ?? 0,
+        ast: s.ast ?? 0,
+        fgm: s.fgm ?? 0,
+        fga: s.fga ?? 0,
+        ftm: s.ftm ?? 0,
+        fta: s.fta ?? 0,
+      };
+    }
+    return map;
+  });
 
   const [selectedTeamId, setSelectedTeamId] = useState<string>(homeTeam.id);
   const [selectedPlayerId, setSelectedPlayerId] = useState<string>("");
   const [pendingShot, setPendingShot] = useState<{ x: number; y: number } | null>(null);
 
   const players = selectedTeamId === homeTeam.id ? homePlayers : awayPlayers;
+  const allPlayers = [...homePlayers, ...awayPlayers];
 
   async function persistScore(newHome: number, newAway: number) {
     setHomeScore(newHome);
@@ -62,8 +121,9 @@ export default function LiveControls({
       .eq("id", gameId);
   }
 
-  function adjustScore(team: "home" | "away", delta: number) {
-    if (team === "home") persistScore(Math.max(0, homeScore + delta), awayScore);
+  function bumpScore(teamId: string, delta: number) {
+    if (delta === 0) return;
+    if (teamId === homeTeam.id) persistScore(Math.max(0, homeScore + delta), awayScore);
     else persistScore(homeScore, Math.max(0, awayScore + delta));
   }
 
@@ -87,82 +147,94 @@ export default function LiveControls({
     await supabase.from("games").update({ clock_display: clock }).eq("id", gameId);
   }
 
+  // Applique un delta au box score local + DB, retourne les nouvelles valeurs absolues
+  async function applyDelta(playerId: string, delta: StatDelta) {
+    const current = box[playerId] ?? { id: null, ...EMPTY_ROW };
+    const next: BoxRow = {
+      id: current.id,
+      pts: current.pts + (delta.pts ?? 0),
+      reb: current.reb + (delta.reb ?? 0),
+      ast: current.ast + (delta.ast ?? 0),
+      fgm: current.fgm + (delta.fgm ?? 0),
+      fga: current.fga + (delta.fga ?? 0),
+      ftm: current.ftm + (delta.ftm ?? 0),
+      fta: current.fta + (delta.fta ?? 0),
+    };
+    setBox((prev) => ({ ...prev, [playerId]: next }));
+
+    const payload = {
+      game_id: gameId,
+      player_id: playerId,
+      pts: next.pts,
+      reb: next.reb,
+      ast: next.ast,
+      fgm: next.fgm,
+      fga: next.fga,
+      ftm: next.ftm,
+      fta: next.fta,
+    };
+
+    if (current.id) {
+      await supabase.from("player_game_stats").update(payload).eq("id", current.id);
+    } else {
+      const { data } = await supabase.from("player_game_stats").insert(payload).select("id").single();
+      if (data) {
+        setBox((prev) => ({ ...prev, [playerId]: { ...prev[playerId], id: data.id } }));
+      }
+    }
+  }
+
+  async function recordEvent(eventType: EventType, made: boolean, x?: number, y?: number) {
+    if (!selectedPlayerId) return;
+    const points = pointsFor(eventType, made);
+
+    const { data, error } = await supabase
+      .from("game_events")
+      .insert({
+        game_id: gameId,
+        player_id: selectedPlayerId,
+        team_id: selectedTeamId,
+        period,
+        x: x ?? null,
+        y: y ?? null,
+        event_type: eventType,
+        made,
+        points,
+      })
+      .select()
+      .single();
+
+    if (!error && data) {
+      setEvents((prev) => [...prev, data as GameEvent]);
+      await applyDelta(selectedPlayerId, deltaFor(eventType, made));
+      if (points > 0) bumpScore(selectedTeamId, points);
+    }
+    setPendingShot(null);
+  }
+
   function handleCourtClick(x: number, y: number) {
     if (!selectedPlayerId) return;
     setPendingShot({ x, y });
   }
 
-  async function confirmShot(shot_type: "2PT" | "3PT", made: boolean) {
-    if (!pendingShot || !selectedPlayerId) return;
-    const points = made ? (shot_type === "3PT" ? 3 : 2) : 0;
-
-    const { data, error } = await supabase
-      .from("shot_events")
-      .insert({
-        game_id: gameId,
-        player_id: selectedPlayerId,
-        team_id: selectedTeamId,
-        period,
-        x: pendingShot.x,
-        y: pendingShot.y,
-        shot_type,
-        made,
-        points,
-      })
-      .select()
-      .single();
-
-    if (!error && data) {
-      setShots((prev) => [...prev, data as ShotEvent]);
-      if (made) {
-        if (selectedTeamId === homeTeam.id) adjustScore("home", points);
-        else adjustScore("away", points);
-      }
-    }
-    setPendingShot(null);
-  }
-
-  async function logFreeThrow(made: boolean) {
-    if (!selectedPlayerId) return;
-    const points = made ? 1 : 0;
-    const { data, error } = await supabase
-      .from("shot_events")
-      .insert({
-        game_id: gameId,
-        player_id: selectedPlayerId,
-        team_id: selectedTeamId,
-        period,
-        x: 50,
-        y: 19,
-        shot_type: "FT",
-        made,
-        points,
-      })
-      .select()
-      .single();
-
-    if (!error && data) {
-      setShots((prev) => [...prev, data as ShotEvent]);
-      if (made) {
-        if (selectedTeamId === homeTeam.id) adjustScore("home", 1);
-        else adjustScore("away", 1);
-      }
-    }
-  }
-
-  async function undoLastShot() {
-    const last = shots[shots.length - 1];
+  async function undoLastEvent() {
+    const last = events[events.length - 1];
     if (!last) return;
-    await supabase.from("shot_events").delete().eq("id", last.id);
-    setShots((prev) => prev.slice(0, -1));
-    if (last.made) {
-      const pts = last.shot_type === "3PT" ? 3 : last.shot_type === "2PT" ? 2 : 1;
-      if (last.team_id === homeTeam.id) adjustScore("home", -pts);
-      else adjustScore("away", -pts);
-    }
+    await supabase.from("game_events").delete().eq("id", last.id);
+    setEvents((prev) => prev.slice(0, -1));
+
+    const delta = deltaFor(last.event_type, last.made);
+    const reversed: StatDelta = Object.fromEntries(
+      Object.entries(delta).map(([k, v]) => [k, -(v as number)])
+    );
+    await applyDelta(last.player_id, reversed);
+
+    const points = pointsFor(last.event_type, last.made);
+    if (points > 0) bumpScore(last.team_id, -points);
   }
 
   const guess = pendingShot ? guessShotType(pendingShot.x, pendingShot.y) : "2PT";
+  const courtShots = events.filter((e) => e.event_type === "2PT" || e.event_type === "3PT");
 
   return (
     <div>
@@ -204,20 +276,12 @@ export default function LiveControls({
 
       {/* Score display */}
       <div className="grid grid-cols-2 gap-4 mb-6">
-        {([{ team: homeTeam, score: homeScore, key: "home" as const }, { team: awayTeam, score: awayScore, key: "away" as const }]).map(
-          ({ team, score, key }) => (
-            <div key={team.id} className="border border-white/10 rounded-lg p-4 text-center bg-white/5">
-              <p className="text-sm text-white/60 mb-1">{team.name}</p>
-              <p className="font-display text-4xl text-bsh-gold mb-3">{score}</p>
-              <div className="flex justify-center gap-2">
-                <button onClick={() => adjustScore(key, -1)} className="w-8 h-8 rounded bg-white/10 hover:bg-white/20 text-sm">−1</button>
-                <button onClick={() => adjustScore(key, 1)} className="w-8 h-8 rounded bg-bsh-orange/20 hover:bg-bsh-orange/30 text-bsh-orange text-sm">+1</button>
-                <button onClick={() => adjustScore(key, 2)} className="w-8 h-8 rounded bg-bsh-orange/20 hover:bg-bsh-orange/30 text-bsh-orange text-sm">+2</button>
-                <button onClick={() => adjustScore(key, 3)} className="w-8 h-8 rounded bg-bsh-orange/20 hover:bg-bsh-orange/30 text-bsh-orange text-sm">+3</button>
-              </div>
-            </div>
-          )
-        )}
+        {[{ team: homeTeam, score: homeScore }, { team: awayTeam, score: awayScore }].map(({ team, score }) => (
+          <div key={team.id} className="border border-white/10 rounded-lg p-4 text-center bg-white/5">
+            <p className="text-sm text-white/60 mb-1">{team.name}</p>
+            <p className="font-display text-4xl text-bsh-gold">{score}</p>
+          </div>
+        ))}
       </div>
 
       {/* Player selection */}
@@ -252,31 +316,38 @@ export default function LiveControls({
           ))}
         </select>
 
-        {selectedPlayerId && (
-          <>
-            <button onClick={() => logFreeThrow(true)} className="text-sm bg-green-600/20 text-green-400 rounded px-3 py-1.5">
-              LF réussi
-            </button>
-            <button onClick={() => logFreeThrow(false)} className="text-sm bg-red-600/20 text-red-400 rounded px-3 py-1.5">
-              LF raté
-            </button>
-          </>
-        )}
-
-        {shots.length > 0 && (
-          <button onClick={undoLastShot} className="text-sm text-white/50 hover:text-white ml-auto">
-            ↩ Annuler dernier tir
+        {events.length > 0 && (
+          <button onClick={undoLastEvent} className="text-sm text-white/50 hover:text-white ml-auto">
+            ↩ Annuler dernière action
           </button>
         )}
       </div>
 
-      {!selectedPlayerId && (
-        <p className="text-xs text-white/40 mb-2">Choisis un joueur avant de taper sur le terrain.</p>
+      {/* Quick action buttons — LF / Rebond / Passe (pas besoin du terrain) */}
+      {selectedPlayerId && (
+        <div className="flex flex-wrap gap-2 mb-4">
+          <button onClick={() => recordEvent("FT", true)} className="text-sm bg-green-600/20 text-green-400 rounded px-3 py-1.5">
+            LF réussi
+          </button>
+          <button onClick={() => recordEvent("FT", false)} className="text-sm bg-red-600/20 text-red-400 rounded px-3 py-1.5">
+            LF raté
+          </button>
+          <button onClick={() => recordEvent("REB", true)} className="text-sm bg-white/10 text-white/80 rounded px-3 py-1.5">
+            Rebond
+          </button>
+          <button onClick={() => recordEvent("AST", true)} className="text-sm bg-white/10 text-white/80 rounded px-3 py-1.5">
+            Passe déc.
+          </button>
+        </div>
       )}
 
-      {/* Court diagram */}
-      <div className="max-w-md relative">
-        <CourtDiagram shots={shots} onCourtClick={selectedPlayerId ? handleCourtClick : undefined} />
+      {!selectedPlayerId && (
+        <p className="text-xs text-white/40 mb-2">Choisis un joueur, puis tape une action ou une zone du terrain.</p>
+      )}
+
+      {/* Court diagram — pour 2PT/3PT avec localisation */}
+      <div className="max-w-md relative mb-8">
+        <CourtDiagram shots={courtShots} onCourtClick={selectedPlayerId ? handleCourtClick : undefined} />
 
         {pendingShot && (
           <div
@@ -291,7 +362,7 @@ export default function LiveControls({
               {(["2PT", "3PT"] as const).map((t) => (
                 <button
                   key={t}
-                  onClick={() => confirmShot(t, true)}
+                  onClick={() => recordEvent(t, true, pendingShot.x, pendingShot.y)}
                   className={`text-xs px-2 py-1 rounded ${
                     t === guess ? "bg-green-600 text-white font-bold" : "bg-white/10 text-white/70"
                   }`}
@@ -304,7 +375,7 @@ export default function LiveControls({
               {(["2PT", "3PT"] as const).map((t) => (
                 <button
                   key={t}
-                  onClick={() => confirmShot(t, false)}
+                  onClick={() => recordEvent(t, false, pendingShot.x, pendingShot.y)}
                   className="text-xs px-2 py-1 rounded bg-white/10 text-white/70"
                 >
                   {t} ✗
@@ -316,6 +387,47 @@ export default function LiveControls({
             </button>
           </div>
         )}
+      </div>
+
+      {/* Box score live */}
+      <div>
+        <p className="text-xs text-white/40 uppercase tracking-wide mb-2">Box score en direct</p>
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse text-sm">
+            <thead>
+              <tr className="border-b border-white/20 text-white/50 uppercase">
+                <th className="py-2 pr-2">Joueur</th>
+                <th className="py-2 px-1 text-center">PTS</th>
+                <th className="py-2 px-1 text-center">REB</th>
+                <th className="py-2 px-1 text-center">AST</th>
+                <th className="py-2 px-1 text-center">FG</th>
+                <th className="py-2 px-1 text-center">LF</th>
+              </tr>
+            </thead>
+            <tbody>
+              {allPlayers
+                .filter((p) => box[p.id])
+                .map((p) => {
+                  const b = box[p.id];
+                  return (
+                    <tr key={p.id} className="border-b border-white/5">
+                      <td className="py-2 pr-2 whitespace-nowrap">#{p.jersey_number ?? "-"} {p.name}</td>
+                      <td className="py-1 px-1 text-center text-bsh-orange font-bold">{b.pts}</td>
+                      <td className="py-1 px-1 text-center">{b.reb}</td>
+                      <td className="py-1 px-1 text-center">{b.ast}</td>
+                      <td className="py-1 px-1 text-center">{b.fgm}/{b.fga}</td>
+                      <td className="py-1 px-1 text-center">{b.ftm}/{b.fta}</td>
+                    </tr>
+                  );
+                })}
+              {allPlayers.filter((p) => box[p.id]).length === 0 && (
+                <tr>
+                  <td colSpan={6} className="py-4 text-white/50">Aucune action enregistrée pour l&apos;instant.</td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );
