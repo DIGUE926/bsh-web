@@ -29,6 +29,12 @@ export default async function AdminLayout({
           Matchs
         </Link>
         <Link
+          href="/admin/demarrer"
+          className="text-bsh-orange font-semibold hover:opacity-80"
+        >
+          ● Démarrer un match
+        </Link>
+        <Link
           href="/admin/playoffs"
           className="text-white/60 hover:text-bsh-orange"
         >
