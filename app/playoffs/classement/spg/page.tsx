@@ -1,28 +1,30 @@
 import { supabase } from "@/lib/supabase";
 import Link from "next/link";
 import Breadcrumb from "@/app/Breadcrumb";
-import PlayoffClassementTabs from "./PlayoffClassementTabs";
+import PlayoffClassementTabs from "../PlayoffClassementTabs";
 
 export const revalidate = 60;
 
-export default async function PlayoffClassementPage() {
+export default async function PlayoffClassementSPGPage() {
   const { data: leaders, error } = await supabase
     .from("playoff_player_totals")
     .select("*")
-    .order("pir", { ascending: false, nullsFirst: false })
+    .order("spg", { ascending: false, nullsFirst: false })
     .limit(50);
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-8">
       <Breadcrumb
-        items={[{ label: "Playoffs", href: "/playoffs" }, { label: "Leaders" }]}
+        items={[
+          { label: "Playoffs", href: "/playoffs" },
+          { label: "Leaders", href: "/playoffs/classement" },
+          { label: "SPG" },
+        ]}
       />
       <h1 className="font-display text-2xl text-bsh-orange mb-1 tracking-wide">
-        LEADERS PLAYOFFS
+        LEADERS PLAYOFFS — SPG
       </h1>
-      <p className="text-white/50 mb-6">
-        Les joueurs les plus impactants en playoffs, toutes stats confondues
-      </p>
+      <p className="text-white/50 mb-6">Meilleurs en interceptions par match</p>
 
       <div className="flex gap-2 mb-6 overflow-x-auto text-sm font-semibold">
         <Link
@@ -52,12 +54,7 @@ export default async function PlayoffClassementPage() {
                 <th className="py-2 pr-4">#</th>
                 <th className="py-2 pr-4">Joueur</th>
                 <th className="py-2 pr-4">Équipe</th>
-                <th className="py-2 px-2 text-center">PPG</th>
-                <th className="py-2 px-2 text-center">RPG</th>
-                <th className="py-2 px-2 text-center">APG</th>
-                <th className="py-2 px-2 text-center">SPG</th>
-                <th className="py-2 px-2 text-center">BPG</th>
-                <th className="py-2 px-2 text-center text-bsh-orange">Score</th>
+                <th className="py-2 px-2 text-center text-bsh-orange">SPG</th>
               </tr>
             </thead>
             <tbody>
@@ -77,23 +74,8 @@ export default async function PlayoffClassementPage() {
                   <td className="py-3 pr-4 text-white/60 whitespace-nowrap">
                     {String(r.team_name ?? "—")}
                   </td>
-                  <td className="py-3 px-2 text-center text-white/60">
-                    {r.ppg != null ? Number(r.ppg).toFixed(1) : "-"}
-                  </td>
-                  <td className="py-3 px-2 text-center text-white/60">
-                    {r.rpg != null ? Number(r.rpg).toFixed(1) : "-"}
-                  </td>
-                  <td className="py-3 px-2 text-center text-white/60">
-                    {r.apg != null ? Number(r.apg).toFixed(1) : "-"}
-                  </td>
-                  <td className="py-3 px-2 text-center text-white/60">
-                    {r.spg != null ? Number(r.spg).toFixed(1) : "-"}
-                  </td>
-                  <td className="py-3 px-2 text-center text-white/60">
-                    {r.bpg != null ? Number(r.bpg).toFixed(1) : "-"}
-                  </td>
                   <td className="py-3 px-2 text-center text-bsh-orange font-bold">
-                    {r.pir != null ? Number(r.pir).toFixed(1) : "—"}
+                    {r.spg != null ? Number(r.spg).toFixed(1) : "-"}
                   </td>
                 </tr>
               ))}
