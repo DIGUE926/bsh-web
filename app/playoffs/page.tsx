@@ -75,7 +75,7 @@ export default async function PlayoffsPage() {
         const roundGames = grouped[round];
         if (!roundGames || roundGames.length === 0) return null;
         return (
-          <div key={round} className="mb-10">
+          <div key={round} className="mb-6">
             <h2 className="font-display text-lg text-bsh-gold mb-4 tracking-wide">
               {ROUND_LABELS[round]}
             </h2>
@@ -84,7 +84,7 @@ export default async function PlayoffsPage() {
                 <Link
                   key={game.id}
                   href={`/playoffs/${game.id}`}
-                  className="block border border-white/10 rounded-lg p-4 hover:border-bsh-orange transition-colors bg-white/5"
+                  className="block border border-white/10 rounded-lg p-3 hover:border-bsh-orange transition-colors bg-white/5"
                 >
                   <div className="flex items-center justify-between">
                     <div>

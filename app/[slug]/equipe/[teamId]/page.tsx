@@ -92,7 +92,7 @@ export default async function TeamPage({
         )}
       </div>
 
-      <h2 className="font-display text-base text-bsh-gold mb-3 tracking-wide">
+      <h2 className="font-display text-sm text-bsh-gold mb-2 tracking-wide">
         ROSTER
       </h2>
 

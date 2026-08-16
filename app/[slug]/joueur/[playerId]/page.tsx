@@ -115,13 +115,13 @@ export default async function PlayerPage({
       {team && (
         <Link
           href={`/${slug}/equipe/${team.id}`}
-          className="text-sm text-white/50 hover:text-bsh-orange mb-10 inline-block"
+          className="text-sm text-white/50 hover:text-bsh-orange mb-6 inline-block"
         >
           {team.name}
         </Link>
       )}
 
-      <div className="grid grid-cols-3 sm:grid-cols-6 gap-3 mb-12">
+      <div className="grid grid-cols-3 sm:grid-cols-6 gap-3 mb-8">
         {[
           { label: "MJ", value: seasonStats?.games_played ?? "-" },
           { label: "PPG", value: seasonStats?.ppg?.toFixed(1) ?? "-" },
@@ -149,7 +149,7 @@ export default async function PlayerPage({
 
       <PlayerTrendChart data={chartData} />
 
-      <h2 className="font-display text-base text-bsh-gold mb-3 tracking-wide">
+      <h2 className="font-display text-sm text-bsh-gold mb-2 tracking-wide">
         HISTORIQUE DES MATCHS
       </h2>
 

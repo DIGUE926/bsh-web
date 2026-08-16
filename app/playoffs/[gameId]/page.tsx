@@ -95,7 +95,7 @@ export default async function PlayoffMatchPage({
   function renderTable(teamName: string, rows: PlayerStatRow[]) {
     return (
       <div className="mb-6">
-        <h2 className="font-display text-base text-bsh-gold mb-3 tracking-wide">
+        <h2 className="font-display text-sm text-bsh-gold mb-2 tracking-wide">
           {teamName}
         </h2>
         <div className="overflow-x-auto">
@@ -190,7 +190,7 @@ export default async function PlayoffMatchPage({
       {shots &&
         shots.length > 0 &&
         !(liveEnabled && game.status === "live") && (
-          <div className="mb-10">
+          <div className="mb-6">
             <p className="text-xs text-white/40 uppercase tracking-wide mb-2">
               Shot chart
             </p>
@@ -201,7 +201,7 @@ export default async function PlayoffMatchPage({
         )}
 
       {playerOfGame && playerOfGame.player && (
-        <div className="border border-bsh-orange/40 bg-bsh-orange/5 rounded-lg p-4 mb-10 flex items-center gap-2">
+        <div className="border border-bsh-orange/40 bg-bsh-orange/5 rounded-lg p-4 mb-6 flex items-center gap-2">
           <span className="text-2xl">⭐</span>
           <div>
             <p className="text-xs text-bsh-gold uppercase tracking-wide font-semibold">
@@ -222,8 +222,8 @@ export default async function PlayoffMatchPage({
       {renderTable(homeTeam.name, homeStats)}
       {renderTable(awayTeam.name, awayStats)}
 
-      <div className="mb-10">
-        <h2 className="font-display text-base text-bsh-gold mb-3 tracking-wide">
+      <div className="mb-6">
+        <h2 className="font-display text-sm text-bsh-gold mb-2 tracking-wide">
           Play-by-play
         </h2>
         <PlayByPlay

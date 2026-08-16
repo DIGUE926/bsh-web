@@ -75,7 +75,7 @@ export default function LiveScoreboard({
   if (game.status !== "live") return null;
 
   return (
-    <div className="mb-10">
+    <div className="mb-6">
       <div className="flex items-center gap-2 mb-3">
         <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
         <span className="text-xs uppercase tracking-wide text-red-400 font-semibold">

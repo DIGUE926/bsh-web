@@ -30,20 +30,20 @@ export default function GamesList({
         <Link
           key={game.id}
           href={`/${slug}/match/${game.id}`}
-          className="block border border-white/10 rounded-lg p-4 hover:border-bsh-orange transition-colors bg-white/5"
+          className="block border border-white/10 rounded-lg p-2.5 hover:border-bsh-orange transition-colors bg-white/5"
         >
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="font-semibold">
+          <div className="flex items-center justify-between gap-2">
+            <div className="min-w-0 flex-1">
+              <p className="font-semibold text-sm truncate">
                 {game.home_team?.name ?? "?"} vs {game.away_team?.name ?? "?"}
               </p>
-              <p className="text-sm text-white/50">
+              <p className="text-xs text-white/50">
                 {game.game_date} · {game.phase ?? "Saison régulière"}
               </p>
             </div>
-            <div className="text-right">
+            <div className="text-right shrink-0">
               {game.status === "completed" ? (
-                <p className="font-display text-lg text-bsh-gold">
+                <p className="font-display text-sm text-bsh-gold">
                   {game.home_score} - {game.away_score}
                 </p>
               ) : (

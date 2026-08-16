@@ -60,7 +60,7 @@ export default async function LeaguePage({
           size={48}
           rounded="rounded-lg"
         />
-        <h1 className="font-display text-2xl text-bsh-orange tracking-wide">
+        <h1 className="font-display text-lg sm:text-2xl text-bsh-orange tracking-wide">
           {league.name}
         </h1>
       </div>
@@ -74,7 +74,7 @@ export default async function LeaguePage({
         </Link>
       </div>
 
-      <h2 className="font-display text-base text-bsh-gold mb-3 tracking-wide">
+      <h2 className="font-display text-sm text-bsh-gold mb-2 tracking-wide">
         ÉQUIPES
       </h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
@@ -85,12 +85,12 @@ export default async function LeaguePage({
             <Link
               key={team.id}
               href={`/${slug}/equipe/${team.id}`}
-              className="border border-white/10 rounded-lg p-4 hover:border-bsh-orange transition-colors bg-white/5"
+              className="border border-white/10 rounded-lg p-3 hover:border-bsh-orange transition-colors bg-white/5"
             >
               <div className="flex items-center gap-3">
                 <Avatar name={team.name} src={team.logo_url} size={36} rounded="rounded-lg" />
-                <div className="flex items-center justify-between flex-1">
-                  <h3 className="font-display text-lg">{team.name}</h3>
+                <div className="flex items-center justify-between flex-1 min-w-0">
+                  <h3 className="font-display text-sm truncate">{team.name}</h3>
                   {hasGames && (
                     <span className="text-xs font-semibold text-white/50 whitespace-nowrap ml-2">
                       {record!.wins}V-{record!.losses}D

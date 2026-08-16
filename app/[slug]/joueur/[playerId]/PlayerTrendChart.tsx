@@ -23,8 +23,8 @@ export default function PlayerTrendChart({ data }: { data: ChartPoint[] }) {
   if (data.length < 2) return null;
 
   return (
-    <div className="mb-12">
-      <h2 className="font-display text-base text-bsh-gold mb-3 tracking-wide">
+    <div className="mb-8">
+      <h2 className="font-display text-sm text-bsh-gold mb-2 tracking-wide">
         TENDANCE
       </h2>
       <div className="border border-white/10 rounded-lg bg-white/5 p-4">
