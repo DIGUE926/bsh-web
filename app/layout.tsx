@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { Analytics } from "@vercel/analytics/next";
 import BackButton from "./BackButton";
 import NavMenu from "./NavMenu";
 import { supabase } from "@/lib/supabase";
@@ -70,6 +71,7 @@ export default async function RootLayout({
             <span>@ballsohardx2</span>
           </a>
         </footer>
+        <Analytics />
       </body>
     </html>
   );
