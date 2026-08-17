@@ -1,13 +1,12 @@
 import { ImageResponse } from "next/og";
+import { readFile } from "fs/promises";
+import { join } from "path";
 
 export const size = { width: 32, height: 32 };
 export const contentType = "image/png";
 
 async function loadAnton() {
-  const res = await fetch(
-    "https://github.com/google/fonts/raw/main/ofl/anton/Anton-Regular.ttf"
-  );
-  return res.arrayBuffer();
+  return readFile(join(process.cwd(), "public/fonts/Anton-Regular.ttf"));
 }
 
 export default async function Icon() {
