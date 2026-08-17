@@ -2,6 +2,7 @@ import { supabase } from "@/lib/supabase";
 import Link from "next/link";
 import Avatar from "@/app/Avatar";
 import LiveBadge from "@/app/LiveBadge";
+import { shortTeamName } from "@/lib/teamDisplay";
 
 export const revalidate = 60;
 
@@ -14,21 +15,21 @@ export default async function Home() {
   const { data: liveGames } = await supabase
     .from("games")
     .select(
-      "id, home_score, away_score, home_team:home_team_id(name), away_team:away_team_id(name), league:league_id(slug)"
+      "id, home_score, away_score, home_team:home_team_id(name, logo_url), away_team:away_team_id(name, logo_url), league:league_id(slug)"
     )
     .eq("status", "live");
 
   const { data: livePlayoffGames } = await supabase
     .from("playoff_games")
     .select(
-      "id, home_score, away_score, team_home:team_home_id(name), team_away:team_away_id(name)"
+      "id, home_score, away_score, team_home:team_home_id(name, logo_url), team_away:team_away_id(name, logo_url)"
     )
     .eq("status", "live");
 
   const { data: recentGames } = await supabase
     .from("games")
     .select(
-      "*, home_team:home_team_id(name), away_team:away_team_id(name), league:league_id(slug)"
+      "*, home_team:home_team_id(name, logo_url), away_team:away_team_id(name, logo_url), league:league_id(slug)"
     )
     .eq("status", "completed")
     .order("game_date", { ascending: false })
@@ -37,7 +38,7 @@ export default async function Home() {
   const { data: upcomingGames } = await supabase
     .from("games")
     .select(
-      "*, home_team:home_team_id(name), away_team:away_team_id(name), league:league_id(slug)"
+      "*, home_team:home_team_id(name, logo_url), away_team:away_team_id(name, logo_url), league:league_id(slug)"
     )
     .eq("status", "scheduled")
     .order("game_date", { ascending: true })
@@ -46,7 +47,7 @@ export default async function Home() {
   const { data: recentPlayoffGames } = await supabase
     .from("playoff_games")
     .select(
-      "*, home_team:team_home_id(name), away_team:team_away_id(name)"
+      "*, home_team:team_home_id(name, logo_url), away_team:team_away_id(name, logo_url)"
     )
     .eq("status", "completed")
     .order("game_date", { ascending: false })
@@ -55,7 +56,7 @@ export default async function Home() {
   const { data: allPlayoffGames } = await supabase
     .from("playoff_games")
     .select(
-      "*, home_team:team_home_id(name), away_team:team_away_id(name)"
+      "*, home_team:team_home_id(name, logo_url), away_team:team_away_id(name, logo_url)"
     )
     .order("game_date", { ascending: true });
 
@@ -65,8 +66,8 @@ export default async function Home() {
     game_date: string;
     home_score: number | null;
     away_score: number | null;
-    home_team: { name: string } | null;
-    away_team: { name: string } | null;
+    home_team: { name: string; logo_url?: string | null } | null;
+    away_team: { name: string; logo_url?: string | null } | null;
     href: string;
     tag: "Saison" | "Playoffs";
   };
@@ -109,12 +110,12 @@ export default async function Home() {
     .sort((a, b) => a.game_date.localeCompare(b.game_date))[0];
 
   return (
-    <div className="max-w-5xl mx-auto px-4 py-10">
-      <section className="text-center mb-6">
-        <h1 className="font-display text-3xl md:text-4xl text-bsh-orange mb-2 tracking-wide">
+    <div className="max-w-5xl mx-auto px-3 sm:px-4 py-5 sm:py-10">
+      <section className="text-center mb-4 sm:mb-6">
+        <h1 className="font-display text-2xl sm:text-3xl md:text-4xl text-bsh-orange mb-1.5 sm:mb-2 tracking-wide">
           BSH
         </h1>
-        <p className="text-white/60 text-sm max-w-xl mx-auto">
+        <p className="text-white/60 text-xs sm:text-sm max-w-xl mx-auto">
           La plateforme officielle de statistiques basketball multi-ligues
           en Haïti.
         </p>
@@ -133,8 +134,8 @@ export default async function Home() {
               id: string;
               home_score: number | null;
               away_score: number | null;
-              home_team: { name: string } | null;
-              away_team: { name: string } | null;
+              home_team: { name: string; logo_url?: string | null } | null;
+              away_team: { name: string; logo_url?: string | null } | null;
               league: { slug: string } | null;
             }> ?? []).map((g) => (
               <LiveBadge
@@ -142,6 +143,8 @@ export default async function Home() {
                 gameId={g.id}
                 homeTeamName={g.home_team?.name ?? "?"}
                 awayTeamName={g.away_team?.name ?? "?"}
+                homeTeamLogo={g.home_team?.logo_url}
+                awayTeamLogo={g.away_team?.logo_url}
                 initialHomeScore={g.home_score}
                 initialAwayScore={g.away_score}
                 href={`/${g.league?.slug}/match/${g.id}`}
@@ -151,8 +154,8 @@ export default async function Home() {
               id: string;
               home_score: number | null;
               away_score: number | null;
-              team_home: { name: string } | null;
-              team_away: { name: string } | null;
+              team_home: { name: string; logo_url?: string | null } | null;
+              team_away: { name: string; logo_url?: string | null } | null;
             }> ?? []).map((g) => (
               <LiveBadge
                 key={g.id}
@@ -160,6 +163,8 @@ export default async function Home() {
                 gameId={g.id}
                 homeTeamName={g.team_home?.name ?? "?"}
                 awayTeamName={g.team_away?.name ?? "?"}
+                homeTeamLogo={g.team_home?.logo_url}
+                awayTeamLogo={g.team_away?.logo_url}
                 initialHomeScore={g.home_score}
                 initialAwayScore={g.away_score}
                 href={`/playoffs/${g.id}`}
@@ -189,13 +194,20 @@ export default async function Home() {
               className="block border border-bsh-orange bg-bsh-orange/10 rounded-lg p-4 hover:opacity-90 transition-opacity"
             >
               <p className="text-xs text-bsh-orange uppercase tracking-wide font-semibold mb-1">
-                🏀 Match du jour
+                Match du jour
               </p>
               <div className="flex items-center justify-between gap-2">
-                <p className="font-semibold text-sm truncate min-w-0">
-                  {matchDuJour.home_team?.name ?? "?"} vs{" "}
-                  {matchDuJour.away_team?.name ?? "?"}
-                </p>
+                <div className="flex items-center gap-1.5 min-w-0 flex-1">
+                  <Avatar name={matchDuJour.home_team?.name ?? "?"} src={matchDuJour.home_team?.logo_url} size={22} rounded="rounded" />
+                  <p className="font-semibold text-xs sm:text-sm truncate">
+                    <span className="sm:hidden">{shortTeamName(matchDuJour.home_team?.name ?? "?")}</span>
+                    <span className="hidden sm:inline">{matchDuJour.home_team?.name ?? "?"}</span>
+                    {" vs "}
+                    <span className="sm:hidden">{shortTeamName(matchDuJour.away_team?.name ?? "?")}</span>
+                    <span className="hidden sm:inline">{matchDuJour.away_team?.name ?? "?"}</span>
+                  </p>
+                  <Avatar name={matchDuJour.away_team?.name ?? "?"} src={matchDuJour.away_team?.logo_url} size={22} rounded="rounded" />
+                </div>
                 {matchDuJour.status === "completed" ? (
                   <p className="font-display text-sm text-bsh-gold shrink-0">
                     {matchDuJour.home_score} - {matchDuJour.away_score}
@@ -216,10 +228,17 @@ export default async function Home() {
                 Prochain match playoff
               </p>
               <div className="flex items-center justify-between gap-2">
-                <p className="font-semibold text-sm truncate min-w-0">
-                  {nextPlayoffGame.home_team?.name ?? "?"} vs{" "}
-                  {nextPlayoffGame.away_team?.name ?? "?"}
-                </p>
+                <div className="flex items-center gap-1.5 min-w-0 flex-1">
+                  <Avatar name={nextPlayoffGame.home_team?.name ?? "?"} src={nextPlayoffGame.home_team?.logo_url} size={22} rounded="rounded" />
+                  <p className="font-semibold text-xs sm:text-sm truncate">
+                    <span className="sm:hidden">{shortTeamName(nextPlayoffGame.home_team?.name ?? "?")}</span>
+                    <span className="hidden sm:inline">{nextPlayoffGame.home_team?.name ?? "?"}</span>
+                    {" vs "}
+                    <span className="sm:hidden">{shortTeamName(nextPlayoffGame.away_team?.name ?? "?")}</span>
+                    <span className="hidden sm:inline">{nextPlayoffGame.away_team?.name ?? "?"}</span>
+                  </p>
+                  <Avatar name={nextPlayoffGame.away_team?.name ?? "?"} src={nextPlayoffGame.away_team?.logo_url} size={22} rounded="rounded" />
+                </div>
                 <p className="text-xs text-white/40 shrink-0">
                   {nextPlayoffGame.game_date}
                 </p>
@@ -242,13 +261,18 @@ export default async function Home() {
                 className="block border border-white/10 rounded-lg p-2.5 hover:border-bsh-orange transition-colors bg-white/5"
               >
                 <div className="flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-2 min-w-0 flex-1">
-                    <p className="font-semibold text-sm truncate">
-                      {game.home_team?.name ?? "?"} vs{" "}
-                      {game.away_team?.name ?? "?"}
+                  <div className="flex items-center gap-1.5 min-w-0 flex-1">
+                    <Avatar name={game.home_team?.name ?? "?"} src={game.home_team?.logo_url} size={20} rounded="rounded" />
+                    <p className="font-semibold text-xs sm:text-sm truncate">
+                      <span className="sm:hidden">{shortTeamName(game.home_team?.name ?? "?")}</span>
+                      <span className="hidden sm:inline">{game.home_team?.name ?? "?"}</span>
+                      {" vs "}
+                      <span className="sm:hidden">{shortTeamName(game.away_team?.name ?? "?")}</span>
+                      <span className="hidden sm:inline">{game.away_team?.name ?? "?"}</span>
                     </p>
+                    <Avatar name={game.away_team?.name ?? "?"} src={game.away_team?.logo_url} size={20} rounded="rounded" />
                     <span
-                      className={`shrink-0 text-[10px] uppercase font-bold px-1.5 py-0.5 rounded ${
+                      className={`shrink-0 text-[9px] sm:text-[10px] uppercase font-bold px-1.5 py-0.5 rounded ${
                         game.tag === "Playoffs"
                           ? "bg-bsh-orange/20 text-bsh-orange"
                           : "bg-white/10 text-white/50"
@@ -257,11 +281,11 @@ export default async function Home() {
                       {game.tag}
                     </span>
                   </div>
-                  <div className="flex items-center gap-3 shrink-0">
+                  <div className="flex items-center gap-2 sm:gap-3 shrink-0">
                     <p className="font-display text-sm text-bsh-gold">
                       {game.home_score} - {game.away_score}
                     </p>
-                    <p className="text-[11px] text-white/40">{game.game_date}</p>
+                    <p className="hidden sm:block text-[11px] text-white/40">{game.game_date}</p>
                   </div>
                 </div>
               </Link>
@@ -283,10 +307,17 @@ export default async function Home() {
                 className="block border border-white/10 rounded-lg p-2.5 hover:border-bsh-orange transition-colors bg-white/5"
               >
                 <div className="flex items-center justify-between gap-2">
-                  <p className="font-semibold text-sm truncate min-w-0">
-                    {game.home_team?.name ?? "?"} vs{" "}
-                    {game.away_team?.name ?? "?"}
-                  </p>
+                  <div className="flex items-center gap-1.5 min-w-0 flex-1">
+                    <Avatar name={game.home_team?.name ?? "?"} src={game.home_team?.logo_url} size={20} rounded="rounded" />
+                    <p className="font-semibold text-xs sm:text-sm truncate">
+                      <span className="sm:hidden">{shortTeamName(game.home_team?.name ?? "?")}</span>
+                      <span className="hidden sm:inline">{game.home_team?.name ?? "?"}</span>
+                      {" vs "}
+                      <span className="sm:hidden">{shortTeamName(game.away_team?.name ?? "?")}</span>
+                      <span className="hidden sm:inline">{game.away_team?.name ?? "?"}</span>
+                    </p>
+                    <Avatar name={game.away_team?.name ?? "?"} src={game.away_team?.logo_url} size={20} rounded="rounded" />
+                  </div>
                   <p className="text-[11px] text-white/40 shrink-0">{game.game_date}</p>
                 </div>
               </Link>

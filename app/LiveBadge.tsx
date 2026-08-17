@@ -3,12 +3,16 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
+import Avatar from "@/app/Avatar";
+import { shortTeamName } from "@/lib/teamDisplay";
 
 export default function LiveBadge({
   gameType = "regular",
   gameId,
   homeTeamName,
   awayTeamName,
+  homeTeamLogo,
+  awayTeamLogo,
   initialHomeScore,
   initialAwayScore,
   href,
@@ -17,6 +21,8 @@ export default function LiveBadge({
   gameId: string;
   homeTeamName: string;
   awayTeamName: string;
+  homeTeamLogo?: string | null;
+  awayTeamLogo?: string | null;
   initialHomeScore: number | null;
   initialAwayScore: number | null;
   href: string;
@@ -56,11 +62,19 @@ export default function LiveBadge({
           En direct
         </span>
       </div>
-      <div className="flex items-center justify-between">
-        <p className="font-semibold text-sm">
-          {homeTeamName} vs {awayTeamName}
-        </p>
-        <p className="font-display text-lg text-bsh-gold whitespace-nowrap">
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-1.5 min-w-0 flex-1">
+          <Avatar name={homeTeamName} src={homeTeamLogo} size={22} rounded="rounded" />
+          <p className="font-semibold text-xs sm:text-sm truncate">
+            <span className="sm:hidden">{shortTeamName(homeTeamName)}</span>
+            <span className="hidden sm:inline">{homeTeamName}</span>
+            {" vs "}
+            <span className="sm:hidden">{shortTeamName(awayTeamName)}</span>
+            <span className="hidden sm:inline">{awayTeamName}</span>
+          </p>
+          <Avatar name={awayTeamName} src={awayTeamLogo} size={22} rounded="rounded" />
+        </div>
+        <p className="font-display text-lg text-bsh-gold whitespace-nowrap shrink-0">
           {homeScore} - {awayScore}
         </p>
       </div>

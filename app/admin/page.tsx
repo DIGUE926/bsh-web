@@ -19,13 +19,13 @@ export default async function AdminDashboard() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="font-display text-xl text-bsh-orange tracking-wide">
+      <div className="flex items-center justify-between mb-4 sm:mb-6 gap-2">
+        <h1 className="font-display text-lg sm:text-xl text-bsh-orange tracking-wide">
           MATCHS
         </h1>
         <Link
           href="/admin/nouveau-match"
-          className="bg-bsh-orange text-black font-bold rounded-lg px-4 py-2 hover:opacity-90 transition-opacity"
+          className="bg-bsh-orange text-black font-bold rounded-lg px-3 py-1.5 sm:px-4 sm:py-2 text-sm hover:opacity-90 transition-opacity shrink-0"
         >
           + Nouveau match
         </Link>
@@ -37,7 +37,7 @@ export default async function AdminDashboard() {
         {games?.map((game) => (
           <div
             key={game.id}
-            className="relative block border border-white/10 rounded-lg p-4 hover:border-bsh-orange transition-colors bg-white/5"
+            className="relative block border border-white/10 rounded-lg p-3 sm:p-4 hover:border-bsh-orange transition-colors bg-white/5"
           >
             <Link
               href={
@@ -48,35 +48,37 @@ export default async function AdminDashboard() {
               className="absolute inset-0"
               aria-label={`${liveEnabled ? "Enregistrer" : "Corriger"} ${game.home_team?.name ?? "?"} vs ${game.away_team?.name ?? "?"}`}
             />
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="font-semibold">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+              <div className="min-w-0">
+                <p className="font-semibold text-sm sm:text-base truncate">
                   {game.home_team?.name ?? "?"} vs{" "}
                   {game.away_team?.name ?? "?"}
                 </p>
-                <p className="text-sm text-white/50">
+                <p className="text-xs sm:text-sm text-white/50">
                   {game.game_date} · {game.phase ?? "Saison régulière"}
                 </p>
               </div>
-              <div className="relative z-10 flex items-center gap-2">
-                <div className="text-right">
-                  <p className="font-display text-lg text-bsh-gold">
+              <div className="relative z-10 flex items-center justify-between sm:justify-end gap-2">
+                <div className="sm:text-right">
+                  <p className="font-display text-base sm:text-lg text-bsh-gold">
                     {game.home_score ?? "-"} / {game.away_score ?? "-"}
                   </p>
-                  <p className="text-xs text-white/40 uppercase">
+                  <p className="text-[10px] sm:text-xs text-white/40 uppercase">
                     {game.status}
                   </p>
                 </div>
-                <Link
-                  href={`/admin/match/${game.id}`}
-                  className="relative z-10 text-xs bg-white/10 text-white/70 rounded px-2 py-1 hover:bg-white/20"
-                >
-                  Corriger
-                </Link>
-                {game.status === "scheduled" && (
-                  <QuickStartButton gameId={game.id} disabled={!liveEnabled} />
-                )}
-                <DeleteGameButton gameId={game.id} />
+                <div className="flex items-center gap-2">
+                  <Link
+                    href={`/admin/match/${game.id}`}
+                    className="relative z-10 text-xs bg-white/10 text-white/70 rounded px-2 py-1 hover:bg-white/20"
+                  >
+                    Corriger
+                  </Link>
+                  {game.status === "scheduled" && (
+                    <QuickStartButton gameId={game.id} disabled={!liveEnabled} />
+                  )}
+                  <DeleteGameButton gameId={game.id} />
+                </div>
               </div>
             </div>
           </div>

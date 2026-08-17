@@ -16,47 +16,50 @@ export default async function AdminLayout({
   if (!user) redirect("/login");
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-8">
-      <div className="flex items-center justify-between mb-4">
-        <div>
-          <p className="text-sm text-white/50">Connecté en tant que</p>
-          <p className="font-semibold">{user.email}</p>
+    <div className="max-w-6xl mx-auto px-3 sm:px-4 py-4 sm:py-8">
+      <div className="flex items-center justify-between mb-3 sm:mb-4 gap-2">
+        <div className="min-w-0">
+          <p className="text-xs sm:text-sm text-white/50">Connecté en tant que</p>
+          <p className="font-semibold text-sm sm:text-base truncate">{user.email}</p>
         </div>
         <SignOutButton />
       </div>
-      <nav className="flex items-center gap-4 mb-8 pb-4 border-b border-white/10 text-sm">
-        <Link href="/admin" className="text-white/60 hover:text-bsh-orange">
+      <nav className="flex items-center gap-1.5 mb-4 sm:mb-8 pb-3 sm:pb-4 border-b border-white/10 text-xs sm:text-sm overflow-x-auto whitespace-nowrap [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <Link
+          href="/admin"
+          className="shrink-0 px-2.5 py-1.5 rounded-full bg-white/5 text-white/60 hover:text-bsh-orange"
+        >
           Matchs
         </Link>
         <Link
           href="/admin/demarrer"
-          className="text-bsh-orange font-semibold hover:opacity-80"
+          className="shrink-0 px-2.5 py-1.5 rounded-full bg-bsh-orange/10 text-bsh-orange font-semibold hover:opacity-80"
         >
-          ● Démarrer un match
+          ● Démarrer
         </Link>
         <Link
           href="/admin/playoffs"
-          className="text-white/60 hover:text-bsh-orange"
+          className="shrink-0 px-2.5 py-1.5 rounded-full bg-white/5 text-white/60 hover:text-bsh-orange"
         >
           Playoffs
         </Link>
         <Link
           href="/admin/historique"
-          className="text-white/60 hover:text-bsh-orange"
+          className="shrink-0 px-2.5 py-1.5 rounded-full bg-white/5 text-white/60 hover:text-bsh-orange"
         >
-          Historique des modifs
+          Historique
         </Link>
         <Link
           href="/admin/changelog"
-          className="text-white/60 hover:text-bsh-orange"
+          className="shrink-0 px-2.5 py-1.5 rounded-full bg-white/5 text-white/60 hover:text-bsh-orange"
         >
-          Mises à jour du site
+          Mises à jour
         </Link>
         <Link
           href="/admin/social"
-          className="text-white/60 hover:text-bsh-orange"
+          className="shrink-0 px-2.5 py-1.5 rounded-full bg-white/5 text-white/60 hover:text-bsh-orange"
         >
-          📸 Réseaux sociaux
+          Réseaux sociaux
         </Link>
       </nav>
       {children}
