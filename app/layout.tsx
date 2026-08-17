@@ -8,6 +8,19 @@ export const metadata: Metadata = {
   metadataBase: new URL("https://bsh-web-one.vercel.app"),
   title: "BSH | BallSoHard",
   description: "La plateforme de stats basketball multi-ligues en Haïti, avec l'AHBB, la SUBLE et plus à venir.",
+  openGraph: {
+    title: "BSH | BallSoHard",
+    description: "La plateforme de stats basketball multi-ligues en Haïti, avec l'AHBB, la SUBLE et plus à venir.",
+    url: "https://bsh-web-one.vercel.app",
+    siteName: "BSH",
+    locale: "fr_HT",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "BSH | BallSoHard",
+    description: "La plateforme de stats basketball multi-ligues en Haïti, avec l'AHBB, la SUBLE et plus à venir.",
+  },
 };
 
 export default async function RootLayout({
