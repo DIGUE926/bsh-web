@@ -74,7 +74,7 @@ export default function NavMenu({ leagues }: { leagues: League[] }) {
                       rounded="rounded"
                     />
                     <p className="text-xs uppercase text-white/40 tracking-wide">
-                      {league.name}
+                      {league.slug}
                     </p>
                   </div>
                   <Link
@@ -165,7 +165,7 @@ export default function NavMenu({ leagues }: { leagues: League[] }) {
               href={`/${league.slug}`}
               className="hover:text-bsh-orange transition-colors"
             >
-              {league.name}
+              {league.slug.toUpperCase()}
             </Link>
           ))}
           <Link href="/classement" className="hover:text-bsh-orange transition-colors">
