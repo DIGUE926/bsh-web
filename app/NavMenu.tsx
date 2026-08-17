@@ -113,7 +113,7 @@ export default function NavMenu({ leagues }: { leagues: League[] }) {
                 onClick={() => setOpen(false)}
                 className="block px-4 py-3 hover:bg-white/5 font-semibold border-b border-white/10"
               >
-                Classement SUBLE
+                Classement général
               </Link>
               <Link
                 href="/playoffs"
@@ -159,11 +159,17 @@ export default function NavMenu({ leagues }: { leagues: League[] }) {
             <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
             Scoreboard Live
           </Link>
-          <Link href="/suble" className="hover:text-bsh-orange transition-colors">
-            SUBLE
-          </Link>
+          {leagues.map((league) => (
+            <Link
+              key={league.slug}
+              href={`/${league.slug}`}
+              className="hover:text-bsh-orange transition-colors"
+            >
+              {league.name}
+            </Link>
+          ))}
           <Link href="/classement" className="hover:text-bsh-orange transition-colors">
-            Classement SUBLE
+            Classement
           </Link>
           <Link href="/playoffs" className="hover:text-bsh-orange transition-colors">
             Playoffs
