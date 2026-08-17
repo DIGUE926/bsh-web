@@ -3,7 +3,16 @@ import { ImageResponse } from "next/og";
 export const size = { width: 32, height: 32 };
 export const contentType = "image/png";
 
-export default function Icon() {
+async function loadAnton() {
+  const res = await fetch(
+    "https://github.com/google/fonts/raw/main/ofl/anton/Anton-Regular.ttf"
+  );
+  return res.arrayBuffer();
+}
+
+export default async function Icon() {
+  const antonData = await loadAnton();
+
   return new ImageResponse(
     (
       <div
@@ -20,9 +29,8 @@ export default function Icon() {
         <div
           style={{
             color: "#FF6B00",
-            fontSize: 18,
-            fontWeight: 900,
-            fontFamily: "sans-serif",
+            fontSize: 20,
+            fontFamily: "Anton",
             letterSpacing: -1,
           }}
         >
@@ -30,6 +38,9 @@ export default function Icon() {
         </div>
       </div>
     ),
-    { ...size }
+    {
+      ...size,
+      fonts: [{ name: "Anton", data: antonData, style: "normal" }],
+    }
   );
 }
