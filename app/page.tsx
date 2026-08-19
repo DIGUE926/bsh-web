@@ -12,6 +12,28 @@ export default async function Home() {
     .select("*")
     .order("name");
 
+  // Leader (meilleur PIR) par ligue, pour le bandeau multi-ligues façon ESPN.
+  const { data: rankingsForLeaders } = await supabase
+    .from("global_rankings")
+    .select("league_slug, player_id, player_name, team_name, pir")
+    .order("pir", { ascending: false, nullsFirst: false });
+
+  const leaderByLeagueSlug = new Map<
+    string,
+    { player_id: string; player_name: string; team_name: string | null; pir: number }
+  >();
+  for (const r of rankingsForLeaders ?? []) {
+    if (!r.league_slug || leaderByLeagueSlug.has(r.league_slug)) continue;
+    leaderByLeagueSlug.set(r.league_slug, r);
+  }
+
+  const { data: teamCounts } = await supabase.from("teams").select("league_id");
+  const teamCountByLeagueId = new Map<string, number>();
+  for (const t of teamCounts ?? []) {
+    if (!t.league_id) continue;
+    teamCountByLeagueId.set(t.league_id, (teamCountByLeagueId.get(t.league_id) ?? 0) + 1);
+  }
+
   const { data: liveGames } = await supabase
     .from("games")
     .select(
@@ -137,6 +159,75 @@ export default async function Home() {
         </p>
       </section>
 
+      <section className="mb-6 sm:mb-8">
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="font-display text-sm text-white/40 tracking-widest">
+            LES LIGUES
+          </h2>
+          <span className="text-[11px] text-white/30">
+            {leagues?.length ?? 0} ligue{(leagues?.length ?? 0) > 1 ? "s" : ""}
+          </span>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {leagues?.map((league) => {
+            const shortName = league.name.split(" - ")[0];
+            const leader = leaderByLeagueSlug.get(league.slug);
+            const teamCount = teamCountByLeagueId.get(league.id) ?? 0;
+            const accent = league.primary_color ?? "#FF6B00";
+            return (
+              <Link
+                key={league.id}
+                href={`/${league.slug}`}
+                className="group relative overflow-hidden rounded-xl border border-white/10 bg-gradient-to-br from-white/[0.06] to-transparent hover:from-white/10 transition-colors"
+              >
+                <span
+                  className="absolute top-0 left-0 right-0 h-[3px]"
+                  style={{ backgroundColor: accent }}
+                />
+                <div className="p-4">
+                  <div className="flex items-center gap-3 mb-3">
+                    <Avatar
+                      name={league.name}
+                      src={league.logo_url}
+                      size={48}
+                      rounded="rounded-lg"
+                    />
+                    <div className="min-w-0">
+                      <h3 className="font-display text-lg tracking-wide truncate group-hover:text-bsh-orange transition-colors">
+                        {shortName}
+                      </h3>
+                      <p className="text-[11px] text-white/40 truncate">
+                        {league.city ?? "Haïti"} · {teamCount} équipe{teamCount > 1 ? "s" : ""}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between border-t border-white/10 pt-2 text-xs">
+                    <span className="text-white/40 uppercase tracking-wide">
+                      Leader PIR
+                    </span>
+                    {leader ? (
+                      <span className="font-semibold text-bsh-gold truncate ml-2">
+                        {leader.player_name}
+                        <span className="text-white/40 font-normal">
+                          {" "}
+                          ({leader.team_name ?? "?"})
+                        </span>{" "}
+                        · {Number(leader.pir).toFixed(1)}
+                      </span>
+                    ) : (
+                      <span className="text-white/30">—</span>
+                    )}
+                  </div>
+                </div>
+              </Link>
+            );
+          })}
+          {(!leagues || leagues.length === 0) && (
+            <p className="text-white/50">Aucune ligue trouvée pour le moment.</p>
+          )}
+        </div>
+      </section>
+
       {((liveGames && liveGames.length > 0) || (livePlayoffGames && livePlayoffGames.length > 0)) && (
         <section className="mb-6">
           <div className="flex items-center gap-2 mb-3">
@@ -194,7 +285,8 @@ export default async function Home() {
       {(matchDuJour || nextPlayoffGame || playoffsList.length > 0) && (
         <section className="mb-6">
           <div className="flex items-center justify-between mb-3">
-            <h2 className="font-display text-sm text-bsh-gold tracking-wide">
+            <h2 className="flex items-center gap-2 font-display text-sm text-bsh-gold tracking-wide">
+              <span className="w-1 h-3.5 bg-bsh-orange rounded-sm" />
               PLAYOFFS
             </h2>
             <Link
@@ -267,7 +359,8 @@ export default async function Home() {
 
       {combinedResults.length > 0 && (
         <section className="mb-6">
-          <h2 className="font-display text-sm text-bsh-gold mb-2 tracking-wide">
+          <h2 className="flex items-center gap-2 font-display text-sm text-bsh-gold mb-2 tracking-wide">
+            <span className="w-1 h-3.5 bg-bsh-orange rounded-sm" />
             DERNIERS RÉSULTATS
           </h2>
           <div className="space-y-2">
@@ -313,7 +406,8 @@ export default async function Home() {
 
       {upcomingGames && upcomingGames.length > 0 && (
         <section className="mb-6">
-          <h2 className="font-display text-sm text-bsh-gold mb-2 tracking-wide">
+          <h2 className="flex items-center gap-2 font-display text-sm text-bsh-gold mb-2 tracking-wide">
+            <span className="w-1 h-3.5 bg-bsh-orange rounded-sm" />
             À VENIR
           </h2>
           <div className="space-y-2">
@@ -343,31 +437,6 @@ export default async function Home() {
         </section>
       )}
 
-      <section>
-        <h2 className="font-display text-sm text-bsh-gold mb-2 tracking-wide">
-          LIGUES
-        </h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-          {leagues?.map((league) => (
-            <Link
-              key={league.id}
-              href={`/${league.slug}`}
-              className="flex items-center gap-3 border border-white/10 rounded-lg p-3 hover:border-bsh-orange transition-colors bg-white/5"
-            >
-              <Avatar
-                name={league.name}
-                src={league.logo_url}
-                size={44}
-                rounded="rounded-lg"
-              />
-              <h3 className="font-display text-sm truncate">{league.name}</h3>
-            </Link>
-          ))}
-          {(!leagues || leagues.length === 0) && (
-            <p className="text-white/50">Aucune ligue trouvée pour le moment.</p>
-          )}
-        </div>
-      </section>
     </div>
   );
 }
