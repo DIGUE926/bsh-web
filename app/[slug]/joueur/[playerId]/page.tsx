@@ -59,8 +59,11 @@ export default async function PlayerPage({
     .eq("slug", slug)
     .single();
 
+  // global_rankings (pas player_season_stats) : vue unifiée qui inclut aussi
+  // les joueurs sans suivi match par match (ex: AHBB, moyennes importées
+  // depuis imported_season_stats) -- sinon leurs stats retombent à 0 ici.
   const { data: seasonStatsArr } = await supabase
-    .from("player_season_stats")
+    .from("global_rankings")
     .select("*")
     .eq("player_id", playerId)
     .limit(1);
