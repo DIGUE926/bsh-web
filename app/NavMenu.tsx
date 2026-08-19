@@ -103,25 +103,25 @@ export default function NavMenu({ leagues }: { leagues: League[] }) {
                     onClick={() => setOpen(false)}
                     className="block px-6 py-2 text-sm hover:bg-white/5"
                   >
-                    Classement
+                    Classement équipes
+                  </Link>
+                  <Link
+                    href={`/${league.slug}/classement-joueurs`}
+                    onClick={() => setOpen(false)}
+                    className="block px-6 py-2 text-sm hover:bg-white/5"
+                  >
+                    Classement joueurs
+                  </Link>
+                  <Link
+                    href={`/${league.slug}/playoffs`}
+                    onClick={() => setOpen(false)}
+                    className="block px-6 py-2 text-sm hover:bg-white/5"
+                  >
+                    Playoffs
                   </Link>
                 </div>
               ))}
 
-              <Link
-                href="/classement"
-                onClick={() => setOpen(false)}
-                className="block px-4 py-3 hover:bg-white/5 font-semibold border-b border-white/10"
-              >
-                Classement général
-              </Link>
-              <Link
-                href="/playoffs"
-                onClick={() => setOpen(false)}
-                className="block px-4 py-3 hover:bg-white/5 font-semibold border-b border-white/10"
-              >
-                Playoffs
-              </Link>
               <a
                 href="https://www.instagram.com/ballsohardx2/?__pwa=1"
                 target="_blank"
@@ -168,12 +168,6 @@ export default function NavMenu({ leagues }: { leagues: League[] }) {
               {league.slug.toUpperCase()}
             </Link>
           ))}
-          <Link href="/classement" className="hover:text-bsh-orange transition-colors">
-            Classement
-          </Link>
-          <Link href="/playoffs" className="hover:text-bsh-orange transition-colors">
-            Playoffs
-          </Link>
         </div>
       </div>
     </nav>

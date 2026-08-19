@@ -36,7 +36,7 @@ export default async function LivePage() {
   const { data: livePlayoffGames } = await supabase
     .from("playoff_games")
     .select(
-      "id, home_score, away_score, team_home:team_home_id(name), team_away:team_away_id(name)"
+      "id, home_score, away_score, team_home:team_home_id(name), team_away:team_away_id(name), league:league_id(slug)"
     )
     .eq("status", "live");
 
@@ -55,6 +55,7 @@ export default async function LivePage() {
     away_score: number | null;
     team_home: { name: string } | null;
     team_away: { name: string } | null;
+    league: { slug: string } | null;
   }>;
 
   const total = games.length + playoffGames.length;
@@ -97,7 +98,7 @@ export default async function LivePage() {
               awayTeamName={g.team_away?.name ?? "?"}
               initialHomeScore={g.home_score}
               initialAwayScore={g.away_score}
-              href={`/playoffs/${g.id}`}
+              href={`/${g.league?.slug}/playoffs/${g.id}`}
             />
           ))}
         </div>

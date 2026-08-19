@@ -1,10 +1,11 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 
 type Competition = "season" | "playoffs";
 type StatKey = "ppg" | "rpg" | "apg" | "spg" | "bpg" | "pir";
+type League = { slug: string; name: string };
 
 type LeaderRow = {
   player_name: string | null;
@@ -33,11 +34,24 @@ export default function TopLeadersGenerator() {
   const [competition, setCompetition] = useState<Competition>("playoffs");
   const [statKey, setStatKey] = useState<StatKey>("ppg");
   const [topN, setTopN] = useState(10);
+  const [leagues, setLeagues] = useState<League[]>([]);
+  const [leagueSlug, setLeagueSlug] = useState("suble");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [ready, setReady] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const supabase = createClient();
+
+  useEffect(() => {
+    async function loadLeagues() {
+      const { data } = await supabase.from("leagues").select("slug, name").order("name");
+      if (data && data.length > 0) {
+        setLeagues(data);
+        setLeagueSlug((current) => (data.some((l) => l.slug === current) ? current : data[0].slug));
+      }
+    }
+    loadLeagues();
+  }, [supabase]);
 
   const availableStats: StatKey[] =
     competition === "season"
@@ -50,15 +64,12 @@ export default function TopLeadersGenerator() {
     setReady(false);
 
     const table = competition === "season" ? "global_rankings" : "playoff_player_totals";
-    let query = supabase
+    const query = supabase
       .from(table)
       .select("*")
+      .eq("league_slug", leagueSlug)
       .order(statKey, { ascending: false, nullsFirst: false })
       .limit(topN);
-
-    if (competition === "season") {
-      query = query.eq("league_slug", "suble");
-    }
 
     const { data, error: fetchError } = await query;
 
@@ -138,7 +149,7 @@ export default function TopLeadersGenerator() {
     ctx.font = "600 26px Montserrat, sans-serif";
     ctx.textAlign = "right";
     ctx.fillText(
-      competition === "season" ? "SUBLE · SAISON RÉGULIÈRE" : "SUBLE · PLAYOFFS",
+      `${leagueSlug.toUpperCase()} · ${competition === "season" ? "SAISON RÉGULIÈRE" : "PLAYOFFS"}`,
       WIDTH - PADDING,
       90
     );
@@ -229,7 +240,7 @@ export default function TopLeadersGenerator() {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const link = document.createElement("a");
-    link.download = `bsh-top${topN}-${statKey}-${competition}.png`;
+    link.download = `bsh-${leagueSlug}-top${topN}-${statKey}-${competition}.png`;
     link.href = canvas.toDataURL("image/png");
     link.click();
   }
@@ -244,6 +255,21 @@ export default function TopLeadersGenerator() {
       </p>
 
       <div className="flex flex-wrap gap-4 mb-6 max-w-2xl">
+        <div>
+          <label className="block text-sm text-white/60 mb-1">Ligue</label>
+          <select
+            value={leagueSlug}
+            onChange={(e) => setLeagueSlug(e.target.value)}
+            className="bg-white/5 border border-white/10 rounded-lg px-4 py-2 focus:border-bsh-orange outline-none"
+          >
+            {leagues.map((l) => (
+              <option key={l.slug} value={l.slug}>
+                {l.name}
+              </option>
+            ))}
+          </select>
+        </div>
+
         <div>
           <label className="block text-sm text-white/60 mb-1">Compétition</label>
           <select

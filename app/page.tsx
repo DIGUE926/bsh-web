@@ -22,7 +22,7 @@ export default async function Home() {
   const { data: livePlayoffGames } = await supabase
     .from("playoff_games")
     .select(
-      "id, home_score, away_score, team_home:team_home_id(name, logo_url), team_away:team_away_id(name, logo_url)"
+      "id, home_score, away_score, team_home:team_home_id(name, logo_url), team_away:team_away_id(name, logo_url), league:league_id(slug)"
     )
     .eq("status", "live");
 
@@ -47,7 +47,7 @@ export default async function Home() {
   const { data: recentPlayoffGames } = await supabase
     .from("playoff_games")
     .select(
-      "*, home_team:team_home_id(name, logo_url), away_team:team_away_id(name, logo_url)"
+      "*, home_team:team_home_id(name, logo_url), away_team:team_away_id(name, logo_url), league:league_id(slug)"
     )
     .eq("status", "completed")
     .order("game_date", { ascending: false })
@@ -56,7 +56,7 @@ export default async function Home() {
   const { data: allPlayoffGames } = await supabase
     .from("playoff_games")
     .select(
-      "*, home_team:team_home_id(name, logo_url), away_team:team_away_id(name, logo_url)"
+      "*, home_team:team_home_id(name, logo_url), away_team:team_away_id(name, logo_url), league:league_id(slug)"
     )
     .order("game_date", { ascending: true });
 
@@ -72,6 +72,17 @@ export default async function Home() {
     tag: "Saison" | "Playoffs";
   };
 
+  type PlayoffGameWithLeague = {
+    id: string;
+    game_date: string;
+    status: string;
+    home_score: number | null;
+    away_score: number | null;
+    home_team: { name: string; logo_url?: string | null } | null;
+    away_team: { name: string; logo_url?: string | null } | null;
+    league: { slug: string } | null;
+  };
+
   const seasonResults: ResultRow[] = (recentGames ?? []).map((g) => ({
     id: g.id,
     game_date: g.game_date,
@@ -83,14 +94,16 @@ export default async function Home() {
     tag: "Saison",
   }));
 
-  const playoffResults: ResultRow[] = (recentPlayoffGames ?? []).map((g) => ({
+  const playoffResults: ResultRow[] = (
+    (recentPlayoffGames ?? []) as unknown as PlayoffGameWithLeague[]
+  ).map((g) => ({
     id: g.id,
     game_date: g.game_date,
     home_score: g.home_score,
     away_score: g.away_score,
     home_team: g.home_team,
     away_team: g.away_team,
-    href: `/playoffs/${g.id}`,
+    href: `/${g.league?.slug}/playoffs/${g.id}`,
     tag: "Playoffs",
   }));
 
@@ -103,11 +116,14 @@ export default async function Home() {
     timeZone: "America/Port-au-Prince",
   });
 
-  const playoffsList = allPlayoffGames ?? [];
+  const playoffsList = (allPlayoffGames ?? []) as unknown as PlayoffGameWithLeague[];
   const matchDuJour = playoffsList.find((g) => g.game_date === todayStr);
   const nextPlayoffGame = playoffsList
     .filter((g) => g.status === "scheduled" && g.game_date >= todayStr)
     .sort((a, b) => a.game_date.localeCompare(b.game_date))[0];
+  // Ligue mise en avant dans le bloc PLAYOFFS de la home (match du jour, sinon prochain match, sinon 1er de la liste)
+  const featuredPlayoffSlug =
+    matchDuJour?.league?.slug ?? nextPlayoffGame?.league?.slug ?? playoffsList[0]?.league?.slug ?? null;
 
   return (
     <div className="max-w-5xl mx-auto px-3 sm:px-4 py-5 sm:py-10">
@@ -156,6 +172,7 @@ export default async function Home() {
               away_score: number | null;
               team_home: { name: string; logo_url?: string | null } | null;
               team_away: { name: string; logo_url?: string | null } | null;
+              league: { slug: string } | null;
             }> ?? []).map((g) => (
               <LiveBadge
                 key={g.id}
@@ -167,7 +184,7 @@ export default async function Home() {
                 awayTeamLogo={g.team_away?.logo_url}
                 initialHomeScore={g.home_score}
                 initialAwayScore={g.away_score}
-                href={`/playoffs/${g.id}`}
+                href={`/${g.league?.slug}/playoffs/${g.id}`}
               />
             ))}
           </div>
@@ -181,7 +198,7 @@ export default async function Home() {
               PLAYOFFS
             </h2>
             <Link
-              href="/playoffs"
+              href={featuredPlayoffSlug ? `/${featuredPlayoffSlug}/playoffs` : "#"}
               className="text-xs text-bsh-orange hover:underline whitespace-nowrap"
             >
               Voir tous les matchs playoffs →
@@ -190,7 +207,7 @@ export default async function Home() {
 
           {matchDuJour ? (
             <Link
-              href={`/playoffs/${matchDuJour.id}`}
+              href={`/${matchDuJour.league?.slug}/playoffs/${matchDuJour.id}`}
               className="block border border-bsh-orange bg-bsh-orange/10 rounded-lg p-4 hover:opacity-90 transition-opacity"
             >
               <p className="text-xs text-bsh-orange uppercase tracking-wide font-semibold mb-1">
@@ -221,7 +238,7 @@ export default async function Home() {
             </Link>
           ) : nextPlayoffGame ? (
             <Link
-              href={`/playoffs/${nextPlayoffGame.id}`}
+              href={`/${nextPlayoffGame.league?.slug}/playoffs/${nextPlayoffGame.id}`}
               className="block border border-white/10 rounded-lg p-3 hover:border-bsh-orange transition-colors bg-white/5"
             >
               <p className="text-xs text-white/40 uppercase tracking-wide font-semibold mb-1">
