@@ -46,8 +46,11 @@ export default async function TeamPage({
 
   const playerIds = (players ?? []).map((p) => p.id);
 
+  // global_rankings (pas player_season_stats) : inclut aussi les joueurs
+  // sans suivi match par match (ex: AHBB, moyennes importées) -- sinon leur
+  // ligne roster affiche 0 partout.
   const { data: seasonStats } = await supabase
-    .from("player_season_stats")
+    .from("global_rankings")
     .select("*")
     .in("player_id", playerIds.length > 0 ? playerIds : ["00000000-0000-0000-0000-000000000000"]);
 
