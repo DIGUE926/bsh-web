@@ -74,6 +74,26 @@ def get_ahbb_teams(league_id):
     return {t["name"].strip().lower(): t["id"] for t in resp.json()}
 
 
+def _post_upsert(url, on_conflict, payload, return_representation=False):
+    """POST avec upsert PostgREST. Affiche le corps de la réponse en cas
+    d'erreur (au lieu d'un simple "400 Bad Request" sans détail)."""
+    prefer = "resolution=merge-duplicates"
+    if return_representation:
+        prefer += ",return=representation"
+
+    resp = requests.post(
+        url,
+        params={"on_conflict": on_conflict},
+        headers={**_headers(), "Prefer": prefer},
+        json=payload,
+        timeout=20,
+    )
+    if not resp.ok:
+        print(f"Erreur Supabase ({resp.status_code}) sur {url}: {resp.text}")
+    resp.raise_for_status()
+    return resp
+
+
 def upsert_player(league_id, team_id, row):
     """Upsert par (external_source, external_id) -- clé stable côté AHBB."""
     jersey = None
@@ -94,14 +114,12 @@ def upsert_player(league_id, team_id, row):
         # laissés tels quels (pas écrasés, pas inventés).
     }]
 
-    resp = requests.post(
+    resp = _post_upsert(
         f"{SUPABASE_URL}/rest/v1/players",
-        params={"on_conflict": "external_source,external_id"},
-        headers={**_headers(), "Prefer": "resolution=merge-duplicates,return=representation"},
-        json=payload,
-        timeout=20,
+        "external_source,external_id",
+        payload,
+        return_representation=True,
     )
-    resp.raise_for_status()
     return resp.json()[0]["id"]
 
 
@@ -129,14 +147,23 @@ def compute_derived(row):
     return ts_pct, pir
 
 
+def _to_int(value):
+    """Convertit un nombre potentiellement flottant (ex: 8.0) en int propre.
+    Nécessaire pour les colonnes Postgres `integer` : PostgREST rejette
+    "8.0" comme valeur invalide pour un entier (400 Bad Request)."""
+    if value is None:
+        return None
+    return int(round(value))
+
+
 def upsert_season_stats(player_id, row):
     ts_pct, pir = compute_derived(row)
 
     payload = [{
         "player_id": player_id,
         "season": SEASON,
-        "games_played": row.get("games"),
-        "games_started": row.get("games_started"),
+        "games_played": _to_int(row.get("games")),
+        "games_started": _to_int(row.get("games_started")),
         "ppg": row.get("pts"),
         "rpg": row.get("reb_total"),
         "oreb": row.get("oreb"),
@@ -153,14 +180,11 @@ def upsert_season_stats(player_id, row):
         "source": EXTERNAL_SOURCE,
     }]
 
-    resp = requests.post(
+    _post_upsert(
         f"{SUPABASE_URL}/rest/v1/imported_season_stats",
-        params={"on_conflict": "player_id,season"},
-        headers={**_headers(), "Prefer": "resolution=merge-duplicates"},
-        json=payload,
-        timeout=20,
+        "player_id,season",
+        payload,
     )
-    resp.raise_for_status()
 
 
 def main():
@@ -199,11 +223,19 @@ def main():
             skipped += 1
             continue
 
-        player_id = upsert_player(league_id, team_id, row)
-        upsert_season_stats(player_id, row)
-        synced += 1
+        try:
+            player_id = upsert_player(league_id, team_id, row)
+            upsert_season_stats(player_id, row)
+            synced += 1
+        except Exception as exc:
+            # Une ligne malformée ne doit pas faire planter la synchro des
+            # 129 autres joueurs -- on log et on continue.
+            print(f"Échec pour {row.get('name')} ({row.get('team')}): {exc}")
+            skipped += 1
 
     print(f"Terminé : {synced} joueurs synchronisés, {skipped} ignorés.")
+    if synced == 0:
+        sys.exit(1)
 
 
 if __name__ == "__main__":
