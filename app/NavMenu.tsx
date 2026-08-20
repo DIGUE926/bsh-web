@@ -8,17 +8,23 @@ type League = { name: string; slug: string; logo_url?: string | null };
 
 export default function NavMenu({ leagues }: { leagues: League[] }) {
   const [open, setOpen] = useState(false);
+  const [expandedLeague, setExpandedLeague] = useState<string | null>(null);
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
       if (ref.current && !ref.current.contains(e.target as Node)) {
-        setOpen(false);
+        closeMenu();
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  function closeMenu() {
+    setOpen(false);
+    setExpandedLeague(null);
+  }
 
   return (
     <nav className="border-b border-white/10 bg-bsh-black/80 backdrop-blur-md sticky top-0 z-50">
@@ -51,14 +57,14 @@ export default function NavMenu({ leagues }: { leagues: League[] }) {
               <div className="py-1">
                 <Link
                   href="/"
-                  onClick={() => setOpen(false)}
+                  onClick={closeMenu}
                   className="block px-4 py-2.5 hover:bg-white/5 font-semibold text-sm"
                 >
                   Accueil
                 </Link>
                 <Link
                   href="/live"
-                  onClick={() => setOpen(false)}
+                  onClick={closeMenu}
                   className="flex items-center gap-2 px-4 py-2.5 hover:bg-white/5 font-semibold text-sm text-red-400"
                 >
                   <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
@@ -70,65 +76,91 @@ export default function NavMenu({ leagues }: { leagues: League[] }) {
                 <p className="px-4 pt-3 pb-1 text-[10px] uppercase tracking-widest text-white/30 font-semibold">
                   Ligues
                 </p>
-                {leagues.map((league) => (
+                {leagues.map((league) => {
+                  const isExpanded = expandedLeague === league.slug;
+                  return (
                   <div key={league.slug} className="border-b border-white/5 last:border-b-0">
-                    <div className="flex items-center gap-2 px-4 pt-2 pb-1.5">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setExpandedLeague(isExpanded ? null : league.slug)
+                      }
+                      className="w-full flex items-center gap-2 px-4 py-2.5 hover:bg-white/5"
+                    >
                       <Avatar
                         name={league.name}
                         src={league.logo_url}
                         size={20}
                         rounded="rounded"
                       />
-                      <p className="text-sm font-semibold text-white/90 truncate">
+                      <p className="text-sm font-semibold text-white/90 truncate flex-1 text-left">
                         {league.name}
                       </p>
-                    </div>
+                      <svg
+                        width="12"
+                        height="12"
+                        viewBox="0 0 14 14"
+                        fill="none"
+                        className={`shrink-0 text-white/40 transition-transform ${isExpanded ? "rotate-180" : ""}`}
+                      >
+                        <path
+                          d="M2 4L7 9L12 4"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                    </button>
+                    {isExpanded && (
                     <div className="grid grid-cols-2 gap-x-1 px-4 pb-2.5">
                       <Link
                         href={`/${league.slug}`}
-                        onClick={() => setOpen(false)}
+                        onClick={closeMenu}
                         className="block px-2 py-1.5 text-xs text-white/60 hover:text-bsh-orange rounded"
                       >
                         Équipes
                       </Link>
                       <Link
                         href={`/${league.slug}/matchs`}
-                        onClick={() => setOpen(false)}
+                        onClick={closeMenu}
                         className="block px-2 py-1.5 text-xs text-white/60 hover:text-bsh-orange rounded"
                       >
                         Matchs
                       </Link>
                       <Link
                         href={`/${league.slug}/archives`}
-                        onClick={() => setOpen(false)}
+                        onClick={closeMenu}
                         className="block px-2 py-1.5 text-xs text-white/60 hover:text-bsh-orange rounded"
                       >
                         Archives
                       </Link>
                       <Link
                         href={`/${league.slug}/classement`}
-                        onClick={() => setOpen(false)}
+                        onClick={closeMenu}
                         className="block px-2 py-1.5 text-xs text-white/60 hover:text-bsh-orange rounded"
                       >
                         Classement équipes
                       </Link>
                       <Link
                         href={`/${league.slug}/classement-joueurs`}
-                        onClick={() => setOpen(false)}
+                        onClick={closeMenu}
                         className="block px-2 py-1.5 text-xs text-white/60 hover:text-bsh-orange rounded"
                       >
                         Classement joueurs
                       </Link>
                       <Link
                         href={`/${league.slug}/playoffs`}
-                        onClick={() => setOpen(false)}
+                        onClick={closeMenu}
                         className="block px-2 py-1.5 text-xs text-white/60 hover:text-bsh-orange rounded"
                       >
                         Playoffs
                       </Link>
                     </div>
+                    )}
                   </div>
-                ))}
+                  );
+                })}
               </div>
 
               <div className="border-t border-white/10 py-1">
@@ -136,7 +168,7 @@ export default function NavMenu({ leagues }: { leagues: League[] }) {
                   href="https://www.instagram.com/ballsohardx2/?__pwa=1"
                   target="_blank"
                   rel="noopener noreferrer"
-                  onClick={() => setOpen(false)}
+                  onClick={closeMenu}
                   className="flex items-center gap-2 px-4 py-2.5 hover:bg-white/5 text-sm text-white/60"
                 >
                   <svg
@@ -158,7 +190,7 @@ export default function NavMenu({ leagues }: { leagues: League[] }) {
               <div className="border-t border-white/10 py-1">
                 <Link
                   href="/login"
-                  onClick={() => setOpen(false)}
+                  onClick={closeMenu}
                   className="flex items-center gap-2 px-4 py-2.5 text-white/35 hover:bg-white/5 hover:text-white/60 text-xs"
                 >
                   <svg
