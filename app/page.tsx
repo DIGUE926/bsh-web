@@ -3,6 +3,7 @@ import Link from "next/link";
 import Avatar from "@/app/Avatar";
 import LiveBadge from "@/app/LiveBadge";
 import { shortTeamName } from "@/lib/teamDisplay";
+import U20Badge from "@/app/U20Badge";
 
 export const revalidate = 60;
 
@@ -193,8 +194,9 @@ export default async function Home() {
                       rounded="rounded-lg"
                     />
                     <div className="min-w-0">
-                      <h3 className="font-display text-lg tracking-wide truncate group-hover:text-bsh-orange transition-colors">
+                      <h3 className="font-display text-lg tracking-wide truncate group-hover:text-bsh-orange transition-colors flex items-center gap-1.5">
                         {shortName}
+                        <U20Badge slug={league.slug} />
                       </h3>
                       <p className="text-[11px] text-white/40 truncate">
                         {league.city ?? "Haïti"} · {teamCount} équipe{teamCount > 1 ? "s" : ""}

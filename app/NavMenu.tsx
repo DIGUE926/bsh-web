@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import Avatar from "./Avatar";
+import U20Badge from "./U20Badge";
 
 type League = { name: string; slug: string; logo_url?: string | null };
 
@@ -93,8 +94,9 @@ export default function NavMenu({ leagues }: { leagues: League[] }) {
                         size={16}
                         rounded="rounded"
                       />
-                      <p className="text-xs font-semibold text-white/90 truncate flex-1 text-left">
+                      <p className="text-xs font-semibold text-white/90 truncate flex-1 text-left flex items-center gap-1.5">
                         {league.name}
+                        <U20Badge slug={league.slug} />
                       </p>
                       <svg
                         width="12"
@@ -224,6 +226,7 @@ export default function NavMenu({ leagues }: { leagues: League[] }) {
             >
               <Avatar name={league.name} src={league.logo_url} size={18} rounded="rounded" />
               {league.slug.toUpperCase()}
+              <U20Badge slug={league.slug} />
             </Link>
           ))}
         </div>

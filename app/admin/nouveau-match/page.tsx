@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import U20Badge from "@/app/U20Badge";
 
 type Team = { id: string; name: string; league_id: string };
 type League = { id: string; name: string; slug: string };
@@ -109,13 +110,14 @@ export default function NouveauMatchPage() {
                 key={l.id}
                 type="button"
                 onClick={() => handleLeagueChange(l.id)}
-                className={`px-3 py-1.5 rounded-full text-sm font-semibold transition-colors ${
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-semibold transition-colors ${
                   leagueId === l.id
                     ? "bg-bsh-orange text-black"
                     : "bg-white/5 text-white/60 hover:text-bsh-orange"
                 }`}
               >
                 {l.slug.toUpperCase()}
+                <U20Badge slug={l.slug} />
               </button>
             ))}
           </div>

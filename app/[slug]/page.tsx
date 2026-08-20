@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import Breadcrumb from "@/app/Breadcrumb";
 import Avatar from "@/app/Avatar";
+import U20Badge from "@/app/U20Badge";
 
 export const revalidate = 60;
 
@@ -60,8 +61,9 @@ export default async function LeaguePage({
           size={48}
           rounded="rounded-lg"
         />
-        <h1 className="font-display text-lg sm:text-2xl text-bsh-orange tracking-wide">
+        <h1 className="font-display text-lg sm:text-2xl text-bsh-orange tracking-wide flex items-center gap-2">
           {league.name}
+          <U20Badge slug={league.slug} />
         </h1>
       </div>
       <div className="flex gap-4 text-sm text-white/50 mb-6">

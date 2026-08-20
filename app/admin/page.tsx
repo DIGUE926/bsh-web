@@ -4,6 +4,7 @@ import DeleteGameButton from "./DeleteGameButton";
 import QuickStartButton from "./QuickStartButton";
 import LiveKillSwitch from "./LiveKillSwitch";
 import { isLiveScoringEnabled } from "@/lib/settings";
+import U20Badge from "@/app/U20Badge";
 
 export const dynamic = "force-dynamic";
 
@@ -58,6 +59,7 @@ export default async function AdminDashboard() {
                       {game.league.slug}
                     </span>
                   )}
+                  {game.league?.slug && <U20Badge slug={game.league.slug} />}
                   <p className="font-semibold text-sm sm:text-base truncate">
                     {game.home_team?.name ?? "?"} vs{" "}
                     {game.away_team?.name ?? "?"}
