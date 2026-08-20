@@ -1,6 +1,9 @@
+import { redirect } from "next/navigation";
+import { createClient } from "@/lib/supabase/server";
+import { isOwnerEmail } from "@/lib/adminAccess";
 import { changelogEntries } from "@/lib/changelogData";
 
-export const dynamic = "force-static";
+export const dynamic = "force-dynamic";
 
 function groupByDay(entries: typeof changelogEntries) {
   const groups = new Map<string, typeof changelogEntries>();
@@ -17,7 +20,13 @@ function groupByDay(entries: typeof changelogEntries) {
   return groups;
 }
 
-export default function ChangelogPage() {
+export default async function ChangelogPage() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!isOwnerEmail(user?.email)) redirect("/admin");
+
   const grouped = groupByDay(changelogEntries);
 
   return (

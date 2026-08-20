@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import SignOutButton from "./SignOutButton";
+import { isOwnerEmail } from "@/lib/adminAccess";
 
 export default async function AdminLayout({
   children,
@@ -14,6 +15,8 @@ export default async function AdminLayout({
   } = await supabase.auth.getUser();
 
   if (!user) redirect("/login");
+
+  const isOwner = isOwnerEmail(user.email);
 
   return (
     <div className="max-w-6xl mx-auto px-3 sm:px-4 py-4 sm:py-8">
@@ -49,18 +52,22 @@ export default async function AdminLayout({
         >
           Historique
         </Link>
-        <Link
-          href="/admin/changelog"
-          className="shrink-0 px-2.5 py-1.5 rounded-full bg-white/5 text-white/60 hover:text-bsh-orange"
-        >
-          Mises à jour
-        </Link>
-        <Link
-          href="/admin/social"
-          className="shrink-0 px-2.5 py-1.5 rounded-full bg-white/5 text-white/60 hover:text-bsh-orange"
-        >
-          Réseaux sociaux
-        </Link>
+        {isOwner && (
+          <Link
+            href="/admin/changelog"
+            className="shrink-0 px-2.5 py-1.5 rounded-full bg-white/5 text-white/60 hover:text-bsh-orange"
+          >
+            Mises à jour
+          </Link>
+        )}
+        {isOwner && (
+          <Link
+            href="/admin/social"
+            className="shrink-0 px-2.5 py-1.5 rounded-full bg-white/5 text-white/60 hover:text-bsh-orange"
+          >
+            Réseaux sociaux
+          </Link>
+        )}
       </nav>
       {children}
     </div>
