@@ -4,12 +4,14 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import Avatar from "./Avatar";
 import U20Badge from "./U20Badge";
+import SearchOverlay from "./SearchOverlay";
 
 type League = { name: string; slug: string; logo_url?: string | null };
 
 export default function NavMenu({ leagues }: { leagues: League[] }) {
   const [open, setOpen] = useState(false);
   const [expandedLeague, setExpandedLeague] = useState<string | null>(null);
+  const [searchOpen, setSearchOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -70,6 +72,13 @@ export default function NavMenu({ leagues }: { leagues: League[] }) {
                 >
                   <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
                   Scoreboard Live
+                </Link>
+                <Link
+                  href="/comparateur"
+                  onClick={closeMenu}
+                  className="block px-3 py-2 hover:bg-white/5 font-semibold text-xs"
+                >
+                  Comparateur de joueurs
                 </Link>
               </div>
 
@@ -222,6 +231,9 @@ export default function NavMenu({ leagues }: { leagues: League[] }) {
             <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
             Scoreboard Live
           </Link>
+          <Link href="/comparateur" className="hover:text-bsh-orange transition-colors">
+            Comparateur
+          </Link>
           {leagues.map((league) => (
             <Link
               key={league.slug}
@@ -234,7 +246,20 @@ export default function NavMenu({ leagues }: { leagues: League[] }) {
             </Link>
           ))}
         </div>
+
+        <button
+          onClick={() => setSearchOpen(true)}
+          aria-label="Rechercher"
+          className="text-white/50 hover:text-bsh-orange transition-colors p-1.5 -mr-1.5 sm:mr-0"
+        >
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <circle cx="11" cy="11" r="7" />
+            <path d="m21 21-4.3-4.3" />
+          </svg>
+        </button>
       </div>
+
+      {searchOpen && <SearchOverlay onClose={() => setSearchOpen(false)} />}
     </nav>
   );
 }
