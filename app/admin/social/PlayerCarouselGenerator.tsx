@@ -148,16 +148,6 @@ export default function PlayerCarouselGenerator() {
     setActiveSlide(0);
   }
 
-  function initials(name: string) {
-    return name
-      .split(" ")
-      .filter(Boolean)
-      .slice(0, 2)
-      .map((w) => w[0])
-      .join("")
-      .toUpperCase();
-  }
-
   async function drawHookSlide(player: PlayerRow, contextLabel: string) {
     const canvas = canvasRefs[0].current;
     if (!canvas) return;
@@ -173,45 +163,79 @@ export default function PlayerCarouselGenerator() {
     paintCompactHeader(ctx, "JOUEUR À SUIVRE", contextLabel, WIDTH);
     paintSlideIndicator(ctx, 0, SLIDE_COUNT, WIDTH);
 
-    // Monogramme
-    const cx = WIDTH / 2;
-    const cy = 420;
-    const radius = 130;
-    const grad = ctx.createLinearGradient(cx - radius, cy - radius, cx + radius, cy + radius);
-    grad.addColorStop(0, "rgba(255,107,0,0.25)");
-    grad.addColorStop(1, "rgba(255,214,10,0.12)");
+    ctx.textBaseline = "alphabetic";
+    ctx.textAlign = "left";
+
+    // Équipe (kicker)
+    ctx.fillStyle = COLORS.orange;
+    ctx.font = "800 20px Montserrat, sans-serif";
+    ctx.fillText((player.team_name ?? "").toUpperCase(), PADDING, 115);
+
+    // Nom du joueur, aligné à gauche comme le reste des slides
+    ctx.fillStyle = COLORS.white;
+    ctx.font = "900 66px Anton, sans-serif";
+    const nameLines = wrapLines(ctx, player.player_name.toUpperCase(), WIDTH - PADDING * 2);
+    let ny = 180;
+    nameLines.forEach((line) => {
+      ctx.fillText(line, PADDING, ny);
+      ny += 66;
+    });
+
+    const dividerY = ny + 14;
+    ctx.strokeStyle = "rgba(255,255,255,0.15)";
+    ctx.lineWidth = 1.5;
     ctx.beginPath();
-    ctx.arc(cx, cy, radius, 0, Math.PI * 2);
-    ctx.fillStyle = grad;
-    ctx.fill();
-    ctx.strokeStyle = "rgba(255,214,10,0.5)";
-    ctx.lineWidth = 2.5;
+    ctx.moveTo(PADDING, dividerY);
+    ctx.lineTo(WIDTH - PADDING, dividerY);
     ctx.stroke();
 
-    ctx.fillStyle = COLORS.white;
-    ctx.font = "900 96px Anton, sans-serif";
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.fillText(initials(player.player_name), cx, cy + 8);
+    // Rangée de 4 chiffres clés
+    const chips: { label: string; value: string }[] = [
+      { label: "PTS", value: player.ppg != null ? Number(player.ppg).toFixed(1) : "-" },
+      { label: "REB", value: player.rpg != null ? Number(player.rpg).toFixed(1) : "-" },
+      { label: "AST", value: player.apg != null ? Number(player.apg).toFixed(1) : "-" },
+      { label: "PIR", value: player.pir != null ? Number(player.pir).toFixed(1) : "-" },
+    ];
+    const chipGap = 14;
+    const chipW = (WIDTH - PADDING * 2 - chipGap * 3) / 4;
+    const chipY = dividerY + 30;
+    const chipH = 118;
 
-    ctx.textBaseline = "alphabetic";
-    ctx.fillStyle = "rgba(255,255,255,0.5)";
-    ctx.font = "600 20px Montserrat, sans-serif";
-    ctx.fillText((player.team_name ?? "").toUpperCase(), cx, cy + radius + 56);
+    chips.forEach((c, i) => {
+      const x = PADDING + i * (chipW + chipGap);
+      ctx.fillStyle = i === 3 ? "rgba(255,214,10,0.08)" : "rgba(255,255,255,0.04)";
+      ctx.strokeStyle = i === 3 ? "rgba(255,214,10,0.35)" : "rgba(255,255,255,0.1)";
+      ctx.lineWidth = 1;
+      roundRect(ctx, x, chipY, chipW, chipH, 12);
+      ctx.fill();
+      ctx.stroke();
 
-    ctx.fillStyle = COLORS.white;
-    ctx.font = "900 58px Anton, sans-serif";
-    wrapCenteredText(ctx, player.player_name.toUpperCase(), cx, cy + radius + 105, WIDTH - PADDING * 2, 60);
+      ctx.fillStyle = i === 3 ? COLORS.gold : COLORS.orange;
+      ctx.font = "900 34px Anton, sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText(c.value, x + chipW / 2, chipY + 62);
 
-    // Stat phare (PIR)
-    const badgeY = HEIGHT - 300;
+      ctx.fillStyle = "rgba(255,255,255,0.5)";
+      ctx.font = "700 13px Montserrat, sans-serif";
+      ctx.fillText(c.label, x + chipW / 2, chipY + 88);
+    });
+
+    // Ligne narrative
+    const quoteY = chipY + chipH + 56;
+    ctx.textAlign = "left";
     ctx.fillStyle = COLORS.gold;
-    ctx.font = "900 150px Anton, sans-serif";
-    ctx.fillText(player.pir != null ? Number(player.pir).toFixed(1) : "-", cx, badgeY);
-
-    ctx.fillStyle = COLORS.orange;
-    ctx.font = "800 24px Montserrat, sans-serif";
-    ctx.fillText("RATING D'IMPACT (PIR)", cx, badgeY + 40);
+    ctx.font = "900 22px Anton, sans-serif";
+    ctx.fillText("│", PADDING, quoteY);
+    ctx.fillStyle = "rgba(255,255,255,0.7)";
+    ctx.font = "500 21px Montserrat, sans-serif";
+    const gp = player.games_played ?? 0;
+    const narrative = `Sur ${gp} match${gp > 1 ? "s" : ""} cette saison : ${chips[0].value} pts, ${chips[1].value} reb et ${chips[2].value} passes de moyenne.`;
+    const narrativeLines = wrapLines(ctx, narrative, WIDTH - PADDING * 2 - 24);
+    let qy = quoteY;
+    narrativeLines.forEach((line) => {
+      ctx.fillText(line, PADDING + 20, qy);
+      qy += 28;
+    });
 
     paintFooter(ctx, WIDTH, HEIGHT);
   }
@@ -540,46 +564,75 @@ export default function PlayerCarouselGenerator() {
 
     paintBackground(ctx, WIDTH, HEIGHT);
     await paintCourtPattern(ctx, WIDTH, HEIGHT, 0.08);
-    paintCompactHeader(ctx, "À SUIVRE", contextLabel, WIDTH);
+    paintCompactHeader(ctx, "EN RÉSUMÉ", contextLabel, WIDTH);
     paintSlideIndicator(ctx, 4, SLIDE_COUNT, WIDTH);
 
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
+    ctx.textBaseline = "alphabetic";
+    ctx.textAlign = "left";
+
+    ctx.fillStyle = COLORS.orange;
+    ctx.font = "800 20px Montserrat, sans-serif";
+    ctx.fillText((player.team_name ?? "").toUpperCase(), PADDING, 115);
 
     ctx.fillStyle = COLORS.white;
-    ctx.font = "900 64px Anton, sans-serif";
-    wrapCenteredText(ctx, player.player_name.toUpperCase(), WIDTH / 2, HEIGHT / 2 - 90, WIDTH - PADDING * 2, 68);
+    ctx.font = "900 52px Anton, sans-serif";
+    const lines = wrapLines(ctx, player.player_name.toUpperCase(), WIDTH - PADDING * 2);
+    let ny = 172;
+    lines.forEach((line) => {
+      ctx.fillText(line, PADDING, ny);
+      ny += 54;
+    });
 
-    ctx.fillStyle = "rgba(255,255,255,0.55)";
-    ctx.font = "600 20px Montserrat, sans-serif";
-    ctx.fillText((player.team_name ?? "").toUpperCase(), WIDTH / 2, HEIGHT / 2 - 10);
-
-    ctx.strokeStyle = "rgba(255,214,10,0.4)";
+    const dividerY = ny + 14;
+    ctx.strokeStyle = "rgba(255,255,255,0.15)";
     ctx.lineWidth = 1.5;
     ctx.beginPath();
-    ctx.moveTo(WIDTH / 2 - 70, HEIGHT / 2 + 26);
-    ctx.lineTo(WIDTH / 2 + 70, HEIGHT / 2 + 26);
+    ctx.moveTo(PADDING, dividerY);
+    ctx.lineTo(WIDTH - PADDING, dividerY);
+    ctx.stroke();
+
+    // Ligne de résumé
+    const sortedRecap = PROFILE_STATS.map((s) => ({
+      ...s,
+      pct: percentile(s.key, player[s.key]),
+    })).sort((a, b) => b.pct - a.pct);
+    const bestRecap = sortedRecap[0];
+
+    ctx.fillStyle = "rgba(255,255,255,0.7)";
+    ctx.font = "500 20px Montserrat, sans-serif";
+    const recapText = `Point fort de la saison : ${bestRecap.label.toLowerCase()} (${bestRecap.pct}e percentile de la ligue). PIR de ${
+      player.pir != null ? Number(player.pir).toFixed(1) : "-"
+    }.`;
+    const recapLines = wrapLines(ctx, recapText, WIDTH - PADDING * 2);
+    let ry = dividerY + 40;
+    recapLines.forEach((line) => {
+      ctx.fillText(line, PADDING, ry);
+      ry += 28;
+    });
+
+    // Carte CTA en bas, pas centrée pleine hauteur
+    const ctaY = HEIGHT - 280;
+    const ctaH = 130;
+    ctx.fillStyle = "rgba(255,255,255,0.04)";
+    ctx.strokeStyle = "rgba(255,214,10,0.25)";
+    ctx.lineWidth = 1;
+    roundRect(ctx, PADDING, ctaY, WIDTH - PADDING * 2, ctaH, 14);
+    ctx.fill();
     ctx.stroke();
 
     ctx.fillStyle = COLORS.orange;
-    ctx.font = "800 22px Montserrat, sans-serif";
-    ctx.fillText("PLUS D'ANALYSES SUR", WIDTH / 2, HEIGHT / 2 + 76);
+    ctx.font = "800 18px Montserrat, sans-serif";
+    ctx.fillText("PLUS D'ANALYSES SUR", PADDING + 28, ctaY + 48);
 
     ctx.fillStyle = COLORS.white;
     ctx.font = "900 40px Anton, sans-serif";
-    ctx.fillText("@BALLSOHARDX2", WIDTH / 2, HEIGHT / 2 + 126);
+    ctx.fillText("@BALLSOHARDX2", PADDING + 28, ctaY + 96);
 
     paintFooter(ctx, WIDTH, HEIGHT);
   }
 
-  function wrapCenteredText(
-    ctx: CanvasRenderingContext2D,
-    text: string,
-    x: number,
-    y: number,
-    maxWidth: number,
-    lineHeight: number
-  ) {
+  // Découpe un texte en lignes qui tiennent dans maxWidth (ne dessine rien).
+  function wrapLines(ctx: CanvasRenderingContext2D, text: string, maxWidth: number): string[] {
     const words = text.split(" ");
     let line = "";
     const lines: string[] = [];
@@ -593,9 +646,7 @@ export default function PlayerCarouselGenerator() {
       }
     }
     if (line) lines.push(line);
-
-    const startY = y - ((lines.length - 1) * lineHeight) / 2;
-    lines.forEach((l, i) => ctx.fillText(l, x, startY + i * lineHeight));
+    return lines;
   }
 
   function roundRect(
