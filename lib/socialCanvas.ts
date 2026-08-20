@@ -88,6 +88,43 @@ export function paintWordmarkHeader(
   ctx.fillText(contextLabel, width - PADDING, 90);
 }
 
+// Header compact façon "tableau de données" : un kicker en haut à gauche
+// (ex: "CLASSEMENT PLAYOFFS"), et à droite le contexte ligue + un petit
+// badge rond BSH — plus dense que paintWordmarkHeader, à utiliser par défaut.
+export function paintCompactHeader(
+  ctx: CanvasRenderingContext2D,
+  kickerLabel: string,
+  contextLabel: string,
+  width = CANVAS_WIDTH
+) {
+  ctx.textBaseline = "alphabetic";
+  ctx.fillStyle = COLORS.orange;
+  ctx.font = "800 22px Montserrat, sans-serif";
+  ctx.textAlign = "left";
+  ctx.fillText(kickerLabel, PADDING, 52);
+
+  ctx.fillStyle = "rgba(255,255,255,0.45)";
+  ctx.font = "600 20px Montserrat, sans-serif";
+  ctx.textAlign = "right";
+  ctx.fillText(contextLabel, width - PADDING - 56, 48);
+
+  const badgeCx = width - PADDING - 24;
+  const badgeCy = 40;
+  ctx.beginPath();
+  ctx.arc(badgeCx, badgeCy, 22, 0, Math.PI * 2);
+  ctx.fillStyle = "rgba(255,255,255,0.06)";
+  ctx.fill();
+  ctx.strokeStyle = "rgba(255,255,255,0.2)";
+  ctx.lineWidth = 1.5;
+  ctx.stroke();
+  ctx.fillStyle = COLORS.orange;
+  ctx.font = "900 16px Anton, sans-serif";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillText("BSH", badgeCx, badgeCy + 1);
+  ctx.textBaseline = "alphabetic";
+}
+
 export function paintFooter(
   ctx: CanvasRenderingContext2D,
   width = CANVAS_WIDTH,
@@ -111,10 +148,10 @@ export function paintSlideIndicator(
 ) {
   if (total <= 1) return;
   ctx.fillStyle = "rgba(255,255,255,0.35)";
-  ctx.font = "600 20px Montserrat, sans-serif";
+  ctx.font = "600 18px Montserrat, sans-serif";
   ctx.textAlign = "right";
   ctx.textBaseline = "alphabetic";
-  ctx.fillText(`${index + 1}/${total}`, width - PADDING, 126);
+  ctx.fillText(`${index + 1}/${total}`, width - PADDING, 84);
 }
 
 export function downloadCanvasPng(canvas: HTMLCanvasElement, filename: string) {

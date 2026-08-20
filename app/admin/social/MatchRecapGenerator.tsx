@@ -10,7 +10,7 @@ import {
   loadBrandFonts,
   paintBackground,
   paintCourtPattern,
-  paintWordmarkHeader,
+  paintCompactHeader,
   paintFooter,
   downloadCanvasPng,
 } from "@/lib/socialCanvas";
@@ -144,60 +144,57 @@ export default function MatchRecapGenerator() {
       month: "long",
     });
 
-    paintWordmarkHeader(
+    paintCompactHeader(
       ctx,
+      "RÉCAP DE MATCH",
       `${(league?.slug ?? "").toUpperCase()} · ${game.phase ?? "SAISON RÉGULIÈRE"}`,
       WIDTH
     );
 
-    ctx.fillStyle = COLORS.gold;
-    ctx.font = "900 32px Anton, sans-serif";
+    ctx.fillStyle = "rgba(255,255,255,0.4)";
+    ctx.font = "600 18px Montserrat, sans-serif";
     ctx.textAlign = "left";
     ctx.textBaseline = "alphabetic";
-    ctx.fillText("RÉCAP DE MATCH", PADDING, 175);
-
-    ctx.fillStyle = "rgba(255,255,255,0.4)";
-    ctx.font = "600 22px Montserrat, sans-serif";
-    ctx.fillText(dateLabel.toUpperCase(), PADDING, 205);
+    ctx.fillText(dateLabel.toUpperCase(), PADDING, 90);
 
     const homeWon = (game.home_score ?? 0) >= (game.away_score ?? 0);
 
     // Bloc score
-    const scoreY = 400;
+    const scoreY = 460;
     ctx.textAlign = "center";
 
-    drawTeamName(ctx, game.home_team!.name, WIDTH * 0.27, scoreY - 90, homeWon);
-    drawTeamName(ctx, game.away_team!.name, WIDTH * 0.73, scoreY - 90, !homeWon);
+    drawTeamName(ctx, game.home_team!.name, WIDTH * 0.27, scoreY - 64, homeWon);
+    drawTeamName(ctx, game.away_team!.name, WIDTH * 0.73, scoreY - 64, !homeWon);
 
-    ctx.font = "900 170px Anton, sans-serif";
+    ctx.font = "900 118px Anton, sans-serif";
     ctx.fillStyle = homeWon ? COLORS.gold : "rgba(255,255,255,0.85)";
-    ctx.fillText(String(game.home_score ?? "-"), WIDTH * 0.27, scoreY + 40);
+    ctx.fillText(String(game.home_score ?? "-"), WIDTH * 0.27, scoreY + 30);
 
     ctx.fillStyle = "rgba(255,255,255,0.25)";
-    ctx.font = "900 90px Anton, sans-serif";
-    ctx.fillText("-", WIDTH / 2, scoreY + 10);
+    ctx.font = "900 60px Anton, sans-serif";
+    ctx.fillText("-", WIDTH / 2, scoreY + 8);
 
-    ctx.font = "900 170px Anton, sans-serif";
+    ctx.font = "900 118px Anton, sans-serif";
     ctx.fillStyle = !homeWon ? COLORS.gold : "rgba(255,255,255,0.85)";
-    ctx.fillText(String(game.away_score ?? "-"), WIDTH * 0.73, scoreY + 40);
+    ctx.fillText(String(game.away_score ?? "-"), WIDTH * 0.73, scoreY + 30);
 
     // Ligne de séparation
     ctx.strokeStyle = "rgba(255,255,255,0.15)";
-    ctx.lineWidth = 2;
+    ctx.lineWidth = 1.5;
     ctx.beginPath();
-    ctx.moveTo(PADDING, scoreY + 110);
-    ctx.lineTo(WIDTH - PADDING, scoreY + 110);
+    ctx.moveTo(PADDING, scoreY + 74);
+    ctx.lineTo(WIDTH - PADDING, scoreY + 74);
     ctx.stroke();
 
     // Top performers
-    const perfY = scoreY + 190;
+    const perfY = scoreY + 130;
     ctx.fillStyle = COLORS.orange;
-    ctx.font = "900 30px Anton, sans-serif";
+    ctx.font = "900 24px Anton, sans-serif";
     ctx.textAlign = "center";
     ctx.fillText("TOP PERFORMERS", WIDTH / 2, perfY);
 
-    drawPerformerCard(ctx, homeTop, WIDTH * 0.27, perfY + 70);
-    drawPerformerCard(ctx, awayTop, WIDTH * 0.73, perfY + 70);
+    drawPerformerCard(ctx, homeTop, WIDTH * 0.27, perfY + 56);
+    drawPerformerCard(ctx, awayTop, WIDTH * 0.73, perfY + 56);
 
     paintFooter(ctx, WIDTH, HEIGHT);
   }
@@ -210,7 +207,7 @@ export default function MatchRecapGenerator() {
     isWinner: boolean
   ) {
     ctx.fillStyle = isWinner ? COLORS.white : "rgba(255,255,255,0.45)";
-    ctx.font = "800 26px Montserrat, sans-serif";
+    ctx.font = "800 20px Montserrat, sans-serif";
     ctx.textAlign = "center";
 
     // Coupe le nom sur 2 lignes si trop long
@@ -218,7 +215,7 @@ export default function MatchRecapGenerator() {
     if (words.length > 1 && name.length > 14) {
       const mid = Math.ceil(words.length / 2);
       ctx.fillText(words.slice(0, mid).join(" "), x, y);
-      ctx.fillText(words.slice(mid).join(" "), x, y + 30);
+      ctx.fillText(words.slice(mid).join(" "), x, y + 24);
     } else {
       ctx.fillText(name, x, y);
     }
@@ -232,24 +229,24 @@ export default function MatchRecapGenerator() {
   ) {
     if (!perf) {
       ctx.fillStyle = "rgba(255,255,255,0.3)";
-      ctx.font = "600 20px Montserrat, sans-serif";
+      ctx.font = "600 16px Montserrat, sans-serif";
       ctx.textAlign = "center";
-      ctx.fillText("—", x, y + 20);
+      ctx.fillText("—", x, y + 16);
       return;
     }
 
     ctx.fillStyle = COLORS.white;
-    ctx.font = "800 26px Montserrat, sans-serif";
+    ctx.font = "800 20px Montserrat, sans-serif";
     ctx.textAlign = "center";
     ctx.fillText(perf.player_name, x, y);
 
     ctx.fillStyle = COLORS.gold;
-    ctx.font = "900 44px Anton, sans-serif";
-    ctx.fillText(`${perf.pts} PTS`, x, y + 55);
+    ctx.font = "900 34px Anton, sans-serif";
+    ctx.fillText(`${perf.pts} PTS`, x, y + 42);
 
     ctx.fillStyle = "rgba(255,255,255,0.5)";
-    ctx.font = "600 20px Montserrat, sans-serif";
-    ctx.fillText(`${perf.reb} REB · ${perf.ast} AST`, x, y + 85);
+    ctx.font = "600 16px Montserrat, sans-serif";
+    ctx.fillText(`${perf.reb} REB · ${perf.ast} AST`, x, y + 66);
   }
 
   function download() {

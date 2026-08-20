@@ -11,7 +11,7 @@ import {
   loadBrandFonts,
   paintBackground,
   paintCourtPattern,
-  paintWordmarkHeader,
+  paintCompactHeader,
   paintFooter,
   paintSlideIndicator,
   downloadCanvasPng,
@@ -170,13 +170,13 @@ export default function PlayerCarouselGenerator() {
 
     paintBackground(ctx, WIDTH, HEIGHT);
     await paintCourtPattern(ctx, WIDTH, HEIGHT, 0.08);
-    paintWordmarkHeader(ctx, contextLabel, WIDTH);
+    paintCompactHeader(ctx, "JOUEUR À SUIVRE", contextLabel, WIDTH);
     paintSlideIndicator(ctx, 0, SLIDE_COUNT, WIDTH);
 
     // Monogramme
     const cx = WIDTH / 2;
-    const cy = 480;
-    const radius = 170;
+    const cy = 420;
+    const radius = 130;
     const grad = ctx.createLinearGradient(cx - radius, cy - radius, cx + radius, cy + radius);
     grad.addColorStop(0, "rgba(255,107,0,0.25)");
     grad.addColorStop(1, "rgba(255,214,10,0.12)");
@@ -185,33 +185,33 @@ export default function PlayerCarouselGenerator() {
     ctx.fillStyle = grad;
     ctx.fill();
     ctx.strokeStyle = "rgba(255,214,10,0.5)";
-    ctx.lineWidth = 3;
+    ctx.lineWidth = 2.5;
     ctx.stroke();
 
     ctx.fillStyle = COLORS.white;
-    ctx.font = "900 130px Anton, sans-serif";
+    ctx.font = "900 96px Anton, sans-serif";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    ctx.fillText(initials(player.player_name), cx, cy + 10);
+    ctx.fillText(initials(player.player_name), cx, cy + 8);
 
     ctx.textBaseline = "alphabetic";
     ctx.fillStyle = "rgba(255,255,255,0.5)";
-    ctx.font = "600 26px Montserrat, sans-serif";
-    ctx.fillText((player.team_name ?? "").toUpperCase(), cx, cy + radius + 70);
+    ctx.font = "600 20px Montserrat, sans-serif";
+    ctx.fillText((player.team_name ?? "").toUpperCase(), cx, cy + radius + 56);
 
     ctx.fillStyle = COLORS.white;
-    ctx.font = "900 76px Anton, sans-serif";
-    wrapCenteredText(ctx, player.player_name.toUpperCase(), cx, cy + radius + 130, WIDTH - PADDING * 2, 78);
+    ctx.font = "900 58px Anton, sans-serif";
+    wrapCenteredText(ctx, player.player_name.toUpperCase(), cx, cy + radius + 105, WIDTH - PADDING * 2, 60);
 
     // Stat phare (PIR)
-    const badgeY = HEIGHT - 260;
+    const badgeY = HEIGHT - 300;
     ctx.fillStyle = COLORS.gold;
-    ctx.font = "900 200px Anton, sans-serif";
+    ctx.font = "900 150px Anton, sans-serif";
     ctx.fillText(player.pir != null ? Number(player.pir).toFixed(1) : "-", cx, badgeY);
 
     ctx.fillStyle = COLORS.orange;
-    ctx.font = "800 32px Montserrat, sans-serif";
-    ctx.fillText("RATING D'IMPACT (PIR)", cx, badgeY + 50);
+    ctx.font = "800 24px Montserrat, sans-serif";
+    ctx.fillText("RATING D'IMPACT (PIR)", cx, badgeY + 40);
 
     paintFooter(ctx, WIDTH, HEIGHT);
   }
@@ -228,32 +228,28 @@ export default function PlayerCarouselGenerator() {
 
     paintBackground(ctx, WIDTH, HEIGHT);
     await paintCourtPattern(ctx, WIDTH, HEIGHT);
-    paintWordmarkHeader(ctx, contextLabel, WIDTH);
+    paintCompactHeader(ctx, "PROFIL STATISTIQUE", contextLabel, WIDTH);
     paintSlideIndicator(ctx, 1, SLIDE_COUNT, WIDTH);
 
     ctx.textBaseline = "alphabetic";
-    ctx.fillStyle = COLORS.gold;
-    ctx.font = "900 34px Anton, sans-serif";
-    ctx.textAlign = "left";
-    ctx.fillText("PROFIL STATISTIQUE", PADDING, 175);
-
     ctx.fillStyle = COLORS.white;
-    ctx.font = "900 56px Anton, sans-serif";
-    ctx.fillText(player.player_name.toUpperCase(), PADDING, 230);
+    ctx.font = "900 40px Anton, sans-serif";
+    ctx.textAlign = "left";
+    ctx.fillText(player.player_name.toUpperCase(), PADDING, 105);
 
     ctx.strokeStyle = "rgba(255,255,255,0.15)";
-    ctx.lineWidth = 2;
+    ctx.lineWidth = 1.5;
     ctx.beginPath();
-    ctx.moveTo(PADDING, 260);
-    ctx.lineTo(WIDTH - PADDING, 260);
+    ctx.moveTo(PADDING, 128);
+    ctx.lineTo(WIDTH - PADDING, 128);
     ctx.stroke();
 
     // Grille de stats 2 colonnes
     const cols = 2;
-    const gap = 24;
+    const gap = 18;
     const cardW = (WIDTH - PADDING * 2 - gap) / cols;
-    const cardH = 190;
-    const startY = 310;
+    const cardH = 140;
+    const startY = 160;
 
     STAT_GRID.forEach((stat, i) => {
       const col = i % cols;
@@ -264,7 +260,7 @@ export default function PlayerCarouselGenerator() {
       ctx.fillStyle = "rgba(255,255,255,0.04)";
       ctx.strokeStyle = "rgba(255,255,255,0.1)";
       ctx.lineWidth = 1;
-      roundRect(ctx, x, y, cardW, cardH, 16);
+      roundRect(ctx, x, y, cardW, cardH, 14);
       ctx.fill();
       ctx.stroke();
 
@@ -272,18 +268,18 @@ export default function PlayerCarouselGenerator() {
       const val = raw != null ? Number(raw).toFixed(1) : "-";
 
       ctx.fillStyle = COLORS.orange;
-      ctx.font = "900 68px Anton, sans-serif";
+      ctx.font = "900 48px Anton, sans-serif";
       ctx.textAlign = "left";
-      ctx.fillText(val, x + 28, y + 100);
+      ctx.fillText(val, x + 22, y + 74);
 
       ctx.fillStyle = "rgba(255,255,255,0.55)";
-      ctx.font = "700 20px Montserrat, sans-serif";
-      ctx.fillText(stat.label, x + 28, y + 140);
+      ctx.font = "700 15px Montserrat, sans-serif";
+      ctx.fillText(stat.label, x + 22, y + 104);
     });
 
-    const gpY = startY + Math.ceil(STAT_GRID.length / cols) * (cardH + gap) + 30;
+    const gpY = startY + Math.ceil(STAT_GRID.length / cols) * (cardH + gap) + 26;
     ctx.fillStyle = "rgba(255,255,255,0.4)";
-    ctx.font = "600 22px Montserrat, sans-serif";
+    ctx.font = "600 18px Montserrat, sans-serif";
     ctx.textAlign = "center";
     ctx.fillText(
       `${player.games_played ?? "-"} match${(player.games_played ?? 0) > 1 ? "s" : ""} joué${(player.games_played ?? 0) > 1 ? "s" : ""}`,
@@ -307,18 +303,18 @@ export default function PlayerCarouselGenerator() {
 
     paintBackground(ctx, WIDTH, HEIGHT);
     await paintCourtPattern(ctx, WIDTH, HEIGHT);
-    paintWordmarkHeader(ctx, contextLabel, WIDTH);
+    paintCompactHeader(ctx, "VS MOYENNE LIGUE", contextLabel, WIDTH);
     paintSlideIndicator(ctx, 2, SLIDE_COUNT, WIDTH);
 
     ctx.textBaseline = "alphabetic";
-    ctx.fillStyle = COLORS.gold;
-    ctx.font = "900 34px Anton, sans-serif";
+    ctx.fillStyle = COLORS.white;
+    ctx.font = "900 32px Anton, sans-serif";
     ctx.textAlign = "left";
-    ctx.fillText("LUI VS LA MOYENNE LIGUE", PADDING, 175);
+    ctx.fillText("LUI VS LA MOYENNE LIGUE", PADDING, 100);
 
-    ctx.fillStyle = "rgba(255,255,255,0.45)";
-    ctx.font = "600 22px Montserrat, sans-serif";
-    ctx.fillText(`Comparé aux ${players.length} joueurs de la ligue`, PADDING, 205);
+    ctx.fillStyle = "rgba(255,255,255,0.4)";
+    ctx.font = "600 17px Montserrat, sans-serif";
+    ctx.fillText(`Comparé aux ${players.length} joueurs de la ligue`, PADDING, 124);
 
     const rows = PROFILE_STATS.map((stat) => {
       const value = Number(player[stat.key] ?? 0);
@@ -328,57 +324,57 @@ export default function PlayerCarouselGenerator() {
     });
 
     const maxVal = Math.max(...rows.map((r) => Math.max(r.value, r.avg)), 1);
-    const barAreaX = PADDING + 230;
-    const barAreaW = WIDTH - PADDING - barAreaX - 130;
-    const rowH = 168;
-    const startY = 260;
+    const barAreaX = PADDING + 160;
+    const barAreaW = WIDTH - PADDING - barAreaX - 110;
+    const rowH = 128;
+    const startY = 165;
 
     rows.forEach((r, i) => {
       const y = startY + i * rowH;
       const isAbove = r.diffPct >= 0;
 
       ctx.fillStyle = COLORS.white;
-      ctx.font = "800 26px Montserrat, sans-serif";
+      ctx.font = "800 19px Montserrat, sans-serif";
       ctx.textAlign = "left";
       ctx.textBaseline = "alphabetic";
-      ctx.fillText(r.label, PADDING, y + 22);
+      ctx.fillText(r.label, PADDING, y + 17);
 
       // Barre "moyenne ligue" (fond)
       const avgW = (r.avg / maxVal) * barAreaW;
       ctx.fillStyle = "rgba(255,255,255,0.12)";
-      roundRect(ctx, barAreaX, y, barAreaW, 26, 13);
+      roundRect(ctx, barAreaX, y, barAreaW, 20, 10);
       ctx.fill();
 
       ctx.strokeStyle = "rgba(255,255,255,0.5)";
-      ctx.lineWidth = 3;
+      ctx.lineWidth = 2.5;
       ctx.beginPath();
-      ctx.moveTo(barAreaX + avgW, y - 6);
-      ctx.lineTo(barAreaX + avgW, y + 32);
+      ctx.moveTo(barAreaX + avgW, y - 4);
+      ctx.lineTo(barAreaX + avgW, y + 24);
       ctx.stroke();
 
       // Barre joueur (au-dessus)
       const valW = (r.value / maxVal) * barAreaW;
       ctx.fillStyle = isAbove ? COLORS.orange : "rgba(255,90,90,0.85)";
-      roundRect(ctx, barAreaX, y + 38, Math.max(valW, 6), 26, 13);
+      roundRect(ctx, barAreaX, y + 28, Math.max(valW, 5), 20, 10);
       ctx.fill();
 
       // Valeurs
       ctx.fillStyle = COLORS.white;
-      ctx.font = "900 26px Anton, sans-serif";
+      ctx.font = "900 20px Anton, sans-serif";
       ctx.textAlign = "left";
-      ctx.fillText(r.value.toFixed(1), barAreaX + barAreaW + 16, y + 60);
+      ctx.fillText(r.value.toFixed(1), barAreaX + barAreaW + 14, y + 45);
 
       ctx.fillStyle = isAbove ? COLORS.gold : "rgba(255,120,120,0.9)";
-      ctx.font = "800 20px Montserrat, sans-serif";
-      ctx.fillText(`${isAbove ? "+" : ""}${r.diffPct}%`, barAreaX + barAreaW + 16, y + 84);
+      ctx.font = "800 15px Montserrat, sans-serif";
+      ctx.fillText(`${isAbove ? "+" : ""}${r.diffPct}%`, barAreaX + barAreaW + 14, y + 62);
 
       ctx.fillStyle = "rgba(255,255,255,0.35)";
-      ctx.font = "600 16px Montserrat, sans-serif";
-      ctx.fillText(`moy. ${r.avg.toFixed(1)}`, barAreaX, y + 118);
+      ctx.font = "600 13px Montserrat, sans-serif";
+      ctx.fillText(`moy. ${r.avg.toFixed(1)}`, barAreaX, y + 88);
     });
 
     ctx.fillStyle = "rgba(255,255,255,0.4)";
-    ctx.font = "600 18px Montserrat, sans-serif";
+    ctx.font = "600 15px Montserrat, sans-serif";
     ctx.textAlign = "left";
     ctx.fillText("│ = moyenne de la ligue", PADDING, HEIGHT - 90);
 
@@ -399,23 +395,23 @@ export default function PlayerCarouselGenerator() {
 
     paintBackground(ctx, WIDTH, HEIGHT);
     await paintCourtPattern(ctx, WIDTH, HEIGHT, 0.08);
-    paintWordmarkHeader(ctx, contextLabel, WIDTH);
+    paintCompactHeader(ctx, "PROFIL DE JOUEUR", contextLabel, WIDTH);
     paintSlideIndicator(ctx, 3, SLIDE_COUNT, WIDTH);
 
     ctx.textBaseline = "alphabetic";
-    ctx.fillStyle = COLORS.gold;
-    ctx.font = "900 34px Anton, sans-serif";
+    ctx.fillStyle = COLORS.white;
+    ctx.font = "900 32px Anton, sans-serif";
     ctx.textAlign = "left";
-    ctx.fillText("PROFIL DE JOUEUR", PADDING, 175);
+    ctx.fillText(player.player_name.toUpperCase(), PADDING, 100);
 
-    ctx.fillStyle = "rgba(255,255,255,0.45)";
-    ctx.font = "600 22px Montserrat, sans-serif";
-    ctx.fillText("Forces et faiblesses relatives", PADDING, 205);
+    ctx.fillStyle = "rgba(255,255,255,0.4)";
+    ctx.font = "600 17px Montserrat, sans-serif";
+    ctx.fillText("Forces et faiblesses relatives", PADDING, 124);
 
     const n = PROFILE_STATS.length;
     const cx = WIDTH / 2;
-    const cy = 560;
-    const maxR = 300;
+    const cy = 520;
+    const maxR = 260;
     const angleFor = (i: number) => -Math.PI / 2 + (i * 2 * Math.PI) / n;
 
     // Grille (anneaux à 25/50/75/100%)
@@ -491,18 +487,18 @@ export default function PlayerCarouselGenerator() {
       ctx.fillStyle = COLORS.gold;
       ctx.fill();
 
-      const labelR = maxR + 56;
+      const labelR = maxR + 46;
       const lx = cx + labelR * Math.cos(a);
       const ly = cy + labelR * Math.sin(a);
       ctx.fillStyle = COLORS.white;
-      ctx.font = "800 22px Montserrat, sans-serif";
+      ctx.font = "800 17px Montserrat, sans-serif";
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
-      ctx.fillText(s.short, lx, ly - 8);
+      ctx.fillText(s.short, lx, ly - 7);
 
       ctx.fillStyle = "rgba(255,255,255,0.45)";
-      ctx.font = "600 16px Montserrat, sans-serif";
-      ctx.fillText(`${pct}e percentile`, lx, ly + 14);
+      ctx.font = "600 13px Montserrat, sans-serif";
+      ctx.fillText(`${pct}e percentile`, lx, ly + 11);
     });
 
     // Callouts force / faiblesse
@@ -510,24 +506,24 @@ export default function PlayerCarouselGenerator() {
     const strength = sorted[0];
     const weakness = sorted[sorted.length - 1];
 
-    const calloutY = HEIGHT - 200;
+    const calloutY = HEIGHT - 190;
     ctx.textBaseline = "alphabetic";
 
     ctx.textAlign = "left";
     ctx.fillStyle = COLORS.gold;
-    ctx.font = "900 24px Anton, sans-serif";
+    ctx.font = "900 19px Anton, sans-serif";
     ctx.fillText("POINT FORT", PADDING, calloutY);
     ctx.fillStyle = COLORS.white;
-    ctx.font = "700 22px Montserrat, sans-serif";
-    ctx.fillText(`${strength.label} (${strength.pct}e percentile)`, PADDING, calloutY + 30);
+    ctx.font = "700 18px Montserrat, sans-serif";
+    ctx.fillText(`${strength.label} (${strength.pct}e percentile)`, PADDING, calloutY + 26);
 
     ctx.textAlign = "right";
     ctx.fillStyle = "rgba(255,120,120,0.9)";
-    ctx.font = "900 24px Anton, sans-serif";
+    ctx.font = "900 19px Anton, sans-serif";
     ctx.fillText("À TRAVAILLER", WIDTH - PADDING, calloutY);
     ctx.fillStyle = COLORS.white;
-    ctx.font = "700 22px Montserrat, sans-serif";
-    ctx.fillText(`${weakness.label} (${weakness.pct}e percentile)`, WIDTH - PADDING, calloutY + 30);
+    ctx.font = "700 18px Montserrat, sans-serif";
+    ctx.fillText(`${weakness.label} (${weakness.pct}e percentile)`, WIDTH - PADDING, calloutY + 26);
 
     paintFooter(ctx, WIDTH, HEIGHT);
   }
@@ -544,38 +540,34 @@ export default function PlayerCarouselGenerator() {
 
     paintBackground(ctx, WIDTH, HEIGHT);
     await paintCourtPattern(ctx, WIDTH, HEIGHT, 0.08);
-    paintWordmarkHeader(ctx, contextLabel, WIDTH);
+    paintCompactHeader(ctx, "À SUIVRE", contextLabel, WIDTH);
     paintSlideIndicator(ctx, 4, SLIDE_COUNT, WIDTH);
 
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
 
-    ctx.fillStyle = COLORS.gold;
-    ctx.font = "900 40px Anton, sans-serif";
-    ctx.fillText("À SUIVRE", WIDTH / 2, HEIGHT / 2 - 220);
-
     ctx.fillStyle = COLORS.white;
-    ctx.font = "900 90px Anton, sans-serif";
-    wrapCenteredText(ctx, player.player_name.toUpperCase(), WIDTH / 2, HEIGHT / 2 - 120, WIDTH - PADDING * 2, 96);
+    ctx.font = "900 64px Anton, sans-serif";
+    wrapCenteredText(ctx, player.player_name.toUpperCase(), WIDTH / 2, HEIGHT / 2 - 90, WIDTH - PADDING * 2, 68);
 
     ctx.fillStyle = "rgba(255,255,255,0.55)";
-    ctx.font = "600 26px Montserrat, sans-serif";
-    ctx.fillText((player.team_name ?? "").toUpperCase(), WIDTH / 2, HEIGHT / 2 - 20);
+    ctx.font = "600 20px Montserrat, sans-serif";
+    ctx.fillText((player.team_name ?? "").toUpperCase(), WIDTH / 2, HEIGHT / 2 - 10);
 
     ctx.strokeStyle = "rgba(255,214,10,0.4)";
-    ctx.lineWidth = 2;
+    ctx.lineWidth = 1.5;
     ctx.beginPath();
-    ctx.moveTo(WIDTH / 2 - 80, HEIGHT / 2 + 30);
-    ctx.lineTo(WIDTH / 2 + 80, HEIGHT / 2 + 30);
+    ctx.moveTo(WIDTH / 2 - 70, HEIGHT / 2 + 26);
+    ctx.lineTo(WIDTH / 2 + 70, HEIGHT / 2 + 26);
     ctx.stroke();
 
     ctx.fillStyle = COLORS.orange;
-    ctx.font = "800 30px Montserrat, sans-serif";
-    ctx.fillText("PLUS D'ANALYSES SUR", WIDTH / 2, HEIGHT / 2 + 90);
+    ctx.font = "800 22px Montserrat, sans-serif";
+    ctx.fillText("PLUS D'ANALYSES SUR", WIDTH / 2, HEIGHT / 2 + 76);
 
     ctx.fillStyle = COLORS.white;
-    ctx.font = "900 52px Anton, sans-serif";
-    ctx.fillText("@BALLSOHARDX2", WIDTH / 2, HEIGHT / 2 + 150);
+    ctx.font = "900 40px Anton, sans-serif";
+    ctx.fillText("@BALLSOHARDX2", WIDTH / 2, HEIGHT / 2 + 126);
 
     paintFooter(ctx, WIDTH, HEIGHT);
   }

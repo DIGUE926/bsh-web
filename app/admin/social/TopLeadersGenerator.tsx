@@ -10,6 +10,7 @@ import {
   loadBrandFonts,
   paintBackground,
   paintCourtPattern,
+  paintCompactHeader,
   paintFooter,
   downloadCanvasPng,
 } from "@/lib/socialCanvas";
@@ -118,34 +119,12 @@ export default function TopLeadersGenerator() {
 
     const competitionLabel = competition === "season" ? "SAISON RÉGULIÈRE" : "PLAYOFFS";
 
-    // Kicker en haut à gauche
-    ctx.textBaseline = "alphabetic";
-    ctx.fillStyle = COLORS.orange;
-    ctx.font = "800 22px Montserrat, sans-serif";
-    ctx.textAlign = "left";
-    ctx.fillText(`CLASSEMENT ${competitionLabel}`, PADDING, 52);
-
-    // Contexte + petit badge rond en haut à droite
-    ctx.fillStyle = "rgba(255,255,255,0.45)";
-    ctx.font = "600 20px Montserrat, sans-serif";
-    ctx.textAlign = "right";
-    ctx.fillText(`${leagueSlug.toUpperCase()} · ${competitionLabel}`, WIDTH - PADDING - 56, 48);
-
-    const badgeCx = WIDTH - PADDING - 24;
-    const badgeCy = 40;
-    ctx.beginPath();
-    ctx.arc(badgeCx, badgeCy, 22, 0, Math.PI * 2);
-    ctx.fillStyle = "rgba(255,255,255,0.06)";
-    ctx.fill();
-    ctx.strokeStyle = "rgba(255,255,255,0.2)";
-    ctx.lineWidth = 1.5;
-    ctx.stroke();
-    ctx.fillStyle = COLORS.orange;
-    ctx.font = "900 16px Anton, sans-serif";
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.fillText("BSH", badgeCx, badgeCy + 1);
-    ctx.textBaseline = "alphabetic";
+    paintCompactHeader(
+      ctx,
+      `CLASSEMENT ${competitionLabel}`,
+      `${leagueSlug.toUpperCase()} · ${competitionLabel}`,
+      WIDTH
+    );
 
     // Titre
     ctx.fillStyle = COLORS.orange;
