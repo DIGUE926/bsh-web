@@ -64,7 +64,7 @@ export default async function Home() {
     )
     .eq("status", "scheduled")
     .order("game_date", { ascending: true })
-    .limit(5);
+    .limit(1);
 
   const { data: recentPlayoffGames } = await supabase
     .from("playoff_games")
@@ -131,7 +131,7 @@ export default async function Home() {
 
   const combinedResults = [...seasonResults, ...playoffResults]
     .sort((a, b) => b.game_date.localeCompare(a.game_date))
-    .slice(0, 5);
+    .slice(0, 1);
 
   // Match du jour (fuseau Haïti) parmi les matchs playoffs
   const todayStr = new Date().toLocaleDateString("en-CA", {
