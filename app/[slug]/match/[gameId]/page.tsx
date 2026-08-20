@@ -148,7 +148,9 @@ export default async function MatchDetailPage({
       <Breadcrumb
         items={[
           { label: league?.name ?? "Ligue", href: `/${slug}` },
-          { label: "Matchs", href: `/${slug}/matchs` },
+          ...(slug !== "ahbb"
+            ? [{ label: "Matchs", href: `/${slug}/matchs` }]
+            : []),
           { label: `${homeTeam.name} vs ${awayTeam.name}` },
         ]}
       />

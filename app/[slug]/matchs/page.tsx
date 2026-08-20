@@ -21,6 +21,7 @@ export default async function MatchsPage({
     .single();
 
   if (!league) notFound();
+  if (league.slug === "ahbb") notFound();
 
   const { data: games } = await supabase
     .from("games")

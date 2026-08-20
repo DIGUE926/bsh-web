@@ -68,9 +68,11 @@ export default async function LeaguePage({
       </div>
       <div className="flex gap-4 text-sm text-white/50 mb-6">
         <span className="text-bsh-gold font-semibold">Équipes</span>
-        <Link href={`/${slug}/matchs`} className="hover:text-bsh-orange">
-          Matchs
-        </Link>
+        {slug !== "ahbb" && (
+          <Link href={`/${slug}/matchs`} className="hover:text-bsh-orange">
+            Matchs
+          </Link>
+        )}
         {slug !== "ahbb" && (
           <Link href={`/${slug}/classement`} className="hover:text-bsh-orange">
             Classement
