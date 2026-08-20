@@ -189,10 +189,8 @@ export default function PlayerCarouselGenerator() {
     ctx.lineTo(WIDTH - PADDING, dividerY);
     ctx.stroke();
 
-    // Accroche qualitative — aucun chiffre ici, c'est le rôle des slides suivantes.
-    const topStat = PROFILE_STATS.map((s) => ({ ...s, pct: percentile(s.key, player[s.key]) })).sort(
-      (a, b) => b.pct - a.pct
-    )[0];
+    // Accroche — met en avant le PPG, chiffre le plus parlant pour capter l'attention.
+    const ppgValue = player.ppg != null ? Number(player.ppg).toFixed(1) : null;
 
     const hookY = dividerY + 60;
     ctx.textAlign = "left";
@@ -201,10 +199,9 @@ export default function PlayerCarouselGenerator() {
     ctx.fillText("│", PADDING, hookY);
     ctx.fillStyle = "rgba(255,255,255,0.8)";
     ctx.font = "500 24px Montserrat, sans-serif";
-    const hookText =
-      topStat.pct >= 70
-        ? `Un des profils qui se distingue le plus en ${topStat.label.toLowerCase()} cette saison.`
-        : `Zoom sur un joueur qui pèse dans le jeu de ${(player.team_name ?? "son équipe").toUpperCase()}.`;
+    const hookText = ppgValue
+      ? `${ppgValue} points de moyenne cette saison — un profil qui capte l'œil.`
+      : `Zoom sur un joueur qui pèse dans le jeu de ${(player.team_name ?? "son équipe").toUpperCase()}.`;
     const hookLines = wrapLines(ctx, hookText, WIDTH - PADDING * 2 - 24);
     let hy = hookY;
     hookLines.forEach((line) => {
@@ -502,15 +499,19 @@ export default function PlayerCarouselGenerator() {
       ctx.textBaseline = "middle";
       ctx.fillText(s.short, lx, ly - 7);
 
+      const val = player[s.key];
       ctx.fillStyle = "rgba(255,255,255,0.45)";
       ctx.font = "600 13px Montserrat, sans-serif";
-      ctx.fillText(`${pct}e percentile`, lx, ly + 11);
+      ctx.fillText(val != null ? Number(val).toFixed(1) : "-", lx, ly + 11);
     });
 
-    // Callouts force / faiblesse
-    const sorted = PROFILE_STATS.map((s, i) => ({ ...s, pct: pcts[i] })).sort((a, b) => b.pct - a.pct);
+    // Callouts force / faiblesse — on parle en valeur brute (ex: PPG), pas en percentile
+    const sorted = PROFILE_STATS.map((s, i) => ({ ...s, pct: pcts[i], val: player[s.key] })).sort(
+      (a, b) => b.pct - a.pct
+    );
     const strength = sorted[0];
     const weakness = sorted[sorted.length - 1];
+    const fmt = (v: number | null) => (v != null ? Number(v).toFixed(1) : "-");
 
     const calloutY = HEIGHT - 190;
     ctx.textBaseline = "alphabetic";
@@ -521,7 +522,7 @@ export default function PlayerCarouselGenerator() {
     ctx.fillText("POINT FORT", PADDING, calloutY);
     ctx.fillStyle = COLORS.white;
     ctx.font = "700 18px Montserrat, sans-serif";
-    ctx.fillText(`${strength.label} (${strength.pct}e percentile)`, PADDING, calloutY + 26);
+    ctx.fillText(`${strength.label} — ${fmt(strength.val)}`, PADDING, calloutY + 26);
 
     ctx.textAlign = "right";
     ctx.fillStyle = "rgba(255,120,120,0.9)";
@@ -529,7 +530,7 @@ export default function PlayerCarouselGenerator() {
     ctx.fillText("À TRAVAILLER", WIDTH - PADDING, calloutY);
     ctx.fillStyle = COLORS.white;
     ctx.font = "700 18px Montserrat, sans-serif";
-    ctx.fillText(`${weakness.label} (${weakness.pct}e percentile)`, WIDTH - PADDING, calloutY + 26);
+    ctx.fillText(`${weakness.label} — ${fmt(weakness.val)}`, WIDTH - PADDING, calloutY + 26);
 
     paintFooter(ctx, WIDTH, HEIGHT);
   }
@@ -573,18 +574,14 @@ export default function PlayerCarouselGenerator() {
     ctx.lineTo(WIDTH - PADDING, dividerY);
     ctx.stroke();
 
-    // Ligne de résumé
-    const sortedRecap = PROFILE_STATS.map((s) => ({
-      ...s,
-      pct: percentile(s.key, player[s.key]),
-    })).sort((a, b) => b.pct - a.pct);
-    const bestRecap = sortedRecap[0];
+    // Ligne de résumé — en chiffres parlants (PPG/REB/AST), pas en PIR ni percentile
+    const ppg = player.ppg != null ? Number(player.ppg).toFixed(1) : "-";
+    const rpg = player.rpg != null ? Number(player.rpg).toFixed(1) : "-";
+    const apg = player.apg != null ? Number(player.apg).toFixed(1) : "-";
 
     ctx.fillStyle = "rgba(255,255,255,0.7)";
     ctx.font = "500 20px Montserrat, sans-serif";
-    const recapText = `Point fort de la saison : ${bestRecap.label.toLowerCase()} (${bestRecap.pct}e percentile de la ligue). PIR de ${
-      player.pir != null ? Number(player.pir).toFixed(1) : "-"
-    }.`;
+    const recapText = `Cette saison : ${ppg} points, ${rpg} rebonds et ${apg} passes de moyenne par match.`;
     const recapLines = wrapLines(ctx, recapText, WIDTH - PADDING * 2);
     let ry = dividerY + 40;
     recapLines.forEach((line) => {
