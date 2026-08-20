@@ -6,8 +6,11 @@ import { createClient } from "@/lib/supabase/client";
 
 type Team = { id: string; name: string; league_id: string };
 type Player = { id: string; name: string; jersey_number: number | null };
+type League = { id: string; name: string; slug: string };
 
 export default function DemarrerMatchForm() {
+  const [leagues, setLeagues] = useState<League[]>([]);
+  const [leagueId, setLeagueId] = useState("");
   const [teams, setTeams] = useState<Team[]>([]);
   const [homeTeamId, setHomeTeamId] = useState("");
   const [awayTeamId, setAwayTeamId] = useState("");
@@ -21,6 +24,20 @@ export default function DemarrerMatchForm() {
   const supabase = createClient();
 
   useEffect(() => {
+    async function loadLeagues() {
+      const { data } = await supabase
+        .from("leagues")
+        .select("id, name, slug")
+        .order("name");
+      if (data) {
+        setLeagues(data);
+        if (data.length > 0) setLeagueId(data[0].id);
+      }
+    }
+    loadLeagues();
+  }, [supabase]);
+
+  useEffect(() => {
     async function loadTeams() {
       const { data } = await supabase
         .from("teams")
@@ -30,6 +47,14 @@ export default function DemarrerMatchForm() {
     }
     loadTeams();
   }, [supabase]);
+
+  const leagueTeams = teams.filter((t) => t.league_id === leagueId);
+
+  function handleLeagueChange(id: string) {
+    setLeagueId(id);
+    setHomeTeamId("");
+    setAwayTeamId("");
+  }
 
   useEffect(() => {
     if (!homeTeamId) {
@@ -196,6 +221,28 @@ export default function DemarrerMatchForm() {
         Choisis les deux équipes, sélectionne les titulaires, et tu passes directement en saisie live.
       </p>
 
+      {leagues.length > 0 && (
+        <div className="mb-4 max-w-xl">
+          <label className="block text-sm text-white/60 mb-1.5">Ligue</label>
+          <div className="flex gap-1.5">
+            {leagues.map((l) => (
+              <button
+                key={l.id}
+                type="button"
+                onClick={() => handleLeagueChange(l.id)}
+                className={`px-3 py-1.5 rounded-full text-sm font-semibold transition-colors ${
+                  leagueId === l.id
+                    ? "bg-bsh-orange text-black"
+                    : "bg-white/5 text-white/60 hover:text-bsh-orange"
+                }`}
+              >
+                {l.slug.toUpperCase()}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
       <div className="grid grid-cols-2 gap-4 mb-6 max-w-xl">
         <div>
           <label className="block text-sm text-white/60 mb-1">Équipe à domicile</label>
@@ -205,7 +252,7 @@ export default function DemarrerMatchForm() {
             className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 focus:border-bsh-orange outline-none"
           >
             <option value="">Sélectionner...</option>
-            {teams.map((t) => (
+            {leagueTeams.map((t) => (
               <option key={t.id} value={t.id}>
                 {t.name}
               </option>
@@ -220,7 +267,7 @@ export default function DemarrerMatchForm() {
             className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 focus:border-bsh-orange outline-none"
           >
             <option value="">Sélectionner...</option>
-            {teams.map((t) => (
+            {leagueTeams.map((t) => (
               <option key={t.id} value={t.id}>
                 {t.name}
               </option>

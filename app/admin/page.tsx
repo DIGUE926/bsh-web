@@ -13,7 +13,9 @@ export default async function AdminDashboard() {
 
   const { data: games } = await supabase
     .from("games")
-    .select("*, home_team:home_team_id(name), away_team:away_team_id(name)")
+    .select(
+      "*, home_team:home_team_id(name), away_team:away_team_id(name), league:league_id(slug)"
+    )
     .order("game_date", { ascending: false })
     .limit(20);
 
@@ -50,10 +52,17 @@ export default async function AdminDashboard() {
             />
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
               <div className="min-w-0">
-                <p className="font-semibold text-sm sm:text-base truncate">
-                  {game.home_team?.name ?? "?"} vs{" "}
-                  {game.away_team?.name ?? "?"}
-                </p>
+                <div className="flex items-center gap-2 mb-0.5">
+                  {game.league?.slug && (
+                    <span className="shrink-0 text-[10px] font-bold uppercase tracking-wide text-bsh-orange bg-bsh-orange/10 rounded px-1.5 py-0.5">
+                      {game.league.slug}
+                    </span>
+                  )}
+                  <p className="font-semibold text-sm sm:text-base truncate">
+                    {game.home_team?.name ?? "?"} vs{" "}
+                    {game.away_team?.name ?? "?"}
+                  </p>
+                </div>
                 <p className="text-xs sm:text-sm text-white/50">
                   {game.game_date} · {game.phase ?? "Saison régulière"}
                 </p>

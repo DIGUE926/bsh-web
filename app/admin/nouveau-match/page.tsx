@@ -4,9 +4,12 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
-type Team = { id: string; name: string };
+type Team = { id: string; name: string; league_id: string };
+type League = { id: string; name: string; slug: string };
 
 export default function NouveauMatchPage() {
+  const [leagues, setLeagues] = useState<League[]>([]);
+  const [leagueId, setLeagueId] = useState("");
   const [teams, setTeams] = useState<Team[]>([]);
   const [homeTeam, setHomeTeam] = useState("");
   const [awayTeam, setAwayTeam] = useState("");
@@ -19,15 +22,37 @@ export default function NouveauMatchPage() {
   const supabase = createClient();
 
   useEffect(() => {
+    async function loadLeagues() {
+      const { data } = await supabase
+        .from("leagues")
+        .select("id, name, slug")
+        .order("name");
+      if (data) {
+        setLeagues(data);
+        if (data.length > 0) setLeagueId(data[0].id);
+      }
+    }
+    loadLeagues();
+  }, [supabase]);
+
+  useEffect(() => {
     async function loadTeams() {
       const { data } = await supabase
         .from("teams")
-        .select("id, name")
+        .select("id, name, league_id")
         .order("name");
       if (data) setTeams(data);
     }
     loadTeams();
   }, [supabase]);
+
+  const leagueTeams = teams.filter((t) => t.league_id === leagueId);
+
+  function handleLeagueChange(id: string) {
+    setLeagueId(id);
+    setHomeTeam("");
+    setAwayTeam("");
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -74,6 +99,29 @@ export default function NouveauMatchPage() {
       <h1 className="font-display text-xl text-bsh-orange mb-4 tracking-wide">
         NOUVEAU MATCH
       </h1>
+
+      {leagues.length > 0 && (
+        <div className="mb-4 max-w-md">
+          <label className="block text-sm text-white/60 mb-1.5">Ligue</label>
+          <div className="flex gap-1.5">
+            {leagues.map((l) => (
+              <button
+                key={l.id}
+                type="button"
+                onClick={() => handleLeagueChange(l.id)}
+                className={`px-3 py-1.5 rounded-full text-sm font-semibold transition-colors ${
+                  leagueId === l.id
+                    ? "bg-bsh-orange text-black"
+                    : "bg-white/5 text-white/60 hover:text-bsh-orange"
+                }`}
+              >
+                {l.slug.toUpperCase()}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
       <form onSubmit={handleSubmit} className="space-y-4 max-w-md">
         <div>
           <label className="block text-sm text-white/60 mb-1">
@@ -86,7 +134,7 @@ export default function NouveauMatchPage() {
             className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 focus:border-bsh-orange outline-none"
           >
             <option value="">Sélectionner...</option>
-            {teams.map((t) => (
+            {leagueTeams.map((t) => (
               <option key={t.id} value={t.id}>
                 {t.name}
               </option>
@@ -105,7 +153,7 @@ export default function NouveauMatchPage() {
             className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 focus:border-bsh-orange outline-none"
           >
             <option value="">Sélectionner...</option>
-            {teams.map((t) => (
+            {leagueTeams.map((t) => (
               <option key={t.id} value={t.id}>
                 {t.name}
               </option>
