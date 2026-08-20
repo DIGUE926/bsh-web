@@ -61,9 +61,11 @@ export default async function ArchivesPage({
           Matchs
         </Link>
         <span className="text-bsh-gold font-semibold">Archives</span>
-        <Link href={`/${slug}/classement`} className="hover:text-bsh-orange">
-          Classement
-        </Link>
+        {slug !== "ahbb" && (
+          <Link href={`/${slug}/classement`} className="hover:text-bsh-orange">
+            Classement
+          </Link>
+        )}
       </div>
 
       <ArchivesSeasonPicker

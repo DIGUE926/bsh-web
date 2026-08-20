@@ -28,6 +28,7 @@ export default async function LeagueClassementPage({
     .single();
 
   if (!league) notFound();
+  if (league.slug === "ahbb") notFound();
 
   const { data: teams } = await supabase
     .from("teams")

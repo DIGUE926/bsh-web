@@ -137,13 +137,15 @@ export default function NavMenu({ leagues }: { leagues: League[] }) {
                       >
                         Archives
                       </Link>
-                      <Link
-                        href={`/${league.slug}/classement`}
-                        onClick={closeMenu}
-                        className="block px-1.5 py-1 text-[11px] text-white/60 hover:text-bsh-orange rounded"
-                      >
-                        Classement équipes
-                      </Link>
+                      {league.slug !== "ahbb" && (
+                        <Link
+                          href={`/${league.slug}/classement`}
+                          onClick={closeMenu}
+                          className="block px-1.5 py-1 text-[11px] text-white/60 hover:text-bsh-orange rounded"
+                        >
+                          Classement équipes
+                        </Link>
+                      )}
                       <Link
                         href={`/${league.slug}/classement-joueurs`}
                         onClick={closeMenu}

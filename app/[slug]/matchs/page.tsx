@@ -54,9 +54,11 @@ export default async function MatchsPage({
         <Link href={`/${slug}/archives`} className="hover:text-bsh-orange">
           Archives
         </Link>
-        <Link href={`/${slug}/classement`} className="hover:text-bsh-orange">
-          Classement
-        </Link>
+        {slug !== "ahbb" && (
+          <Link href={`/${slug}/classement`} className="hover:text-bsh-orange">
+            Classement
+          </Link>
+        )}
       </div>
 
       <GamesList
