@@ -14,6 +14,7 @@ export type ChangelogEntry = {
 };
 
 export const changelogEntries: ChangelogEntry[] = [
+  { hash: "e535dba", date: "2026-08-20T21:56:19+00:00", title: "feat: texte IA pour Match Recap/Top Leaders, staff équipes, Team Breakdown", details: "- nouvelle route /api/social-copy (généralise carousel-story) : storyline pour Match Recap, insight pour Top Leaders, hook+outro pour Team Breakdown\n- head_coach/assistant_coach sur teams, affiché discrètement sur la page équipe publique, éditable dans le nouvel écran /admin/equipes\n- nouveau générateur social Team Breakdown : carrousel 4 slides (accroche, bilan V-D/PPG, top 3 joueurs, outro)" },
   { hash: "8c0d02c", date: "2026-08-20T16:17:57+00:00", title: "fix: comparateur - autocomplete dès 1 lettre au lieu de 2", details: "résultats triés par ordre alphabétique" },
   { hash: "022150f", date: "2026-08-20T16:13:35+00:00", title: "feat: accueil - seulement le match playoff + % chances de victoire", details: "- retire DERNIERS RÉSULTATS et À VENIR, garde juste le bloc PLAYOFFS\n- barre % chances de victoire sous le match, basée sur le bilan V-D réel en saison régulière" },
   { hash: "771351c", date: "2026-08-20T16:00:25+00:00", title: "fix: masque les matchs playoffs annulés du bracket public", details: "statut cancelled pour un match 3 devenu inutile (série déjà pliée 2-0) au lieu de rester scheduled et traîner en À venir" },
