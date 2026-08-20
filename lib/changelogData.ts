@@ -8,6 +8,8 @@ export type ChangelogEntry = {
 };
 
 export const changelogEntries: ChangelogEntry[] = [
+  { hash: "022150f", date: "2026-08-20T16:13:35+00:00", title: "feat: accueil - seulement le match playoff + % chances de victoire", details: "- retire DERNIERS RÉSULTATS et À VENIR, garde juste le bloc PLAYOFFS\n- barre % chances de victoire sous le match, basée sur le bilan V-D réel en saison régulière" },
+  { hash: "771351c", date: "2026-08-20T16:00:25+00:00", title: "fix: masque les matchs playoffs annulés du bracket public", details: "statut cancelled pour un match 3 devenu inutile (série déjà pliée 2-0) au lieu de rester scheduled et traîner en À venir" },
   { hash: "24cda45", date: "2026-08-20T04:04:29+00:00", title: "feat: génération IA du texte carrousel (accroche/outro)", details: "- bouton Générer le texte (IA) dans le carrousel joueur, appelle Claude via /api/carousel-story\n- texte éditable avant application, garde le template par défaut si laissé vide\n- owner-only\n- besoin de ANTHROPIC_API_KEY sur Vercel, pas encore configurée" },
   { hash: "5415f09", date: "2026-08-20T03:57:29+00:00", title: "feat: recherche joueurs/équipes + comparateur de joueurs public", details: "- Barre de recherche (SearchOverlay) accessible depuis la nav, joueurs\n  et équipes toutes ligues confondues, debounce 250ms.\n- /comparateur : compare deux joueurs côte à côte (radar chart 5 stats\n  + tableau détaillé), sélection via autocomplete." },
   { hash: "f0eda64", date: "2026-08-20T03:40:23+00:00", title: "fix: sitemap - retire les routes ahbb/matchs et ahbb/classement", details: "listées alors qu'elles renvoient 404 depuis le masquage ahbb" },
