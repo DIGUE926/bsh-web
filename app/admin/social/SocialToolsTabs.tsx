@@ -4,13 +4,15 @@ import { useState } from "react";
 import TopLeadersGenerator from "./TopLeadersGenerator";
 import MatchRecapGenerator from "./MatchRecapGenerator";
 import PlayerCarouselGenerator from "./PlayerCarouselGenerator";
+import TeamBreakdownGenerator from "./TeamBreakdownGenerator";
 
-type Tab = "leaders" | "recap" | "carousel";
+type Tab = "leaders" | "recap" | "carousel" | "team";
 
 const TABS: { key: Tab; label: string }[] = [
   { key: "leaders", label: "Top Leaders" },
   { key: "recap", label: "Récap de match" },
   { key: "carousel", label: "Carrousel joueur" },
+  { key: "team", label: "Team Breakdown" },
 ];
 
 export default function SocialToolsTabs() {
@@ -37,6 +39,7 @@ export default function SocialToolsTabs() {
       {tab === "leaders" && <TopLeadersGenerator />}
       {tab === "recap" && <MatchRecapGenerator />}
       {tab === "carousel" && <PlayerCarouselGenerator />}
+      {tab === "team" && <TeamBreakdownGenerator />}
     </div>
   );
 }

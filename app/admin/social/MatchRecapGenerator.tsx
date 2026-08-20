@@ -40,6 +40,9 @@ export default function MatchRecapGenerator() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [ready, setReady] = useState(false);
+  const [aiStoryline, setAiStoryline] = useState("");
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiError, setAiError] = useState<string | null>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const supabase = createClient();
 
@@ -72,6 +75,60 @@ export default function MatchRecapGenerator() {
     }
     loadGames();
   }, [leagueId, supabase]);
+
+  // Le texte IA généré pour un match ne doit jamais se retrouver appliqué
+  // à un autre match sélectionné ensuite.
+  function selectGame(id: string) {
+    setGameId(id);
+    setAiStoryline("");
+    setAiError(null);
+  }
+
+  async function generateAiCopy() {
+    const game = games.find((g) => g.id === gameId);
+    const league = leagues.find((l) => l.id === leagueId);
+    if (!game || !game.home_team || !game.away_team) {
+      setAiError("Sélectionne un match terminé.");
+      return;
+    }
+
+    setAiError(null);
+    setAiLoading(true);
+
+    try {
+      const [homeTop, awayTop] = await Promise.all([
+        topPerformerForTeam(game.id, game.home_team.id),
+        topPerformerForTeam(game.id, game.away_team.id),
+      ]);
+
+      const res = await fetch("/api/social-copy", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          kind: "matchRecap",
+          leagueName: league?.name ?? "",
+          phase: game.phase,
+          homeTeam: game.home_team.name,
+          awayTeam: game.away_team.name,
+          homeScore: game.home_score,
+          awayScore: game.away_score,
+          homeTop,
+          awayTop,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        setAiError(data.error ?? "Échec de la génération.");
+        return;
+      }
+      setAiStoryline(data.storyline ?? "");
+    } catch {
+      setAiError("Impossible de contacter le service de génération.");
+    } finally {
+      setAiLoading(false);
+    }
+  }
 
   async function generate() {
     setError(null);
@@ -156,6 +213,21 @@ export default function MatchRecapGenerator() {
     ctx.textAlign = "left";
     ctx.textBaseline = "alphabetic";
     ctx.fillText(dateLabel.toUpperCase(), PADDING, 90);
+
+    // Accroche éditoriale (générée par IA, ou fallback silencieux si vide)
+    if (aiStoryline.trim()) {
+      ctx.fillStyle = COLORS.gold;
+      ctx.font = "900 22px Anton, sans-serif";
+      ctx.fillText("│", PADDING, 150);
+      ctx.fillStyle = "rgba(255,255,255,0.8)";
+      ctx.font = "500 26px Montserrat, sans-serif";
+      const storyLines = wrapLines(ctx, aiStoryline.trim(), WIDTH - PADDING * 2 - 24);
+      let sy = 150;
+      storyLines.slice(0, 3).forEach((line) => {
+        ctx.fillText(line, PADDING + 20, sy);
+        sy += 34;
+      });
+    }
 
     const homeWon = (game.home_score ?? 0) >= (game.away_score ?? 0);
 
@@ -249,6 +321,24 @@ export default function MatchRecapGenerator() {
     ctx.fillText(`${perf.reb} REB · ${perf.ast} AST`, x, y + 66);
   }
 
+  // Découpe un texte en lignes qui tiennent dans maxWidth (ne dessine rien).
+  function wrapLines(ctx: CanvasRenderingContext2D, text: string, maxWidth: number): string[] {
+    const words = text.split(" ");
+    let line = "";
+    const lines: string[] = [];
+    for (const word of words) {
+      const test = line ? `${line} ${word}` : word;
+      if (ctx.measureText(test).width > maxWidth && line) {
+        lines.push(line);
+        line = word;
+      } else {
+        line = test;
+      }
+    }
+    if (line) lines.push(line);
+    return lines;
+  }
+
   function download() {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -288,7 +378,7 @@ export default function MatchRecapGenerator() {
           <label className="block text-sm text-white/60 mb-1">Match</label>
           <select
             value={gameId}
-            onChange={(e) => setGameId(e.target.value)}
+            onChange={(e) => selectGame(e.target.value)}
             className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 focus:border-bsh-orange outline-none"
           >
             {games.map((g) => (
@@ -301,6 +391,32 @@ export default function MatchRecapGenerator() {
             <p className="text-xs text-white/40 mt-1">Aucun match terminé pour cette ligue.</p>
           )}
         </div>
+      </div>
+
+      <div className="border border-white/10 rounded-lg p-4 bg-white/5 mb-6 max-w-2xl">
+        <div className="flex items-center justify-between mb-2 gap-3 flex-wrap">
+          <p className="text-sm font-semibold text-white/80">
+            Accroche éditoriale — générée par IA
+          </p>
+          <button
+            onClick={generateAiCopy}
+            disabled={aiLoading || !gameId}
+            className="bg-bsh-gold text-black text-xs font-bold rounded-lg px-3.5 py-2 hover:opacity-90 transition-opacity disabled:opacity-50 shrink-0"
+          >
+            {aiLoading ? "Génération..." : aiStoryline ? "Régénérer le texte" : "Générer le texte (IA)"}
+          </button>
+        </div>
+        {aiError && <p className="text-red-400 text-xs mb-2">{aiError}</p>}
+        <textarea
+          value={aiStoryline}
+          onChange={(e) => setAiStoryline(e.target.value)}
+          placeholder="Laisse vide pour ne rien afficher au-dessus du score."
+          rows={2}
+          className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm focus:border-bsh-orange outline-none resize-none"
+        />
+        <p className="text-[11px] text-white/30 mt-2">
+          Relis et corrige si besoin, puis clique « Générer l&apos;image » pour appliquer ce texte.
+        </p>
       </div>
 
       <div className="flex items-center gap-3 mb-6">

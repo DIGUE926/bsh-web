@@ -95,6 +95,14 @@ export default async function TeamPage({
         )}
       </div>
 
+      {(team.head_coach || team.assistant_coach) && (
+        <p className="text-xs text-white/35 mb-6 -mt-4">
+          {team.head_coach && <>Coach : {team.head_coach}</>}
+          {team.head_coach && team.assistant_coach && "  ·  "}
+          {team.assistant_coach && <>Assistant : {team.assistant_coach}</>}
+        </p>
+      )}
+
       <h2 className="font-display text-sm text-bsh-gold mb-2 tracking-wide">
         ROSTER
       </h2>

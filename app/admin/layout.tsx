@@ -62,6 +62,14 @@ export default async function AdminLayout({
         )}
         {isOwner && (
           <Link
+            href="/admin/equipes"
+            className="shrink-0 px-2.5 py-1.5 rounded-full bg-white/5 text-white/60 hover:text-bsh-orange"
+          >
+            Équipes
+          </Link>
+        )}
+        {isOwner && (
+          <Link
             href="/admin/social"
             className="shrink-0 px-2.5 py-1.5 rounded-full bg-white/5 text-white/60 hover:text-bsh-orange"
           >
