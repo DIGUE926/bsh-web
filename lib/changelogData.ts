@@ -14,6 +14,7 @@ export type ChangelogEntry = {
 };
 
 export const changelogEntries: ChangelogEntry[] = [
+  { hash: "8c0d02c", date: "2026-08-20T16:17:57+00:00", title: "fix: comparateur - autocomplete dès 1 lettre au lieu de 2", details: "résultats triés par ordre alphabétique" },
   { hash: "022150f", date: "2026-08-20T16:13:35+00:00", title: "feat: accueil - seulement le match playoff + % chances de victoire", details: "- retire DERNIERS RÉSULTATS et À VENIR, garde juste le bloc PLAYOFFS\n- barre % chances de victoire sous le match, basée sur le bilan V-D réel en saison régulière" },
   { hash: "771351c", date: "2026-08-20T16:00:25+00:00", title: "fix: masque les matchs playoffs annulés du bracket public", details: "statut cancelled pour un match 3 devenu inutile (série déjà pliée 2-0) au lieu de rester scheduled et traîner en À venir" },
   { hash: "24cda45", date: "2026-08-20T04:04:29+00:00", title: "feat: génération IA du texte carrousel (accroche/outro)", details: "- bouton Générer le texte (IA) dans le carrousel joueur, appelle Claude via /api/carousel-story\n- texte éditable avant application, garde le template par défaut si laissé vide\n- owner-only\n- besoin de ANTHROPIC_API_KEY sur Vercel, pas encore configurée" },
