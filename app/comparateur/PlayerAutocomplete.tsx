@@ -48,7 +48,7 @@ export default function PlayerAutocomplete({
 
   useEffect(() => {
     const q = query.trim();
-    if (q.length < 2) {
+    if (q.length < 1) {
       return;
     }
     const timeout = setTimeout(async () => {
@@ -58,6 +58,7 @@ export default function PlayerAutocomplete({
           "player_id, player_name, team_name, league_slug, league_name, games_played, ppg, rpg, apg, spg, bpg, ts_pct, pir"
         )
         .ilike("player_name", `%${q}%`)
+        .order("player_name", { ascending: true })
         .limit(8);
       setResults((data ?? []) as PlayerStats[]);
     }, 250);

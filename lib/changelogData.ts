@@ -1,5 +1,11 @@
 // Généré à partir de l'historique Git — ne pas éditer à la main.
 // Chaque entrée = un commit poussé sur le repo bsh-web.
+// EXCEPTION: quelques entrées ont été réécrites à la main pour un ton plus
+// naturel (Digue trouvait certaines descriptions trop "IA"). Ne pas
+// re-régénérer bêtement tout le fichier depuis git log — ça écraserait ces
+// réécritures. Voir claude/CLAUDE.md (mémoire projet) pour la marche à
+// suivre : ajouter les nouveaux commits en haut du tableau à la main,
+// dans le même registre que ses propres messages de commit.
 export type ChangelogEntry = {
   hash: string;
   date: string; // ISO
