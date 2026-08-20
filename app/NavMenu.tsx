@@ -53,19 +53,19 @@ export default function NavMenu({ leagues }: { leagues: League[] }) {
           </button>
 
           {open && (
-            <div className="absolute left-0 top-full mt-2 w-[85vw] max-w-72 bg-bsh-black border border-white/10 rounded-lg shadow-xl overflow-hidden max-h-[80vh] overflow-y-auto">
+            <div className="absolute left-0 top-full mt-2 w-[75vw] max-w-56 bg-bsh-black border border-white/10 rounded-lg shadow-xl overflow-hidden max-h-[80vh] overflow-y-auto">
               <div className="py-1">
                 <Link
                   href="/"
                   onClick={closeMenu}
-                  className="block px-4 py-2.5 hover:bg-white/5 font-semibold text-sm"
+                  className="block px-3 py-2 hover:bg-white/5 font-semibold text-xs"
                 >
                   Accueil
                 </Link>
                 <Link
                   href="/live"
                   onClick={closeMenu}
-                  className="flex items-center gap-2 px-4 py-2.5 hover:bg-white/5 font-semibold text-sm text-red-400"
+                  className="flex items-center gap-2 px-3 py-2 hover:bg-white/5 font-semibold text-xs text-red-400"
                 >
                   <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
                   Scoreboard Live
@@ -73,7 +73,7 @@ export default function NavMenu({ leagues }: { leagues: League[] }) {
               </div>
 
               <div className="border-t border-white/10">
-                <p className="px-4 pt-3 pb-1 text-[10px] uppercase tracking-widest text-white/30 font-semibold">
+                <p className="px-3 pt-2 pb-0.5 text-[9px] uppercase tracking-widest text-white/30 font-semibold">
                   Ligues
                 </p>
                 {leagues.map((league) => {
@@ -85,15 +85,15 @@ export default function NavMenu({ leagues }: { leagues: League[] }) {
                       onClick={() =>
                         setExpandedLeague(isExpanded ? null : league.slug)
                       }
-                      className="w-full flex items-center gap-2 px-4 py-2.5 hover:bg-white/5"
+                      className="w-full flex items-center gap-1.5 px-3 py-2 hover:bg-white/5"
                     >
                       <Avatar
                         name={league.name}
                         src={league.logo_url}
-                        size={20}
+                        size={16}
                         rounded="rounded"
                       />
-                      <p className="text-sm font-semibold text-white/90 truncate flex-1 text-left">
+                      <p className="text-xs font-semibold text-white/90 truncate flex-1 text-left">
                         {league.name}
                       </p>
                       <svg
@@ -113,46 +113,46 @@ export default function NavMenu({ leagues }: { leagues: League[] }) {
                       </svg>
                     </button>
                     {isExpanded && (
-                    <div className="grid grid-cols-2 gap-x-1 px-4 pb-2.5">
+                    <div className="grid grid-cols-2 gap-x-1 px-3 pb-2">
                       <Link
                         href={`/${league.slug}`}
                         onClick={closeMenu}
-                        className="block px-2 py-1.5 text-xs text-white/60 hover:text-bsh-orange rounded"
+                        className="block px-1.5 py-1 text-[11px] text-white/60 hover:text-bsh-orange rounded"
                       >
                         Équipes
                       </Link>
                       <Link
                         href={`/${league.slug}/matchs`}
                         onClick={closeMenu}
-                        className="block px-2 py-1.5 text-xs text-white/60 hover:text-bsh-orange rounded"
+                        className="block px-1.5 py-1 text-[11px] text-white/60 hover:text-bsh-orange rounded"
                       >
                         Matchs
                       </Link>
                       <Link
                         href={`/${league.slug}/archives`}
                         onClick={closeMenu}
-                        className="block px-2 py-1.5 text-xs text-white/60 hover:text-bsh-orange rounded"
+                        className="block px-1.5 py-1 text-[11px] text-white/60 hover:text-bsh-orange rounded"
                       >
                         Archives
                       </Link>
                       <Link
                         href={`/${league.slug}/classement`}
                         onClick={closeMenu}
-                        className="block px-2 py-1.5 text-xs text-white/60 hover:text-bsh-orange rounded"
+                        className="block px-1.5 py-1 text-[11px] text-white/60 hover:text-bsh-orange rounded"
                       >
                         Classement équipes
                       </Link>
                       <Link
                         href={`/${league.slug}/classement-joueurs`}
                         onClick={closeMenu}
-                        className="block px-2 py-1.5 text-xs text-white/60 hover:text-bsh-orange rounded"
+                        className="block px-1.5 py-1 text-[11px] text-white/60 hover:text-bsh-orange rounded"
                       >
                         Classement joueurs
                       </Link>
                       <Link
                         href={`/${league.slug}/playoffs`}
                         onClick={closeMenu}
-                        className="block px-2 py-1.5 text-xs text-white/60 hover:text-bsh-orange rounded"
+                        className="block px-1.5 py-1 text-[11px] text-white/60 hover:text-bsh-orange rounded"
                       >
                         Playoffs
                       </Link>
@@ -169,7 +169,7 @@ export default function NavMenu({ leagues }: { leagues: League[] }) {
                   target="_blank"
                   rel="noopener noreferrer"
                   onClick={closeMenu}
-                  className="flex items-center gap-2 px-4 py-2.5 hover:bg-white/5 text-sm text-white/60"
+                  className="flex items-center gap-2 px-3 py-2 hover:bg-white/5 text-xs text-white/60"
                 >
                   <svg
                     width="16"
@@ -191,7 +191,7 @@ export default function NavMenu({ leagues }: { leagues: League[] }) {
                 <Link
                   href="/login"
                   onClick={closeMenu}
-                  className="flex items-center gap-2 px-4 py-2.5 text-white/35 hover:bg-white/5 hover:text-white/60 text-xs"
+                  className="flex items-center gap-2 px-3 py-2 text-white/35 hover:bg-white/5 hover:text-white/60 text-[11px]"
                 >
                   <svg
                     width="12"
