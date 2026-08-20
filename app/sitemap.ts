@@ -19,8 +19,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   const leagueRoutes: MetadataRoute.Sitemap = (leagues ?? []).flatMap((l) => [
     { url: `${BASE_URL}/${l.slug}`, changeFrequency: "daily" as const, priority: 0.8 },
-    { url: `${BASE_URL}/${l.slug}/matchs`, changeFrequency: "daily" as const, priority: 0.7 },
-    { url: `${BASE_URL}/${l.slug}/classement`, changeFrequency: "daily" as const, priority: 0.7 },
+    // Matchs et classement équipes sont désactivés pour l'AHBB (pas encore prêt, notFound()).
+    ...(l.slug !== "ahbb"
+      ? [
+          { url: `${BASE_URL}/${l.slug}/matchs`, changeFrequency: "daily" as const, priority: 0.7 },
+          { url: `${BASE_URL}/${l.slug}/classement`, changeFrequency: "daily" as const, priority: 0.7 },
+        ]
+      : []),
     { url: `${BASE_URL}/${l.slug}/classement-joueurs`, changeFrequency: "daily" as const, priority: 0.7 },
     { url: `${BASE_URL}/${l.slug}/archives`, changeFrequency: "weekly" as const, priority: 0.5 },
     { url: `${BASE_URL}/${l.slug}/playoffs`, changeFrequency: "daily" as const, priority: 0.6 },
