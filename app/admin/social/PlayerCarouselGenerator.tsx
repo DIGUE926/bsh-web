@@ -189,53 +189,35 @@ export default function PlayerCarouselGenerator() {
     ctx.lineTo(WIDTH - PADDING, dividerY);
     ctx.stroke();
 
-    // Rangée de 4 chiffres clés
-    const chips: { label: string; value: string }[] = [
-      { label: "PTS", value: player.ppg != null ? Number(player.ppg).toFixed(1) : "-" },
-      { label: "REB", value: player.rpg != null ? Number(player.rpg).toFixed(1) : "-" },
-      { label: "AST", value: player.apg != null ? Number(player.apg).toFixed(1) : "-" },
-      { label: "PIR", value: player.pir != null ? Number(player.pir).toFixed(1) : "-" },
-    ];
-    const chipGap = 14;
-    const chipW = (WIDTH - PADDING * 2 - chipGap * 3) / 4;
-    const chipY = dividerY + 30;
-    const chipH = 118;
+    // Accroche qualitative — aucun chiffre ici, c'est le rôle des slides suivantes.
+    const topStat = PROFILE_STATS.map((s) => ({ ...s, pct: percentile(s.key, player[s.key]) })).sort(
+      (a, b) => b.pct - a.pct
+    )[0];
 
-    chips.forEach((c, i) => {
-      const x = PADDING + i * (chipW + chipGap);
-      ctx.fillStyle = i === 3 ? "rgba(255,214,10,0.08)" : "rgba(255,255,255,0.04)";
-      ctx.strokeStyle = i === 3 ? "rgba(255,214,10,0.35)" : "rgba(255,255,255,0.1)";
-      ctx.lineWidth = 1;
-      roundRect(ctx, x, chipY, chipW, chipH, 12);
-      ctx.fill();
-      ctx.stroke();
-
-      ctx.fillStyle = i === 3 ? COLORS.gold : COLORS.orange;
-      ctx.font = "900 34px Anton, sans-serif";
-      ctx.textAlign = "center";
-      ctx.fillText(c.value, x + chipW / 2, chipY + 62);
-
-      ctx.fillStyle = "rgba(255,255,255,0.5)";
-      ctx.font = "700 13px Montserrat, sans-serif";
-      ctx.fillText(c.label, x + chipW / 2, chipY + 88);
-    });
-
-    // Ligne narrative
-    const quoteY = chipY + chipH + 56;
+    const hookY = dividerY + 60;
     ctx.textAlign = "left";
     ctx.fillStyle = COLORS.gold;
     ctx.font = "900 22px Anton, sans-serif";
-    ctx.fillText("│", PADDING, quoteY);
-    ctx.fillStyle = "rgba(255,255,255,0.7)";
-    ctx.font = "500 21px Montserrat, sans-serif";
-    const gp = player.games_played ?? 0;
-    const narrative = `Sur ${gp} match${gp > 1 ? "s" : ""} cette saison : ${chips[0].value} pts, ${chips[1].value} reb et ${chips[2].value} passes de moyenne.`;
-    const narrativeLines = wrapLines(ctx, narrative, WIDTH - PADDING * 2 - 24);
-    let qy = quoteY;
-    narrativeLines.forEach((line) => {
-      ctx.fillText(line, PADDING + 20, qy);
-      qy += 28;
+    ctx.fillText("│", PADDING, hookY);
+    ctx.fillStyle = "rgba(255,255,255,0.8)";
+    ctx.font = "500 24px Montserrat, sans-serif";
+    const hookText =
+      topStat.pct >= 70
+        ? `Un des profils qui se distingue le plus en ${topStat.label.toLowerCase()} cette saison.`
+        : `Zoom sur un joueur qui pèse dans le jeu de ${(player.team_name ?? "son équipe").toUpperCase()}.`;
+    const hookLines = wrapLines(ctx, hookText, WIDTH - PADDING * 2 - 24);
+    let hy = hookY;
+    hookLines.forEach((line) => {
+      ctx.fillText(line, PADDING + 20, hy);
+      hy += 32;
     });
+
+    // Invite à swiper, en bas de slide
+    const swipeY = HEIGHT - 150;
+    ctx.textAlign = "left";
+    ctx.fillStyle = COLORS.orange;
+    ctx.font = "800 22px Montserrat, sans-serif";
+    ctx.fillText("GLISSE POUR VOIR SES STATS →", PADDING, swipeY);
 
     paintFooter(ctx, WIDTH, HEIGHT);
   }
