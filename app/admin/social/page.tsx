@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { isOwnerEmail } from "@/lib/adminAccess";
-import TopLeadersGenerator from "./TopLeadersGenerator";
+import SocialToolsTabs from "./SocialToolsTabs";
 
 export default async function SocialToolsPage() {
   const supabase = await createClient();
@@ -10,5 +10,5 @@ export default async function SocialToolsPage() {
   } = await supabase.auth.getUser();
   if (!isOwnerEmail(user?.email)) redirect("/admin");
 
-  return <TopLeadersGenerator />;
+  return <SocialToolsTabs />;
 }

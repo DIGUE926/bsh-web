@@ -2,6 +2,18 @@
 
 import { useEffect, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import {
+  CANVAS_WIDTH as WIDTH,
+  CANVAS_HEIGHT as HEIGHT,
+  PADDING,
+  COLORS,
+  loadBrandFonts,
+  paintBackground,
+  paintCourtPattern,
+  paintWordmarkHeader,
+  paintFooter,
+  downloadCanvasPng,
+} from "@/lib/socialCanvas";
 
 type Competition = "season" | "playoffs";
 type StatKey = "ppg" | "rpg" | "apg" | "spg" | "bpg" | "pir";
@@ -27,11 +39,8 @@ const STAT_LABELS: Record<StatKey, { title: string; suffix: string }> = {
   pir: { title: "CLASSEMENT IMPACT", suffix: "PIR" },
 };
 
-const WIDTH = 1080;
-const HEIGHT = 1350;
-
 export default function TopLeadersGenerator() {
-  const [competition, setCompetition] = useState<Competition>("playoffs");
+  const [competition, setCompetition] = useState<Competition>("season");
   const [statKey, setStatKey] = useState<StatKey>("ppg");
   const [topN, setTopN] = useState(10);
   const [leagues, setLeagues] = useState<League[]>([]);
@@ -73,8 +82,18 @@ export default function TopLeadersGenerator() {
 
     const { data, error: fetchError } = await query;
 
-    if (fetchError || !data) {
-      setError("Erreur de chargement : " + (fetchError?.message ?? "inconnue"));
+    if (fetchError) {
+      setError("Erreur de chargement : " + fetchError.message);
+      setLoading(false);
+      return;
+    }
+
+    if (!data || data.length === 0) {
+      setError(
+        `Aucune donnée pour ${leagueSlug.toUpperCase()} en ${
+          competition === "season" ? "saison régulière" : "playoffs"
+        }. Essaie une autre combinaison ligue/compétition.`
+      );
       setLoading(false);
       return;
     }
@@ -93,74 +112,23 @@ export default function TopLeadersGenerator() {
     canvas.width = WIDTH;
     canvas.height = HEIGHT;
 
-    // S'assure que la police Anton (déjà chargée sur le site) est prête pour le canvas
-    try {
-      await document.fonts.load("900 80px Anton");
-      await document.fonts.ready;
-    } catch {
-      // fallback silencieux sur une police système si Anton ne charge pas
-    }
+    await loadBrandFonts();
 
-    const orange = "#FF6B00";
-    const gold = "#FFD60A";
-    const black = "#0D0D0D";
-
-    // Fond
-    ctx.fillStyle = black;
-    ctx.fillRect(0, 0, WIDTH, HEIGHT);
-
-    // Glow décoratif
-    const glow1 = ctx.createRadialGradient(150, 200, 0, 150, 200, 500);
-    glow1.addColorStop(0, "rgba(255,107,0,0.16)");
-    glow1.addColorStop(1, "rgba(255,107,0,0)");
-    ctx.fillStyle = glow1;
-    ctx.fillRect(0, 0, WIDTH, HEIGHT);
-
-    const glow2 = ctx.createRadialGradient(WIDTH - 150, HEIGHT - 250, 0, WIDTH - 150, HEIGHT - 250, 500);
-    glow2.addColorStop(0, "rgba(255,214,10,0.10)");
-    glow2.addColorStop(1, "rgba(255,214,10,0)");
-    ctx.fillStyle = glow2;
-    ctx.fillRect(0, 0, WIDTH, HEIGHT);
-
-    // Tentative de fond décoratif du terrain (silencieux si absent)
-    await new Promise<void>((resolve) => {
-      const img = new Image();
-      img.onload = () => {
-        ctx.save();
-        ctx.globalAlpha = 0.06;
-        ctx.drawImage(img, WIDTH / 2 - 700, HEIGHT / 2 - 700, 1400, 1400);
-        ctx.restore();
-        resolve();
-      };
-      img.onerror = () => resolve();
-      img.src = "/court-pattern.svg";
-    });
-
-    const PADDING = 64;
-
-    // Wordmark
-    ctx.textBaseline = "alphabetic";
-    ctx.fillStyle = orange;
-    ctx.font = "700 30px Montserrat, sans-serif";
-    ctx.textAlign = "left";
-    ctx.fillText("BALLSOHARD", PADDING, 90);
-
-    ctx.fillStyle = "rgba(255,255,255,0.5)";
-    ctx.font = "600 26px Montserrat, sans-serif";
-    ctx.textAlign = "right";
-    ctx.fillText(
+    paintBackground(ctx, WIDTH, HEIGHT);
+    await paintCourtPattern(ctx, WIDTH, HEIGHT);
+    paintWordmarkHeader(
+      ctx,
       `${leagueSlug.toUpperCase()} · ${competition === "season" ? "SAISON RÉGULIÈRE" : "PLAYOFFS"}`,
-      WIDTH - PADDING,
-      90
+      WIDTH
     );
 
     // Titre
-    ctx.fillStyle = orange;
+    ctx.fillStyle = COLORS.orange;
     ctx.font = "900 108px Anton, sans-serif";
     ctx.textAlign = "left";
     ctx.fillText(`TOP ${topN}`, PADDING, 220);
 
-    ctx.fillStyle = gold;
+    ctx.fillStyle = COLORS.gold;
     ctx.font = "900 42px Anton, sans-serif";
     ctx.fillText(STAT_LABELS[statKey].title, PADDING, 268);
 
@@ -194,7 +162,7 @@ export default function TopLeadersGenerator() {
       const centerY = y + rowHeight / 2;
 
       // Rang
-      ctx.fillStyle = i < 3 ? gold : "rgba(255,255,255,0.45)";
+      ctx.fillStyle = i < 3 ? COLORS.gold : "rgba(255,255,255,0.45)";
       ctx.font = `900 ${rankFont}px Anton, sans-serif`;
       ctx.textAlign = "left";
       ctx.textBaseline = "middle";
@@ -203,7 +171,7 @@ export default function TopLeadersGenerator() {
       const nameX = PADDING + 76;
 
       // Nom + équipe
-      ctx.fillStyle = "#ffffff";
+      ctx.fillStyle = COLORS.white;
       ctx.font = `700 ${nameFont}px Montserrat, sans-serif`;
       ctx.textAlign = "left";
       ctx.fillText(r.player_name ?? "—", nameX, centerY - (rowHeight > 60 ? 12 : 0));
@@ -217,7 +185,7 @@ export default function TopLeadersGenerator() {
       // Valeur stat
       const raw = r[statKey === "pir" ? "pir" : statKey];
       const val = raw != null ? Number(raw).toFixed(1) : "-";
-      ctx.fillStyle = orange;
+      ctx.fillStyle = COLORS.orange;
       ctx.font = `900 ${valueFont}px Anton, sans-serif`;
       ctx.textAlign = "right";
       ctx.fillText(val, WIDTH - PADDING - 90, centerY);
@@ -228,21 +196,13 @@ export default function TopLeadersGenerator() {
       ctx.fillText(STAT_LABELS[statKey].suffix, WIDTH - PADDING, centerY);
     });
 
-    // Footer
-    ctx.fillStyle = "rgba(255,255,255,0.35)";
-    ctx.font = "600 20px Montserrat, sans-serif";
-    ctx.textAlign = "center";
-    ctx.textBaseline = "alphabetic";
-    ctx.fillText("BallsoHard — La donnée du basket haïtien", WIDTH / 2, HEIGHT - 40);
+    paintFooter(ctx, WIDTH, HEIGHT);
   }
 
   function download() {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const link = document.createElement("a");
-    link.download = `bsh-${leagueSlug}-top${topN}-${statKey}-${competition}.png`;
-    link.href = canvas.toDataURL("image/png");
-    link.click();
+    downloadCanvasPng(canvas, `bsh-${leagueSlug}-top${topN}-${statKey}-${competition}.png`);
   }
 
   return (
@@ -283,8 +243,8 @@ export default function TopLeadersGenerator() {
             }}
             className="bg-white/5 border border-white/10 rounded-lg px-4 py-2 focus:border-bsh-orange outline-none"
           >
-            <option value="playoffs">Playoffs</option>
             <option value="season">Saison régulière</option>
+            <option value="playoffs">Playoffs</option>
           </select>
         </div>
 
