@@ -361,15 +361,11 @@ export default function PlayerCarouselGenerator() {
       roundRect(ctx, barAreaX, y + 28, Math.max(valW, 5), 20, 10);
       ctx.fill();
 
-      // Valeurs
+      // Valeur du joueur
       ctx.fillStyle = COLORS.white;
-      ctx.font = "900 20px Anton, sans-serif";
+      ctx.font = "900 22px Anton, sans-serif";
       ctx.textAlign = "left";
-      ctx.fillText(r.value.toFixed(1), barAreaX + barAreaW + 14, y + 45);
-
-      ctx.fillStyle = isAbove ? COLORS.gold : "rgba(255,120,120,0.9)";
-      ctx.font = "800 15px Montserrat, sans-serif";
-      ctx.fillText(`${isAbove ? "+" : ""}${r.diffPct}%`, barAreaX + barAreaW + 14, y + 62);
+      ctx.fillText(r.value.toFixed(1), barAreaX + barAreaW + 14, y + 50);
 
       ctx.fillStyle = "rgba(255,255,255,0.35)";
       ctx.font = "600 13px Montserrat, sans-serif";
