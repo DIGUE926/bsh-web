@@ -10,7 +10,6 @@ import {
   loadBrandFonts,
   paintBackground,
   paintCourtPattern,
-  paintWordmarkHeader,
   paintFooter,
   downloadCanvasPng,
 } from "@/lib/socialCanvas";
@@ -116,70 +115,97 @@ export default function TopLeadersGenerator() {
 
     paintBackground(ctx, WIDTH, HEIGHT);
     await paintCourtPattern(ctx, WIDTH, HEIGHT);
-    paintWordmarkHeader(
-      ctx,
-      `${leagueSlug.toUpperCase()} · ${competition === "season" ? "SAISON RÉGULIÈRE" : "PLAYOFFS"}`,
-      WIDTH
-    );
+
+    const competitionLabel = competition === "season" ? "SAISON RÉGULIÈRE" : "PLAYOFFS";
+
+    // Kicker en haut à gauche
+    ctx.textBaseline = "alphabetic";
+    ctx.fillStyle = COLORS.orange;
+    ctx.font = "800 22px Montserrat, sans-serif";
+    ctx.textAlign = "left";
+    ctx.fillText(`CLASSEMENT ${competitionLabel}`, PADDING, 52);
+
+    // Contexte + petit badge rond en haut à droite
+    ctx.fillStyle = "rgba(255,255,255,0.45)";
+    ctx.font = "600 20px Montserrat, sans-serif";
+    ctx.textAlign = "right";
+    ctx.fillText(`${leagueSlug.toUpperCase()} · ${competitionLabel}`, WIDTH - PADDING - 56, 48);
+
+    const badgeCx = WIDTH - PADDING - 24;
+    const badgeCy = 40;
+    ctx.beginPath();
+    ctx.arc(badgeCx, badgeCy, 22, 0, Math.PI * 2);
+    ctx.fillStyle = "rgba(255,255,255,0.06)";
+    ctx.fill();
+    ctx.strokeStyle = "rgba(255,255,255,0.2)";
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+    ctx.fillStyle = COLORS.orange;
+    ctx.font = "900 16px Anton, sans-serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText("BSH", badgeCx, badgeCy + 1);
+    ctx.textBaseline = "alphabetic";
 
     // Titre
     ctx.fillStyle = COLORS.orange;
-    ctx.font = "900 108px Anton, sans-serif";
+    ctx.font = "900 82px Anton, sans-serif";
     ctx.textAlign = "left";
-    ctx.fillText(`TOP ${topN}`, PADDING, 220);
+    ctx.fillText(`TOP ${topN}`, PADDING, 150);
 
     ctx.fillStyle = COLORS.gold;
-    ctx.font = "900 42px Anton, sans-serif";
-    ctx.fillText(STAT_LABELS[statKey].title, PADDING, 268);
+    ctx.font = "900 30px Anton, sans-serif";
+    ctx.fillText(STAT_LABELS[statKey].title, PADDING, 184);
 
     // Ligne de séparation
     ctx.strokeStyle = "rgba(255,255,255,0.15)";
-    ctx.lineWidth = 2;
+    ctx.lineWidth = 1.5;
     ctx.beginPath();
-    ctx.moveTo(PADDING, 300);
-    ctx.lineTo(WIDTH - PADDING, 300);
+    ctx.moveTo(PADDING, 208);
+    ctx.lineTo(WIDTH - PADDING, 208);
     ctx.stroke();
 
     // Liste
-    const listTop = 330;
-    const listBottom = HEIGHT - 110;
+    const listTop = 232;
+    const listBottom = HEIGHT - 90;
     const availableHeight = listBottom - listTop;
-    const rowHeight = Math.max(46, Math.min(102, availableHeight / rows.length));
+    const rowHeight = Math.max(38, Math.min(64, availableHeight / rows.length));
 
-    const rankFont = Math.max(24, Math.min(52, rowHeight * 0.5));
-    const nameFont = Math.max(20, Math.min(34, rowHeight * 0.32));
-    const teamFont = Math.max(14, Math.min(22, rowHeight * 0.2));
-    const valueFont = Math.max(22, Math.min(40, rowHeight * 0.38));
+    const rankFont = Math.max(18, Math.min(28, rowHeight * 0.36));
+    const nameFont = Math.max(16, Math.min(22, rowHeight * 0.28));
+    const teamFont = Math.max(11, Math.min(14, rowHeight * 0.16));
+    const valueFont = Math.max(18, Math.min(26, rowHeight * 0.32));
 
     rows.forEach((r, i) => {
       const y = listTop + i * rowHeight;
 
       if (i % 2 === 0) {
-        ctx.fillStyle = "rgba(255,255,255,0.035)";
-        ctx.fillRect(PADDING - 16, y, WIDTH - (PADDING - 16) * 2, rowHeight - 6);
+        ctx.fillStyle = "rgba(255,255,255,0.03)";
+        ctx.fillRect(PADDING - 14, y, WIDTH - (PADDING - 14) * 2, rowHeight - 4);
       }
 
       const centerY = y + rowHeight / 2;
 
       // Rang
-      ctx.fillStyle = i < 3 ? COLORS.gold : "rgba(255,255,255,0.45)";
+      ctx.fillStyle = i < 3 ? COLORS.gold : "rgba(255,255,255,0.4)";
       ctx.font = `900 ${rankFont}px Anton, sans-serif`;
       ctx.textAlign = "left";
       ctx.textBaseline = "middle";
       ctx.fillText(String(i + 1), PADDING, centerY);
 
-      const nameX = PADDING + 76;
+      const nameX = PADDING + 46;
+      const hasTeamLine = rowHeight > 44;
 
       // Nom + équipe
       ctx.fillStyle = COLORS.white;
       ctx.font = `700 ${nameFont}px Montserrat, sans-serif`;
       ctx.textAlign = "left";
-      ctx.fillText(r.player_name ?? "—", nameX, centerY - (rowHeight > 60 ? 12 : 0));
+      ctx.fillText(r.player_name ?? "—", nameX, centerY - (hasTeamLine ? 9 : 0));
 
-      if (rowHeight > 60) {
-        ctx.fillStyle = "rgba(255,255,255,0.5)";
-        ctx.font = `500 ${teamFont}px Montserrat, sans-serif`;
-        ctx.fillText(r.team_name ?? "", nameX, centerY + 16);
+      if (hasTeamLine) {
+        ctx.fillStyle = "rgba(255,255,255,0.4)";
+        ctx.font = `600 ${teamFont}px Montserrat, sans-serif`;
+        ctx.fillText((r.team_name ?? "").toUpperCase(), nameX, centerY + 12);
       }
 
       // Valeur stat
@@ -188,12 +214,12 @@ export default function TopLeadersGenerator() {
       ctx.fillStyle = COLORS.orange;
       ctx.font = `900 ${valueFont}px Anton, sans-serif`;
       ctx.textAlign = "right";
-      ctx.fillText(val, WIDTH - PADDING - 90, centerY);
+      ctx.fillText(val, WIDTH - PADDING - 44, centerY + 6);
 
-      ctx.fillStyle = "rgba(255,255,255,0.4)";
-      ctx.font = `600 16px Montserrat, sans-serif`;
-      ctx.textAlign = "right";
-      ctx.fillText(STAT_LABELS[statKey].suffix, WIDTH - PADDING, centerY);
+      ctx.fillStyle = "rgba(255,255,255,0.35)";
+      ctx.font = `700 11px Montserrat, sans-serif`;
+      ctx.textAlign = "left";
+      ctx.fillText(STAT_LABELS[statKey].suffix, WIDTH - PADDING - 36, centerY + 6);
     });
 
     paintFooter(ctx, WIDTH, HEIGHT);
