@@ -63,6 +63,10 @@ export default function PlayerCarouselGenerator() {
   const [error, setError] = useState<string | null>(null);
   const [ready, setReady] = useState(false);
   const [activeSlide, setActiveSlide] = useState(0);
+  const [aiHook, setAiHook] = useState("");
+  const [aiOutro, setAiOutro] = useState("");
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiError, setAiError] = useState<string | null>(null);
   const canvasRefs = [
     useRef<HTMLCanvasElement>(null),
     useRef<HTMLCanvasElement>(null),
@@ -102,6 +106,15 @@ export default function PlayerCarouselGenerator() {
     loadPlayers();
   }, [leagueId, competition, leagues, supabase]);
 
+  // Le texte IA généré pour un joueur ne doit jamais se retrouver appliqué
+  // à un autre joueur sélectionné ensuite.
+  function selectPlayer(id: string) {
+    setPlayerId(id);
+    setAiHook("");
+    setAiOutro("");
+    setAiError(null);
+  }
+
   // Moyenne de la ligue pour chaque stat (à partir des joueurs déjà chargés).
   function leagueAverage(stat: keyof PlayerRow): number {
     const values = players.map((p) => p[stat]).filter((v): v is number => v != null);
@@ -116,6 +129,63 @@ export default function PlayerCarouselGenerator() {
     if (values.length <= 1) return 50;
     const below = values.filter((v) => Number(v) <= value).length;
     return Math.round((below / values.length) * 100);
+  }
+
+  // Force/faiblesse relative du joueur, réutilisé par le radar ET par le prompt IA.
+  function strengthAndWeakness(player: PlayerRow) {
+    const pcts = PROFILE_STATS.map((s) => ({ ...s, pct: percentile(s.key, player[s.key]) }));
+    const sorted = [...pcts].sort((a, b) => b.pct - a.pct);
+    return { strength: sorted[0], weakness: sorted[sorted.length - 1] };
+  }
+
+  async function generateAiCopy() {
+    const player = players.find((p) => p.player_id === playerId);
+    const league = leagues.find((l) => l.id === leagueId);
+    if (!player) {
+      setAiError("Sélectionne un joueur.");
+      return;
+    }
+
+    setAiError(null);
+    setAiLoading(true);
+
+    const { strength, weakness } = strengthAndWeakness(player);
+    const rank = players.findIndex((p) => p.player_id === playerId) + 1;
+
+    try {
+      const res = await fetch("/api/carousel-story", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          playerName: player.player_name,
+          teamName: player.team_name,
+          leagueName: league?.name ?? "",
+          competitionLabel: competition === "season" ? "Saison régulière" : "Playoffs",
+          gamesPlayed: player.games_played,
+          stats: PROFILE_STATS.map((s) => ({
+            label: s.label,
+            value: player[s.key] as number | null,
+            leagueAvg: leagueAverage(s.key),
+          })),
+          rank: rank || null,
+          totalPlayers: players.length || null,
+          strengthLabel: strength.label,
+          weaknessLabel: weakness.label,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        setAiError(data.error ?? "Échec de la génération.");
+        return;
+      }
+      setAiHook(data.hook ?? "");
+      setAiOutro(data.outro ?? "");
+    } catch {
+      setAiError("Impossible de contacter le service de génération.");
+    } finally {
+      setAiLoading(false);
+    }
   }
 
   async function generate() {
@@ -199,9 +269,11 @@ export default function PlayerCarouselGenerator() {
     ctx.fillText("│", PADDING, hookY);
     ctx.fillStyle = "rgba(255,255,255,0.8)";
     ctx.font = "500 24px Montserrat, sans-serif";
-    const hookText = ppgValue
-      ? `${ppgValue} points de moyenne cette saison — un profil qui capte l'œil.`
-      : `Zoom sur un joueur qui pèse dans le jeu de ${(player.team_name ?? "son équipe").toUpperCase()}.`;
+    const hookText =
+      aiHook.trim() ||
+      (ppgValue
+        ? `${ppgValue} points de moyenne cette saison — un profil qui capte l'œil.`
+        : `Zoom sur un joueur qui pèse dans le jeu de ${(player.team_name ?? "son équipe").toUpperCase()}.`);
     const hookLines = wrapLines(ctx, hookText, WIDTH - PADDING * 2 - 24);
     let hy = hookY;
     hookLines.forEach((line) => {
@@ -577,7 +649,9 @@ export default function PlayerCarouselGenerator() {
 
     ctx.fillStyle = "rgba(255,255,255,0.7)";
     ctx.font = "500 20px Montserrat, sans-serif";
-    const recapText = `Cette saison : ${ppg} points, ${rpg} rebonds et ${apg} passes de moyenne par match.`;
+    const recapText =
+      aiOutro.trim() ||
+      `Cette saison : ${ppg} points, ${rpg} rebonds et ${apg} passes de moyenne par match.`;
     const recapLines = wrapLines(ctx, recapText, WIDTH - PADDING * 2);
     let ry = dividerY + 40;
     recapLines.forEach((line) => {
@@ -713,7 +787,7 @@ export default function PlayerCarouselGenerator() {
           <label className="block text-sm text-white/60 mb-1">Joueur</label>
           <select
             value={playerId}
-            onChange={(e) => setPlayerId(e.target.value)}
+            onChange={(e) => selectPlayer(e.target.value)}
             className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 focus:border-bsh-orange outline-none"
           >
             {players.map((p) => (
@@ -726,6 +800,47 @@ export default function PlayerCarouselGenerator() {
             <p className="text-xs text-white/40 mt-1">Aucune donnée pour cette combinaison.</p>
           )}
         </div>
+      </div>
+
+      <div className="border border-white/10 rounded-lg p-4 bg-white/5 mb-6 max-w-2xl">
+        <div className="flex items-center justify-between mb-2 gap-3 flex-wrap">
+          <p className="text-sm font-semibold text-white/80">
+            Texte d&apos;analyse (accroche + outro) — généré par IA
+          </p>
+          <button
+            onClick={generateAiCopy}
+            disabled={aiLoading || !playerId}
+            className="bg-bsh-gold text-black text-xs font-bold rounded-lg px-3.5 py-2 hover:opacity-90 transition-opacity disabled:opacity-50 shrink-0"
+          >
+            {aiLoading ? "Génération..." : aiHook ? "Régénérer le texte" : "Générer le texte (IA)"}
+          </button>
+        </div>
+        {aiError && <p className="text-red-400 text-xs mb-2">{aiError}</p>}
+        <div className="grid sm:grid-cols-2 gap-3">
+          <div>
+            <label className="block text-xs text-white/40 mb-1">Accroche (slide 1)</label>
+            <textarea
+              value={aiHook}
+              onChange={(e) => setAiHook(e.target.value)}
+              placeholder="Laisse vide pour garder le texte par défaut."
+              rows={3}
+              className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm focus:border-bsh-orange outline-none resize-none"
+            />
+          </div>
+          <div>
+            <label className="block text-xs text-white/40 mb-1">Outro (slide 5)</label>
+            <textarea
+              value={aiOutro}
+              onChange={(e) => setAiOutro(e.target.value)}
+              placeholder="Laisse vide pour garder le texte par défaut."
+              rows={3}
+              className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm focus:border-bsh-orange outline-none resize-none"
+            />
+          </div>
+        </div>
+        <p className="text-[11px] text-white/30 mt-2">
+          Relis et corrige si besoin, puis clique « Générer le carrousel » pour appliquer ce texte aux slides.
+        </p>
       </div>
 
       <div className="flex items-center gap-3 mb-6 flex-wrap">
