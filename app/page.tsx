@@ -4,6 +4,7 @@ import Avatar from "@/app/Avatar";
 import LiveBadge from "@/app/LiveBadge";
 import { shortTeamName } from "@/lib/teamDisplay";
 import U20Badge from "@/app/U20Badge";
+import WinProbBar from "@/app/WinProbBar";
 
 export const revalidate = 60;
 
@@ -49,51 +50,12 @@ export default async function Home() {
     )
     .eq("status", "live");
 
-  const { data: recentGames } = await supabase
-    .from("games")
-    .select(
-      "*, home_team:home_team_id(name, logo_url), away_team:away_team_id(name, logo_url), league:league_id(slug)"
-    )
-    .eq("status", "completed")
-    .order("game_date", { ascending: false })
-    .limit(5);
-
-  const { data: upcomingGames } = await supabase
-    .from("games")
-    .select(
-      "*, home_team:home_team_id(name, logo_url), away_team:away_team_id(name, logo_url), league:league_id(slug)"
-    )
-    .eq("status", "scheduled")
-    .order("game_date", { ascending: true })
-    .limit(1);
-
-  const { data: recentPlayoffGames } = await supabase
-    .from("playoff_games")
-    .select(
-      "*, home_team:team_home_id(name, logo_url), away_team:team_away_id(name, logo_url), league:league_id(slug)"
-    )
-    .eq("status", "completed")
-    .order("game_date", { ascending: false })
-    .limit(5);
-
   const { data: allPlayoffGames } = await supabase
     .from("playoff_games")
     .select(
-      "*, home_team:team_home_id(name, logo_url), away_team:team_away_id(name, logo_url), league:league_id(slug)"
+      "*, home_team:team_home_id(name, logo_url), away_team:team_away_id(name, logo_url), league:league_id(id, slug)"
     )
     .order("game_date", { ascending: true });
-
-  // Combine saison + playoffs, tag each, trier par date desc, garder les 5 plus récents
-  type ResultRow = {
-    id: string;
-    game_date: string;
-    home_score: number | null;
-    away_score: number | null;
-    home_team: { name: string; logo_url?: string | null } | null;
-    away_team: { name: string; logo_url?: string | null } | null;
-    href: string;
-    tag: "Saison" | "Playoffs";
-  };
 
   type PlayoffGameWithLeague = {
     id: string;
@@ -101,38 +63,12 @@ export default async function Home() {
     status: string;
     home_score: number | null;
     away_score: number | null;
+    team_home_id: string;
+    team_away_id: string;
     home_team: { name: string; logo_url?: string | null } | null;
     away_team: { name: string; logo_url?: string | null } | null;
-    league: { slug: string } | null;
+    league: { id: string; slug: string } | null;
   };
-
-  const seasonResults: ResultRow[] = (recentGames ?? []).map((g) => ({
-    id: g.id,
-    game_date: g.game_date,
-    home_score: g.home_score,
-    away_score: g.away_score,
-    home_team: g.home_team,
-    away_team: g.away_team,
-    href: `/${g.league?.slug}/match/${g.id}`,
-    tag: "Saison",
-  }));
-
-  const playoffResults: ResultRow[] = (
-    (recentPlayoffGames ?? []) as unknown as PlayoffGameWithLeague[]
-  ).map((g) => ({
-    id: g.id,
-    game_date: g.game_date,
-    home_score: g.home_score,
-    away_score: g.away_score,
-    home_team: g.home_team,
-    away_team: g.away_team,
-    href: `/${g.league?.slug}/playoffs/${g.id}`,
-    tag: "Playoffs",
-  }));
-
-  const combinedResults = [...seasonResults, ...playoffResults]
-    .sort((a, b) => b.game_date.localeCompare(a.game_date))
-    .slice(0, 1);
 
   // Match du jour (fuseau Haïti) parmi les matchs playoffs
   const todayStr = new Date().toLocaleDateString("en-CA", {
@@ -147,6 +83,58 @@ export default async function Home() {
   // Ligue mise en avant dans le bloc PLAYOFFS de la home (match du jour, sinon prochain match, sinon 1er de la liste)
   const featuredPlayoffSlug =
     matchDuJour?.league?.slug ?? nextPlayoffGame?.league?.slug ?? playoffsList[0]?.league?.slug ?? null;
+
+  // Pourcentage de victoire estimé pour le match playoff mis en avant, basé
+  // sur le bilan V-D de chaque équipe en saison régulière (pas de stats
+  // fictives — juste leur bilan réel, normalisé pour sommer à 100%).
+  const featuredGame = matchDuJour ?? nextPlayoffGame ?? null;
+  let winProb: { home: number; away: number } | null = null;
+
+  if (featuredGame && featuredGame.status !== "completed" && featuredGame.league?.id) {
+    const { data: seasonGamesForLeague } = await supabase
+      .from("games")
+      .select("home_team_id, away_team_id, home_score, away_score")
+      .eq("league_id", featuredGame.league.id)
+      .eq("status", "completed");
+
+    const record = new Map<string, { wins: number; losses: number }>();
+    record.set(featuredGame.team_home_id, { wins: 0, losses: 0 });
+    record.set(featuredGame.team_away_id, { wins: 0, losses: 0 });
+
+    for (const g of seasonGamesForLeague ?? []) {
+      if (g.home_score == null || g.away_score == null) continue;
+      const homeWon = g.home_score > g.away_score;
+      const home = record.get(g.home_team_id);
+      const away = record.get(g.away_team_id);
+      if (home) {
+        if (homeWon) home.wins++;
+        else home.losses++;
+      }
+      if (away) {
+        if (homeWon) away.losses++;
+        else away.wins++;
+      }
+    }
+
+    const homeRecord = record.get(featuredGame.team_home_id)!;
+    const awayRecord = record.get(featuredGame.team_away_id)!;
+    const homeTotal = homeRecord.wins + homeRecord.losses;
+    const awayTotal = awayRecord.wins + awayRecord.losses;
+
+    if (homeTotal > 0 || awayTotal > 0) {
+      // +1 match "neutre" à chaque équipe pour éviter un 0%/100% brutal
+      // quand une équipe a un bilan parfait ou nul sur peu de matchs.
+      const homePct = (homeRecord.wins + 0.5) / (homeTotal + 1);
+      const awayPct = (awayRecord.wins + 0.5) / (awayTotal + 1);
+      const total = homePct + awayPct;
+      winProb = {
+        home: Math.round((homePct / total) * 100),
+        away: Math.round((awayPct / total) * 100),
+      };
+      // Corrige l'arrondi pour que ça somme toujours à 100
+      winProb.away = 100 - winProb.home;
+    }
+  }
 
   return (
     <div className="max-w-5xl mx-auto px-3 sm:px-4 py-5 sm:py-10">
@@ -324,6 +312,14 @@ export default async function Home() {
                   </p>
                 )}
               </div>
+              {winProb && matchDuJour.status !== "completed" && (
+                <WinProbBar
+                  homePct={winProb.home}
+                  awayPct={winProb.away}
+                  homeName={shortTeamName(matchDuJour.home_team?.name ?? "?")}
+                  awayName={shortTeamName(matchDuJour.away_team?.name ?? "?")}
+                />
+              )}
             </Link>
           ) : nextPlayoffGame ? (
             <Link
@@ -349,90 +345,19 @@ export default async function Home() {
                   {nextPlayoffGame.game_date}
                 </p>
               </div>
+              {winProb && (
+                <WinProbBar
+                  homePct={winProb.home}
+                  awayPct={winProb.away}
+                  homeName={shortTeamName(nextPlayoffGame.home_team?.name ?? "?")}
+                  awayName={shortTeamName(nextPlayoffGame.away_team?.name ?? "?")}
+                />
+              )}
             </Link>
           ) : null}
         </section>
       )}
 
-      {combinedResults.length > 0 && (
-        <section className="mb-6">
-          <h2 className="flex items-center gap-2 font-display text-sm text-bsh-gold mb-2 tracking-wide">
-            <span className="w-1 h-3.5 bg-bsh-orange rounded-sm" />
-            DERNIERS RÉSULTATS
-          </h2>
-          <div className="space-y-2">
-            {combinedResults.map((game) => (
-              <Link
-                key={game.id}
-                href={game.href}
-                className="block border border-white/10 rounded-lg p-2.5 hover:border-bsh-orange transition-colors bg-white/5"
-              >
-                <div className="flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-1.5 min-w-0 flex-1">
-                    <Avatar name={game.home_team?.name ?? "?"} src={game.home_team?.logo_url} size={20} rounded="rounded" />
-                    <p className="font-semibold text-xs sm:text-sm truncate">
-                      <span className="sm:hidden">{shortTeamName(game.home_team?.name ?? "?")}</span>
-                      <span className="hidden sm:inline">{game.home_team?.name ?? "?"}</span>
-                      {" vs "}
-                      <span className="sm:hidden">{shortTeamName(game.away_team?.name ?? "?")}</span>
-                      <span className="hidden sm:inline">{game.away_team?.name ?? "?"}</span>
-                    </p>
-                    <Avatar name={game.away_team?.name ?? "?"} src={game.away_team?.logo_url} size={20} rounded="rounded" />
-                    <span
-                      className={`shrink-0 text-[9px] sm:text-[10px] uppercase font-bold px-1.5 py-0.5 rounded ${
-                        game.tag === "Playoffs"
-                          ? "bg-bsh-orange/20 text-bsh-orange"
-                          : "bg-white/10 text-white/50"
-                      }`}
-                    >
-                      {game.tag}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-                    <p className="font-display text-sm text-bsh-gold">
-                      {game.home_score} - {game.away_score}
-                    </p>
-                    <p className="hidden sm:block text-[11px] text-white/40">{game.game_date}</p>
-                  </div>
-                </div>
-              </Link>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {upcomingGames && upcomingGames.length > 0 && (
-        <section className="mb-6">
-          <h2 className="flex items-center gap-2 font-display text-sm text-bsh-gold mb-2 tracking-wide">
-            <span className="w-1 h-3.5 bg-bsh-orange rounded-sm" />
-            À VENIR
-          </h2>
-          <div className="space-y-2">
-            {upcomingGames.map((game) => (
-              <Link
-                key={game.id}
-                href={`/${game.league?.slug}/match/${game.id}`}
-                className="block border border-white/10 rounded-lg p-2.5 hover:border-bsh-orange transition-colors bg-white/5"
-              >
-                <div className="flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-1.5 min-w-0 flex-1">
-                    <Avatar name={game.home_team?.name ?? "?"} src={game.home_team?.logo_url} size={20} rounded="rounded" />
-                    <p className="font-semibold text-xs sm:text-sm truncate">
-                      <span className="sm:hidden">{shortTeamName(game.home_team?.name ?? "?")}</span>
-                      <span className="hidden sm:inline">{game.home_team?.name ?? "?"}</span>
-                      {" vs "}
-                      <span className="sm:hidden">{shortTeamName(game.away_team?.name ?? "?")}</span>
-                      <span className="hidden sm:inline">{game.away_team?.name ?? "?"}</span>
-                    </p>
-                    <Avatar name={game.away_team?.name ?? "?"} src={game.away_team?.logo_url} size={20} rounded="rounded" />
-                  </div>
-                  <p className="text-[11px] text-white/40 shrink-0">{game.game_date}</p>
-                </div>
-              </Link>
-            ))}
-          </div>
-        </section>
-      )}
 
     </div>
   );
