@@ -28,11 +28,11 @@ export default function NavMenu({ leagues }: { leagues: League[] }) {
 
   return (
     <nav className="border-b border-white/10 bg-bsh-black/80 backdrop-blur-md sticky top-0 z-50">
-      <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between relative">
+      <div className="max-w-5xl mx-auto px-3 py-2 sm:px-4 sm:py-3 flex items-center justify-between relative">
         <div ref={ref} className="relative">
           <button
             onClick={() => setOpen((v) => !v)}
-            className="font-display text-lg text-bsh-orange tracking-wide flex items-center gap-2"
+            className="font-display text-base sm:text-lg text-bsh-orange tracking-wide flex items-center gap-1.5 sm:gap-2"
           >
             BSH
             <svg
@@ -53,7 +53,7 @@ export default function NavMenu({ leagues }: { leagues: League[] }) {
           </button>
 
           {open && (
-            <div className="absolute left-0 top-full mt-2 w-[75vw] max-w-56 bg-bsh-black border border-white/10 rounded-lg shadow-xl overflow-hidden max-h-[80vh] overflow-y-auto">
+            <div className="absolute left-0 top-full mt-1.5 sm:mt-2 w-[62vw] max-w-48 sm:w-[75vw] sm:max-w-56 bg-bsh-black border border-white/10 rounded-lg shadow-xl overflow-hidden max-h-[80vh] overflow-y-auto">
               <div className="py-1">
                 <Link
                   href="/"

@@ -207,12 +207,7 @@ export default async function Home() {
                     </span>
                     {leader ? (
                       <span className="font-semibold text-bsh-gold truncate ml-2">
-                        {leader.player_name}
-                        <span className="text-white/40 font-normal">
-                          {" "}
-                          ({leader.team_name ?? "?"})
-                        </span>{" "}
-                        · {Number(leader.pir).toFixed(1)}
+                        {leader.player_name} · {Number(leader.pir).toFixed(1)}
                       </span>
                     ) : (
                       <span className="text-white/30">—</span>
