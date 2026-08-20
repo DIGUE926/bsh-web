@@ -49,7 +49,11 @@ export default async function PlayoffsPage({
     .eq("league_id", league.id)
     .order("game_date", { ascending: true });
 
-  const rows = (games ?? []) as unknown as PlayoffGame[];
+  // "cancelled" = match plus nécessaire (série déjà décidée avant le nombre
+  // maximum de matchs) — ne doit pas apparaître sur le bracket public.
+  const rows = ((games ?? []) as unknown as PlayoffGame[]).filter(
+    (g) => g.status !== "cancelled"
+  );
 
   const grouped = ROUND_ORDER.reduce<Record<string, PlayoffGame[]>>(
     (acc, round) => {
