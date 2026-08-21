@@ -79,7 +79,7 @@ export default function RejoindrePage() {
       <p className="text-white/50 text-sm mb-8">
         BSH couvre déjà SUBLE (Saint-Marc) et AHBB (Port-au-Prince). Si tu organises ou joues
         dans une autre ligue de basket amateur en Haïti et que tu veux être suivi sur la
-        plateforme (classements, stats, visuels réseaux sociaux), remplis ce formulaire — on te
+        plateforme (classements, stats, visuels réseaux sociaux), remplis ce formulaire, on te
         recontacte pour discuter.
       </p>
 
