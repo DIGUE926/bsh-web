@@ -64,6 +64,9 @@ export default function PlayerCarouselGenerator() {
   const [ready, setReady] = useState(false);
   const [activeSlide, setActiveSlide] = useState(0);
   const [aiHook, setAiHook] = useState("");
+  const [aiStatsCaption, setAiStatsCaption] = useState("");
+  const [aiComparisonCaption, setAiComparisonCaption] = useState("");
+  const [aiRadarCaption, setAiRadarCaption] = useState("");
   const [aiOutro, setAiOutro] = useState("");
   const [aiLoading, setAiLoading] = useState(false);
   const [aiError, setAiError] = useState<string | null>(null);
@@ -111,6 +114,9 @@ export default function PlayerCarouselGenerator() {
   function selectPlayer(id: string) {
     setPlayerId(id);
     setAiHook("");
+    setAiStatsCaption("");
+    setAiComparisonCaption("");
+    setAiRadarCaption("");
     setAiOutro("");
     setAiError(null);
   }
@@ -180,6 +186,9 @@ export default function PlayerCarouselGenerator() {
         return;
       }
       setAiHook(data.hook ?? "");
+      setAiStatsCaption(data.statsCaption ?? "");
+      setAiComparisonCaption(data.comparisonCaption ?? "");
+      setAiRadarCaption(data.radarCaption ?? "");
       setAiOutro(data.outro ?? "");
     } catch {
       setAiError("Impossible de contacter le service de génération.");
@@ -362,6 +371,18 @@ export default function PlayerCarouselGenerator() {
       gpY
     );
 
+    if (aiStatsCaption.trim()) {
+      ctx.fillStyle = COLORS.gold;
+      ctx.font = "600 italic 19px Montserrat, sans-serif";
+      ctx.textAlign = "center";
+      const capLines = wrapLines(ctx, aiStatsCaption.trim(), WIDTH - PADDING * 2);
+      let cy = HEIGHT - 110;
+      capLines.slice(0, 2).forEach((line) => {
+        ctx.fillText(line, WIDTH / 2, cy);
+        cy += 26;
+      });
+    }
+
     paintFooter(ctx, WIDTH, HEIGHT);
   }
 
@@ -444,10 +465,22 @@ export default function PlayerCarouselGenerator() {
       ctx.fillText(`moy. ${r.avg.toFixed(1)}`, barAreaX, y + 88);
     });
 
+    if (aiComparisonCaption.trim()) {
+      ctx.fillStyle = COLORS.gold;
+      ctx.font = "600 italic 19px Montserrat, sans-serif";
+      ctx.textAlign = "left";
+      const capLines = wrapLines(ctx, aiComparisonCaption.trim(), WIDTH - PADDING * 2);
+      let cy = HEIGHT - 130;
+      capLines.slice(0, 2).forEach((line) => {
+        ctx.fillText(line, PADDING, cy);
+        cy += 24;
+      });
+    }
+
     ctx.fillStyle = "rgba(255,255,255,0.4)";
     ctx.font = "600 15px Montserrat, sans-serif";
     ctx.textAlign = "left";
-    ctx.fillText("│ = moyenne de la ligue", PADDING, HEIGHT - 90);
+    ctx.fillText("│ = moyenne de la ligue", PADDING, HEIGHT - 70);
 
     paintFooter(ctx, WIDTH, HEIGHT);
   }
@@ -599,6 +632,18 @@ export default function PlayerCarouselGenerator() {
     ctx.fillStyle = COLORS.white;
     ctx.font = "700 18px Montserrat, sans-serif";
     ctx.fillText(`${weakness.label} — ${fmt(weakness.val)}`, WIDTH - PADDING, calloutY + 26);
+
+    if (aiRadarCaption.trim()) {
+      ctx.fillStyle = COLORS.gold;
+      ctx.font = "600 italic 19px Montserrat, sans-serif";
+      ctx.textAlign = "center";
+      const capLines = wrapLines(ctx, aiRadarCaption.trim(), WIDTH - PADDING * 2);
+      let cy = HEIGHT - 110;
+      capLines.slice(0, 2).forEach((line) => {
+        ctx.fillText(line, WIDTH / 2, cy);
+        cy += 26;
+      });
+    }
 
     paintFooter(ctx, WIDTH, HEIGHT);
   }
@@ -805,7 +850,7 @@ export default function PlayerCarouselGenerator() {
       <div className="border border-white/10 rounded-lg p-4 bg-white/5 mb-6 max-w-2xl">
         <div className="flex items-center justify-between mb-2 gap-3 flex-wrap">
           <p className="text-sm font-semibold text-white/80">
-            Texte d&apos;analyse (accroche + outro) — généré par IA
+            Texte d&apos;analyse (5 slides) — généré par IA
           </p>
           <button
             onClick={generateAiCopy}
@@ -823,6 +868,36 @@ export default function PlayerCarouselGenerator() {
               value={aiHook}
               onChange={(e) => setAiHook(e.target.value)}
               placeholder="Laisse vide pour garder le texte par défaut."
+              rows={3}
+              className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm focus:border-bsh-orange outline-none resize-none"
+            />
+          </div>
+          <div>
+            <label className="block text-xs text-white/40 mb-1">Légende stats (slide 2)</label>
+            <textarea
+              value={aiStatsCaption}
+              onChange={(e) => setAiStatsCaption(e.target.value)}
+              placeholder="Laisse vide pour ne rien afficher sur cette slide."
+              rows={3}
+              className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm focus:border-bsh-orange outline-none resize-none"
+            />
+          </div>
+          <div>
+            <label className="block text-xs text-white/40 mb-1">Légende comparaison (slide 3)</label>
+            <textarea
+              value={aiComparisonCaption}
+              onChange={(e) => setAiComparisonCaption(e.target.value)}
+              placeholder="Laisse vide pour ne rien afficher sur cette slide."
+              rows={3}
+              className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm focus:border-bsh-orange outline-none resize-none"
+            />
+          </div>
+          <div>
+            <label className="block text-xs text-white/40 mb-1">Légende radar (slide 4)</label>
+            <textarea
+              value={aiRadarCaption}
+              onChange={(e) => setAiRadarCaption(e.target.value)}
+              placeholder="Laisse vide pour ne rien afficher sur cette slide."
               rows={3}
               className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm focus:border-bsh-orange outline-none resize-none"
             />

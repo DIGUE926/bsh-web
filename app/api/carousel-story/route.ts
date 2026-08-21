@@ -24,15 +24,30 @@ const COPY_SCHEMA: GeminiSchema = {
     hook: {
       type: "STRING",
       description:
-        "Phrase d'accroche pour la première slide, 1 phrase, 140 caractères max, ton analyste sportif pro (façon ESPN/NBA), percutante et spécifique au joueur — jamais générique.",
+        "Phrase d'accroche pour la slide 1 (ouverture), 1 phrase, 140 caractères max, ton analyste sportif pro (façon ESPN/NBA), percutante et spécifique au joueur — jamais générique.",
+    },
+    statsCaption: {
+      type: "STRING",
+      description:
+        "Légende courte pour la slide 2 (grille de stats brutes), 1 phrase, 100 caractères max, met en relief le chiffre le plus parlant de la grille — jamais générique.",
+    },
+    comparisonCaption: {
+      type: "STRING",
+      description:
+        "Légende courte pour la slide 3 (comparaison vs moyenne de la ligue), 1 phrase, 100 caractères max, souligne l'écart le plus frappant avec la moyenne — jamais générique.",
+    },
+    radarCaption: {
+      type: "STRING",
+      description:
+        "Légende courte pour la slide 4 (profil radar forces/faiblesses), 1 phrase, 100 caractères max, commente le contraste entre le point fort et le point à travailler — jamais générique.",
     },
     outro: {
       type: "STRING",
       description:
-        "Phrase de conclusion/résumé pour la dernière slide, 1 phrase, 160 caractères max, ton analyste sportif pro, qui synthétise l'impact du joueur cette saison.",
+        "Phrase de conclusion/résumé pour la slide 5 (dernière), 1 phrase, 160 caractères max, ton analyste sportif pro, qui synthétise l'impact du joueur cette saison.",
     },
   },
-  required: ["hook", "outro"],
+  required: ["hook", "statsCaption", "comparisonCaption", "radarCaption", "outro"],
 };
 
 export async function POST(req: Request) {
@@ -85,18 +100,28 @@ ${statsLines}
 Point fort relatif : ${body.strengthLabel ?? "n/a"}
 Point à travailler : ${body.weaknessLabel ?? "n/a"}
 
-Écris :
-1. Une phrase d'accroche pour la slide d'ouverture du carrousel Instagram — donne envie de swiper, s'appuie sur un fait concret et spécifique à ce joueur (pas juste "il est bon").
-2. Une phrase de conclusion pour la dernière slide — résume ce qui définit sa saison, avec une vraie prise de position analytique.
+Le carrousel Instagram a 5 slides. Écris un texte pour chacune :
+1. Slide 1 (accroche d'ouverture) — donne envie de swiper, s'appuie sur un fait concret et spécifique à ce joueur (pas juste "il est bon").
+2. Slide 2 (grille de stats brutes) — une légende courte qui met en avant le chiffre le plus parlant.
+3. Slide 3 (comparaison vs moyenne de la ligue) — une légende courte sur l'écart le plus frappant avec la moyenne.
+4. Slide 4 (profil radar forces/faiblesses) — une légende courte qui contraste le point fort et le point à travailler.
+5. Slide 5 (conclusion) — résume ce qui définit sa saison, avec une vraie prise de position analytique.
 
 Contraintes strictes :
-- N'utilise JAMAIS les mots "percentile" ou "PIR" dans le texte.
+- N'utilise JAMAIS les mots "percentile" ou "PIR" dans le texte — dis "impact" à la place si besoin.
 - Français, ton pro et direct, zéro cliché creux ("un joueur exceptionnel", "un talent brut").
-- Chaque phrase doit tenir dans les limites de caractères indiquées dans le schéma — sois concis.`;
+- Chaque phrase doit tenir dans les limites de caractères indiquées dans le schéma — sois concis.
+- Les 5 textes doivent être distincts, ne répète pas la même idée d'une slide à l'autre.`;
 
   try {
     const output = await generateStructuredCopy(prompt, COPY_SCHEMA);
-    return NextResponse.json({ hook: output.hook, outro: output.outro });
+    return NextResponse.json({
+      hook: output.hook,
+      statsCaption: output.statsCaption,
+      comparisonCaption: output.comparisonCaption,
+      radarCaption: output.radarCaption,
+      outro: output.outro,
+    });
   } catch (err) {
     console.error("carousel-story generation failed", err);
     return NextResponse.json(
