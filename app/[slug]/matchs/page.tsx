@@ -4,8 +4,28 @@ import { notFound } from "next/navigation";
 import Breadcrumb from "@/app/Breadcrumb";
 import GamesList from "@/app/[slug]/GamesList";
 import { seasonLabel, currentSeasonLabel } from "@/lib/season";
+import { getLeagueNameForSeo } from "@/lib/seo";
+import type { Metadata } from "next";
 
 export const revalidate = 60;
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const name = await getLeagueNameForSeo(slug);
+  if (!name) return {};
+  const title = `Matchs ${name} — Résultats et calendrier | BSH Basketball Haïti`;
+  const description = `Résultats et calendrier des matchs de la ligue ${name} en Haïti, saison régulière et archives.`;
+  return {
+    title,
+    description,
+    openGraph: { title, description },
+    twitter: { title, description },
+  };
+}
 
 export default async function MatchsPage({
   params,

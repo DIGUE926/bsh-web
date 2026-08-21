@@ -2,8 +2,28 @@ import { supabase } from "@/lib/supabase";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import Breadcrumb from "@/app/Breadcrumb";
+import { getLeagueNameForSeo } from "@/lib/seo";
+import type { Metadata } from "next";
 
 export const revalidate = 60;
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const name = await getLeagueNameForSeo(slug);
+  if (!name) return {};
+  const title = `Classement équipes ${name} — Basketball Haïti | BSH`;
+  const description = `Classement des équipes de la ligue ${name} en Haïti : victoires, défaites, points marqués et encaissés.`;
+  return {
+    title,
+    description,
+    openGraph: { title, description },
+    twitter: { title, description },
+  };
+}
 
 type TeamRecord = {
   teamId: string;

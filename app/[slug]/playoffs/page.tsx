@@ -2,8 +2,28 @@ import { supabase } from "@/lib/supabase";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import Breadcrumb from "@/app/Breadcrumb";
+import { getLeagueNameForSeo } from "@/lib/seo";
+import type { Metadata } from "next";
 
 export const revalidate = 60;
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const name = await getLeagueNameForSeo(slug);
+  if (!name) return {};
+  const title = `Playoffs ${name} — Bracket et résultats | BSH Basketball Haïti`;
+  const description = `Le bracket des playoffs de la ligue ${name} en Haïti : matchs, scores et parcours de chaque équipe.`;
+  return {
+    title,
+    description,
+    openGraph: { title, description },
+    twitter: { title, description },
+  };
+}
 
 const ROUND_LABELS: Record<string, string> = {
   demi_finale_1: "Demi-finale 1",

@@ -3,8 +3,28 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import Breadcrumb from "@/app/Breadcrumb";
 import ClassementTabs from "./ClassementTabs";
+import { getLeagueNameForSeo } from "@/lib/seo";
+import type { Metadata } from "next";
 
 export const revalidate = 60;
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const name = await getLeagueNameForSeo(slug);
+  if (!name) return {};
+  const title = `Classement joueurs ${name} — PPG, RPG, APG | BSH Basketball Haïti`;
+  const description = `Le classement des meilleurs joueurs de la ligue ${name} en Haïti : points, rebonds, passes, interceptions et contres par match.`;
+  return {
+    title,
+    description,
+    openGraph: { title, description },
+    twitter: { title, description },
+  };
+}
 
 export default async function ClassementJoueursPage({
   params,

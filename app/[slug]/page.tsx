@@ -4,8 +4,28 @@ import { notFound } from "next/navigation";
 import Breadcrumb from "@/app/Breadcrumb";
 import Avatar from "@/app/Avatar";
 import U20Badge from "@/app/U20Badge";
+import { getLeagueNameForSeo } from "@/lib/seo";
+import type { Metadata } from "next";
 
 export const revalidate = 60;
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const name = await getLeagueNameForSeo(slug);
+  if (!name) return {};
+  const title = `${name} — Équipes, classement et stats | BSH Basketball Haïti`;
+  const description = `Suivez la ligue ${name} sur BSH : équipes, classement, résultats et statistiques des joueurs, basketball en Haïti.`;
+  return {
+    title,
+    description,
+    openGraph: { title, description },
+    twitter: { title, description },
+  };
+}
 
 export default async function LeaguePage({
   params,
