@@ -30,6 +30,7 @@ type RankingRow = {
   pir: number | null;
 };
 
+type League = { id: string; slug: string; name: string };
 type TeamRow = { id: string; name: string; league_id: string };
 type TeamRecord = { teamId: string; name: string; wins: number; losses: number };
 type ChiffreChoc = {
@@ -88,6 +89,8 @@ function PickSelector<T>({
 
 export default function SeasonWrappedGenerator() {
   const [seasonLabel, setSeasonLabel] = useState("Saison 2025-2026");
+  const [leagues, setLeagues] = useState<League[]>([]);
+  const [leagueId, setLeagueId] = useState("");
   const [loading, setLoading] = useState(false);
   const [loadingData, setLoadingData] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -123,19 +126,39 @@ export default function SeasonWrappedGenerator() {
   const supabase = createClient();
 
   useEffect(() => {
+    async function loadLeagues() {
+      const { data } = await supabase.from("leagues").select("id, slug, name").order("name");
+      if (data && data.length > 0) {
+        setLeagues(data);
+        setLeagueId(data[0].id);
+      }
+    }
+    loadLeagues();
+  }, [supabase]);
+
+  useEffect(() => {
+    if (!leagueId) return;
+    const league = leagues.find((l) => l.id === leagueId);
+    if (!league) return;
+
     async function loadData() {
       setLoadingData(true);
 
       const { data: rankingRows } = await supabase
         .from("global_rankings")
         .select("player_id, player_name, team_name, league_name, games_played, ppg, apg, spg, bpg, pir")
+        .eq("league_slug", league!.slug)
         .gte("games_played", MIN_GAMES);
       setRankings((rankingRows ?? []) as RankingRow[]);
 
-      const { data: teams } = await supabase.from("teams").select("id, name, league_id");
+      const { data: teams } = await supabase
+        .from("teams")
+        .select("id, name, league_id")
+        .eq("league_id", leagueId);
       const { data: games } = await supabase
         .from("games")
         .select("home_team_id, away_team_id, home_score, away_score, status, game_date")
+        .eq("league_id", leagueId)
         .eq("status", "completed");
 
       const recordByTeam = new Map<string, { wins: number; losses: number }>();
@@ -180,7 +203,24 @@ export default function SeasonWrappedGenerator() {
       setLoadingData(false);
     }
     loadData();
-  }, [supabase]);
+  }, [supabase, leagueId, leagues]);
+
+  const selectedLeague = leagues.find((l) => l.id === leagueId) ?? null;
+  const contextLabel = `${selectedLeague?.slug.toUpperCase() ?? ""} · ${seasonLabel.toUpperCase()}`;
+
+  function selectLeague(id: string) {
+    setLeagueId(id);
+    setMvpIdx(0);
+    setScorerIdx(0);
+    setPasserIdx(0);
+    setDefenderIdx(0);
+    setTeamIdx(0);
+    setChiffreIdx(0);
+    setAiHook("");
+    setAiOutro("");
+    setAiError(null);
+    setReady(false);
+  }
 
   const byPir = [...rankings].sort((a, b) => (b.pir ?? 0) - (a.pir ?? 0)).slice(0, 3);
   const byPpg = [...rankings].sort((a, b) => (b.ppg ?? 0) - (a.ppg ?? 0)).slice(0, 3);
@@ -210,6 +250,7 @@ export default function SeasonWrappedGenerator() {
         body: JSON.stringify({
           kind: "seasonWrapped",
           seasonLabel,
+          leagueName: selectedLeague?.name ?? "",
           mvp: { name: mvp.player_name, team: mvp.team_name, pir: mvp.pir },
           topScorer: { name: topScorer?.player_name ?? "", team: topScorer?.team_name ?? null, ppg: topScorer?.ppg ?? null },
           topPasser: { name: topPasser?.player_name ?? "", team: topPasser?.team_name ?? null, apg: topPasser?.apg ?? null },
@@ -266,7 +307,7 @@ export default function SeasonWrappedGenerator() {
 
     paintBackground(ctx, WIDTH, HEIGHT);
     await paintCourtPattern(ctx, WIDTH, HEIGHT, 0.1);
-    paintCompactHeader(ctx, "BSH WRAPPED", "TOUTES LIGUES", WIDTH);
+    paintCompactHeader(ctx, "BSH WRAPPED", contextLabel, WIDTH);
     paintSlideIndicator(ctx, 0, SLIDE_COUNT, WIDTH);
 
     ctx.textBaseline = "alphabetic";
@@ -292,7 +333,8 @@ export default function SeasonWrappedGenerator() {
 
     ctx.fillStyle = "rgba(255,255,255,0.8)";
     ctx.font = "500 24px Montserrat, sans-serif";
-    const hookText = aiHook.trim() || "Le récap complet de la saison BSH, SUBLE et AHBB confondues.";
+    const hookText =
+      aiHook.trim() || `Le récap complet de la saison ${selectedLeague?.name ?? ""}.`;
     const hookLines = wrapLines(ctx, hookText, WIDTH - PADDING * 2);
     let hy = dividerY + 50;
     hookLines.forEach((line) => {
@@ -325,7 +367,7 @@ export default function SeasonWrappedGenerator() {
 
     paintBackground(ctx, WIDTH, HEIGHT);
     await paintCourtPattern(ctx, WIDTH, HEIGHT, 0.08);
-    paintCompactHeader(ctx, kicker, seasonLabel.toUpperCase(), WIDTH);
+    paintCompactHeader(ctx, kicker, contextLabel, WIDTH);
     paintSlideIndicator(ctx, index, SLIDE_COUNT, WIDTH);
 
     ctx.textBaseline = "alphabetic";
@@ -373,7 +415,7 @@ export default function SeasonWrappedGenerator() {
 
     paintBackground(ctx, WIDTH, HEIGHT);
     await paintCourtPattern(ctx, WIDTH, HEIGHT, 0.08);
-    paintCompactHeader(ctx, "ÉQUIPE DOMINANTE", seasonLabel.toUpperCase(), WIDTH);
+    paintCompactHeader(ctx, "ÉQUIPE DOMINANTE", contextLabel, WIDTH);
     paintSlideIndicator(ctx, 5, SLIDE_COUNT, WIDTH);
 
     ctx.textBaseline = "alphabetic";
@@ -421,7 +463,7 @@ export default function SeasonWrappedGenerator() {
 
     paintBackground(ctx, WIDTH, HEIGHT);
     await paintCourtPattern(ctx, WIDTH, HEIGHT, 0.08);
-    paintCompactHeader(ctx, "LE MATCH LE PLUS EXPLOSIF", seasonLabel.toUpperCase(), WIDTH);
+    paintCompactHeader(ctx, "LE MATCH LE PLUS EXPLOSIF", contextLabel, WIDTH);
     paintSlideIndicator(ctx, 6, SLIDE_COUNT, WIDTH);
 
     ctx.textBaseline = "alphabetic";
@@ -475,7 +517,7 @@ export default function SeasonWrappedGenerator() {
 
     paintBackground(ctx, WIDTH, HEIGHT);
     await paintCourtPattern(ctx, WIDTH, HEIGHT, 0.08);
-    paintCompactHeader(ctx, "MERCI POUR CETTE SAISON", seasonLabel.toUpperCase(), WIDTH);
+    paintCompactHeader(ctx, "MERCI POUR CETTE SAISON", contextLabel, WIDTH);
     paintSlideIndicator(ctx, 7, SLIDE_COUNT, WIDTH);
 
     ctx.textBaseline = "alphabetic";
@@ -489,7 +531,7 @@ export default function SeasonWrappedGenerator() {
     ctx.font = "500 22px Montserrat, sans-serif";
     const recapText =
       aiOutro.trim() ||
-      "Une saison marquée par le talent de SUBLE et AHBB — la suite arrive bientôt.";
+      `Une saison marquée par le talent de ${selectedLeague?.name ?? "cette ligue"} — la suite arrive bientôt.`;
     const recapLines = wrapLines(ctx, recapText, WIDTH - PADDING * 2);
     let ry = 250;
     recapLines.forEach((line) => {
@@ -586,17 +628,33 @@ export default function SeasonWrappedGenerator() {
         SEASON WRAPPED
       </h1>
       <p className="text-sm text-white/50 mb-6">
-        Récap de fin de saison, toutes ligues confondues (SUBLE + AHBB). Le système calcule les
-        highlights automatiquement — ajuste chaque catégorie ci-dessous si besoin avant de générer.
+        Récap de fin de saison, une ligue à la fois. Le système calcule les highlights
+        automatiquement — ajuste chaque catégorie ci-dessous si besoin avant de générer.
       </p>
 
-      <div className="mb-6 max-w-md">
-        <label className="block text-sm text-white/60 mb-1">Nom de la saison</label>
-        <input
-          value={seasonLabel}
-          onChange={(e) => setSeasonLabel(e.target.value)}
-          className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 focus:border-bsh-orange outline-none"
-        />
+      <div className="flex flex-wrap gap-4 mb-6">
+        <div>
+          <label className="block text-sm text-white/60 mb-1">Ligue</label>
+          <select
+            value={leagueId}
+            onChange={(e) => selectLeague(e.target.value)}
+            className="bg-white/5 border border-white/10 rounded-lg px-4 py-2 focus:border-bsh-orange outline-none"
+          >
+            {leagues.map((l) => (
+              <option key={l.id} value={l.id}>
+                {l.name}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div className="max-w-md">
+          <label className="block text-sm text-white/60 mb-1">Nom de la saison</label>
+          <input
+            value={seasonLabel}
+            onChange={(e) => setSeasonLabel(e.target.value)}
+            className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 focus:border-bsh-orange outline-none"
+          />
+        </div>
       </div>
 
       {loadingData ? (

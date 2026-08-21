@@ -42,6 +42,7 @@ type TeamBreakdownBody = {
 type SeasonWrappedBody = {
   kind: "seasonWrapped";
   seasonLabel: string;
+  leagueName: string;
   mvp: { name: string; team: string | null; pir: number | null };
   topScorer: { name: string; team: string | null; ppg: number | null };
   topPasser: { name: string; team: string | null; apg: number | null };
@@ -111,8 +112,9 @@ const SEASON_WRAPPED_SCHEMA: GeminiSchema = {
 };
 
 function buildSeasonWrappedPrompt(body: SeasonWrappedBody): string {
-  return `Tu es un analyste basketball professionnel qui écrit pour un média sportif haïtien (BSH / BallsoHard), dans le style d'un récap de fin de saison ESPN/NBA ("Wrapped"). Le carrousel couvre TOUTES les ligues BSH confondues (SUBLE + AHBB), pas une seule.
+  return `Tu es un analyste basketball professionnel qui écrit pour un média sportif haïtien (BSH / BallsoHard), dans le style d'un récap de fin de saison ESPN/NBA ("Wrapped"). Le carrousel couvre UNE seule ligue BSH : ${body.leagueName}.
 
+Ligue : ${body.leagueName}
 Saison : ${body.seasonLabel}
 MVP saison (impact/PIR le plus haut) : ${body.mvp.name} (${body.mvp.team ?? "équipe inconnue"}), impact ${body.mvp.pir?.toFixed(1) ?? "n/a"}
 Meilleur scoreur : ${body.topScorer.name} (${body.topScorer.team ?? "équipe inconnue"}), ${body.topScorer.ppg?.toFixed(1) ?? "n/a"} pts/match
@@ -123,7 +125,7 @@ ${body.chiffreChoc ? `Match le plus explosif : ${body.chiffreChoc.homeTeam} vs $
 
 Écris :
 1. Une phrase d'accroche pour la slide de couverture — donne le ton de "voici le récap de la saison BSH", excitant, sans lister les stats (elles arrivent dans les slides suivantes).
-2. Une phrase de conclusion pour la dernière slide — résume l'esprit global de la saison sur les deux ligues, avec une vraie prise de position analytique.
+2. Une phrase de conclusion pour la dernière slide — résume l'esprit global de la saison de cette ligue, avec une vraie prise de position analytique.
 
 Contraintes strictes :
 - N'utilise JAMAIS les mots "percentile" ou "PIR" dans le texte — dis "impact" à la place si besoin.
