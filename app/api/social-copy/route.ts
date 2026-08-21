@@ -39,7 +39,18 @@ type TeamBreakdownBody = {
   topPerformers: { name: string; ppg: number | null; pir: number | null }[];
 };
 
-type RequestBody = MatchRecapBody | TopLeadersBody | TeamBreakdownBody;
+type SeasonWrappedBody = {
+  kind: "seasonWrapped";
+  seasonLabel: string;
+  mvp: { name: string; team: string | null; pir: number | null };
+  topScorer: { name: string; team: string | null; ppg: number | null };
+  topPasser: { name: string; team: string | null; apg: number | null };
+  topDefender: { name: string; team: string | null; value: number | null };
+  dominantTeam: { name: string | null; wins: number; losses: number };
+  chiffreChoc: { homeTeam: string; awayTeam: string; totalPoints: number } | null;
+};
+
+type RequestBody = MatchRecapBody | TopLeadersBody | TeamBreakdownBody | SeasonWrappedBody;
 
 const MATCH_RECAP_SCHEMA: GeminiSchema = {
   type: "OBJECT",
@@ -81,6 +92,44 @@ const TEAM_BREAKDOWN_SCHEMA: GeminiSchema = {
   },
   required: ["hook", "outro"],
 };
+
+const SEASON_WRAPPED_SCHEMA: GeminiSchema = {
+  type: "OBJECT",
+  properties: {
+    hook: {
+      type: "STRING",
+      description:
+        "Phrase d'accroche pour la slide de couverture du Wrapped BSH, 1 phrase, 140 caractères max, ton événementiel et impactant (façon récap de fin de saison ESPN/NBA), donne envie de swiper — jamais générique.",
+    },
+    outro: {
+      type: "STRING",
+      description:
+        "Phrase de conclusion pour la dernière slide, 1 phrase, 160 caractères max, ton analyste sportif pro, qui résume l'esprit de la saison BSH (les deux ligues confondues) et invite à suivre la suite.",
+    },
+  },
+  required: ["hook", "outro"],
+};
+
+function buildSeasonWrappedPrompt(body: SeasonWrappedBody): string {
+  return `Tu es un analyste basketball professionnel qui écrit pour un média sportif haïtien (BSH / BallsoHard), dans le style d'un récap de fin de saison ESPN/NBA ("Wrapped"). Le carrousel couvre TOUTES les ligues BSH confondues (SUBLE + AHBB), pas une seule.
+
+Saison : ${body.seasonLabel}
+MVP saison (impact/PIR le plus haut) : ${body.mvp.name} (${body.mvp.team ?? "équipe inconnue"}), impact ${body.mvp.pir?.toFixed(1) ?? "n/a"}
+Meilleur scoreur : ${body.topScorer.name} (${body.topScorer.team ?? "équipe inconnue"}), ${body.topScorer.ppg?.toFixed(1) ?? "n/a"} pts/match
+Meilleur passeur : ${body.topPasser.name} (${body.topPasser.team ?? "équipe inconnue"}), ${body.topPasser.apg?.toFixed(1) ?? "n/a"} passes/match
+Meilleur défenseur : ${body.topDefender.name} (${body.topDefender.team ?? "équipe inconnue"}), ${body.topDefender.value?.toFixed(1) ?? "n/a"} (interceptions+contres)/match
+Équipe la plus dominante : ${body.dominantTeam.name ?? "n/a"} (${body.dominantTeam.wins}V-${body.dominantTeam.losses}D)
+${body.chiffreChoc ? `Match le plus explosif : ${body.chiffreChoc.homeTeam} vs ${body.chiffreChoc.awayTeam}, ${body.chiffreChoc.totalPoints} points cumulés` : ""}
+
+Écris :
+1. Une phrase d'accroche pour la slide de couverture — donne le ton de "voici le récap de la saison BSH", excitant, sans lister les stats (elles arrivent dans les slides suivantes).
+2. Une phrase de conclusion pour la dernière slide — résume l'esprit global de la saison sur les deux ligues, avec une vraie prise de position analytique.
+
+Contraintes strictes :
+- N'utilise JAMAIS les mots "percentile" ou "PIR" dans le texte — dis "impact" à la place si besoin.
+- Français, ton pro et direct, zéro cliché creux.
+- Chaque phrase doit tenir dans les limites de caractères indiquées dans le schéma — sois concis.`;
+}
 
 function buildTeamBreakdownPrompt(body: TeamBreakdownBody): string {
   const perfLines = body.topPerformers
@@ -218,6 +267,13 @@ export async function POST(req: Request) {
     }
     prompt = buildTeamBreakdownPrompt(body);
     schema = TEAM_BREAKDOWN_SCHEMA;
+    outputKeys = ["hook", "outro"];
+  } else if (body.kind === "seasonWrapped") {
+    if (!body.mvp?.name) {
+      return NextResponse.json({ error: "Données de saison incomplètes." }, { status: 400 });
+    }
+    prompt = buildSeasonWrappedPrompt(body);
+    schema = SEASON_WRAPPED_SCHEMA;
     outputKeys = ["hook", "outro"];
   } else {
     return NextResponse.json({ error: "Type de requête inconnu." }, { status: 400 });

@@ -5,14 +5,16 @@ import TopLeadersGenerator from "./TopLeadersGenerator";
 import MatchRecapGenerator from "./MatchRecapGenerator";
 import PlayerCarouselGenerator from "./PlayerCarouselGenerator";
 import TeamBreakdownGenerator from "./TeamBreakdownGenerator";
+import SeasonWrappedGenerator from "./SeasonWrappedGenerator";
 
-type Tab = "leaders" | "recap" | "carousel" | "team";
+type Tab = "leaders" | "recap" | "carousel" | "team" | "wrapped";
 
 const TABS: { key: Tab; label: string }[] = [
   { key: "leaders", label: "Top Leaders" },
   { key: "recap", label: "Récap de match" },
   { key: "carousel", label: "Carrousel joueur" },
   { key: "team", label: "Team Breakdown" },
+  { key: "wrapped", label: "Season Wrapped" },
 ];
 
 export default function SocialToolsTabs() {
@@ -40,6 +42,7 @@ export default function SocialToolsTabs() {
       {tab === "recap" && <MatchRecapGenerator />}
       {tab === "carousel" && <PlayerCarouselGenerator />}
       {tab === "team" && <TeamBreakdownGenerator />}
+      {tab === "wrapped" && <SeasonWrappedGenerator />}
     </div>
   );
 }
