@@ -80,6 +80,13 @@ export default function NavMenu({ leagues }: { leagues: League[] }) {
                 >
                   Comparateur de joueurs
                 </Link>
+                <Link
+                  href="/rejoindre"
+                  onClick={closeMenu}
+                  className="block px-3 py-2 hover:bg-white/5 font-semibold text-xs text-bsh-orange"
+                >
+                  Ta ligue veut rejoindre BSH ?
+                </Link>
               </div>
 
               <div className="border-t border-white/10">

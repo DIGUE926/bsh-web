@@ -84,6 +84,14 @@ export default async function AdminLayout({
             Sponsors
           </Link>
         )}
+        {isOwner && (
+          <Link
+            href="/admin/demandes"
+            className="shrink-0 px-2.5 py-1.5 rounded-full bg-white/5 text-white/60 hover:text-bsh-orange"
+          >
+            Demandes
+          </Link>
+        )}
       </nav>
       {children}
     </div>

@@ -24,6 +24,7 @@ type RankingRow = {
   league_name: string | null;
   games_played: number | null;
   ppg: number | null;
+  rpg: number | null;
   apg: number | null;
   spg: number | null;
   bpg: number | null;
@@ -146,7 +147,7 @@ export default function SeasonWrappedGenerator() {
 
       const { data: rankingRows } = await supabase
         .from("global_rankings")
-        .select("player_id, player_name, team_name, league_name, games_played, ppg, apg, spg, bpg, pir")
+        .select("player_id, player_name, team_name, league_name, games_played, ppg, rpg, apg, spg, bpg, pir")
         .eq("league_slug", league!.slug)
         .gte("games_played", MIN_GAMES);
       setRankings((rankingRows ?? []) as RankingRow[]);
@@ -355,7 +356,8 @@ export default function SeasonWrappedGenerator() {
     playerName: string,
     teamName: string | null,
     valueLabel: string,
-    valueText: string
+    valueText: string,
+    extraStats?: { label: string; value: string }[]
   ) {
     const canvas = canvasRefs[index].current;
     if (!canvas) return;
@@ -400,6 +402,27 @@ export default function SeasonWrappedGenerator() {
     ctx.fillStyle = "rgba(255,255,255,0.45)";
     ctx.font = "700 18px Montserrat, sans-serif";
     ctx.fillText(valueLabel.toUpperCase(), PADDING, dividerY + 108);
+
+    if (extraStats && extraStats.length > 0) {
+      const rowY = dividerY + 170;
+      ctx.strokeStyle = "rgba(255,255,255,0.15)";
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(PADDING, rowY - 30);
+      ctx.lineTo(WIDTH - PADDING, rowY - 30);
+      ctx.stroke();
+
+      const colWidth = (WIDTH - PADDING * 2) / extraStats.length;
+      extraStats.forEach((stat, i) => {
+        const x = PADDING + i * colWidth;
+        ctx.fillStyle = COLORS.white;
+        ctx.font = "900 30px Anton, sans-serif";
+        ctx.fillText(stat.value, x, rowY);
+        ctx.fillStyle = "rgba(255,255,255,0.4)";
+        ctx.font = "700 13px Montserrat, sans-serif";
+        ctx.fillText(stat.label.toUpperCase(), x, rowY + 22);
+      });
+    }
 
     paintFooter(ctx, WIDTH, HEIGHT);
   }
@@ -580,16 +603,57 @@ export default function SeasonWrappedGenerator() {
 
     await Promise.all([
       drawCoverSlide(),
-      drawStatSlide(1, "MVP SAISON", mvp.player_name, mvp.team_name, "IMPACT", mvp.pir?.toFixed(1) ?? "-"),
-      drawStatSlide(2, "MEILLEUR SCOREUR", topScorer.player_name, topScorer.team_name, "POINTS/MATCH", topScorer.ppg?.toFixed(1) ?? "-"),
-      drawStatSlide(3, "MEILLEUR PASSEUR", topPasser.player_name, topPasser.team_name, "PASSES/MATCH", topPasser.apg?.toFixed(1) ?? "-"),
+      drawStatSlide(
+        1,
+        "MVP SAISON",
+        mvp.player_name,
+        mvp.team_name,
+        "IMPACT",
+        mvp.pir?.toFixed(1) ?? "-",
+        [
+          { label: "PTS", value: mvp.ppg?.toFixed(1) ?? "-" },
+          { label: "REB", value: mvp.rpg?.toFixed(1) ?? "-" },
+          { label: "PASSES", value: mvp.apg?.toFixed(1) ?? "-" },
+        ]
+      ),
+      drawStatSlide(
+        2,
+        "MEILLEUR SCOREUR",
+        topScorer.player_name,
+        topScorer.team_name,
+        "POINTS/MATCH",
+        topScorer.ppg?.toFixed(1) ?? "-",
+        [
+          { label: "REB", value: topScorer.rpg?.toFixed(1) ?? "-" },
+          { label: "PASSES", value: topScorer.apg?.toFixed(1) ?? "-" },
+          { label: "MATCHS", value: String(topScorer.games_played ?? "-") },
+        ]
+      ),
+      drawStatSlide(
+        3,
+        "MEILLEUR PASSEUR",
+        topPasser.player_name,
+        topPasser.team_name,
+        "PASSES/MATCH",
+        topPasser.apg?.toFixed(1) ?? "-",
+        [
+          { label: "PTS", value: topPasser.ppg?.toFixed(1) ?? "-" },
+          { label: "REB", value: topPasser.rpg?.toFixed(1) ?? "-" },
+          { label: "MATCHS", value: String(topPasser.games_played ?? "-") },
+        ]
+      ),
       drawStatSlide(
         4,
         "MEILLEUR DÉFENSEUR",
         topDefender.player_name,
         topDefender.team_name,
         "INTERCEPTIONS + CONTRES/MATCH",
-        ((topDefender.spg ?? 0) + (topDefender.bpg ?? 0)).toFixed(1)
+        ((topDefender.spg ?? 0) + (topDefender.bpg ?? 0)).toFixed(1),
+        [
+          { label: "INT", value: topDefender.spg?.toFixed(1) ?? "-" },
+          { label: "CONTRES", value: topDefender.bpg?.toFixed(1) ?? "-" },
+          { label: "MATCHS", value: String(topDefender.games_played ?? "-") },
+        ]
       ),
       drawTeamSlide(),
       drawChiffreChocSlide(),
