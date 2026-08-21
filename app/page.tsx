@@ -5,6 +5,7 @@ import LiveBadge from "@/app/LiveBadge";
 import { shortTeamName } from "@/lib/teamDisplay";
 import U20Badge from "@/app/U20Badge";
 import WinProbBar from "@/app/WinProbBar";
+import SponsorsStrip from "@/app/SponsorsStrip";
 
 export const revalidate = 60;
 
@@ -358,7 +359,7 @@ export default async function Home() {
         </section>
       )}
 
-
+      <SponsorsStrip />
     </div>
   );
 }
