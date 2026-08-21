@@ -1,13 +1,9 @@
 import { NextResponse } from "next/server";
-import Anthropic from "@anthropic-ai/sdk";
+import { generateStructuredCopy, type GeminiSchema } from "@/lib/gemini";
 import { createClient } from "@/lib/supabase/server";
 import { isOwnerEmail } from "@/lib/adminAccess";
 
 export const dynamic = "force-dynamic";
-
-// Modèle utilisé pour la génération de texte du carrousel joueur.
-// Configurable via env var au cas où le nom de modèle doive être mis à jour.
-const MODEL = process.env.ANTHROPIC_MODEL ?? "claude-sonnet-4-5-20250929";
 
 type RequestBody = {
   playerName: string;
@@ -22,32 +18,27 @@ type RequestBody = {
   weaknessLabel: string | null;
 };
 
-const COPY_TOOL = {
-  name: "generate_carousel_copy",
-  description:
-    "Fournit le texte d'accroche et de conclusion pour un carrousel Instagram d'analyse basketball.",
-  input_schema: {
-    type: "object" as const,
-    properties: {
-      hook: {
-        type: "string",
-        description:
-          "Phrase d'accroche pour la première slide, 1 phrase, 140 caractères max, ton analyste sportif pro (façon ESPN/NBA), percutante et spécifique au joueur — jamais générique.",
-      },
-      outro: {
-        type: "string",
-        description:
-          "Phrase de conclusion/résumé pour la dernière slide, 1 phrase, 160 caractères max, ton analyste sportif pro, qui synthétise l'impact du joueur cette saison.",
-      },
+const COPY_SCHEMA: GeminiSchema = {
+  type: "OBJECT",
+  properties: {
+    hook: {
+      type: "STRING",
+      description:
+        "Phrase d'accroche pour la première slide, 1 phrase, 140 caractères max, ton analyste sportif pro (façon ESPN/NBA), percutante et spécifique au joueur — jamais générique.",
     },
-    required: ["hook", "outro"],
+    outro: {
+      type: "STRING",
+      description:
+        "Phrase de conclusion/résumé pour la dernière slide, 1 phrase, 160 caractères max, ton analyste sportif pro, qui synthétise l'impact du joueur cette saison.",
+    },
   },
+  required: ["hook", "outro"],
 };
 
 export async function POST(req: Request) {
-  if (!process.env.ANTHROPIC_API_KEY) {
+  if (!process.env.GEMINI_API_KEY) {
     return NextResponse.json(
-      { error: "ANTHROPIC_API_KEY n'est pas configurée sur le serveur." },
+      { error: "GEMINI_API_KEY n'est pas configurée sur le serveur." },
       { status: 500 }
     );
   }
@@ -104,25 +95,8 @@ Contraintes strictes :
 - Chaque phrase doit tenir dans les limites de caractères indiquées dans le schéma — sois concis.`;
 
   try {
-    const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
-    const message = await anthropic.messages.create({
-      model: MODEL,
-      max_tokens: 500,
-      tools: [COPY_TOOL],
-      tool_choice: { type: "tool", name: "generate_carousel_copy" },
-      messages: [{ role: "user", content: prompt }],
-    });
-
-    const toolUse = message.content.find(
-      (block): block is Anthropic.ToolUseBlock => block.type === "tool_use"
-    );
-
-    if (!toolUse) {
-      return NextResponse.json({ error: "Pas de réponse structurée du modèle." }, { status: 502 });
-    }
-
-    const input = toolUse.input as { hook: string; outro: string };
-    return NextResponse.json({ hook: input.hook, outro: input.outro });
+    const output = await generateStructuredCopy(prompt, COPY_SCHEMA);
+    return NextResponse.json({ hook: output.hook, outro: output.outro });
   } catch (err) {
     console.error("carousel-story generation failed", err);
     return NextResponse.json(

@@ -1,14 +1,9 @@
 import { NextResponse } from "next/server";
-import Anthropic from "@anthropic-ai/sdk";
+import { generateStructuredCopy, type GeminiSchema } from "@/lib/gemini";
 import { createClient } from "@/lib/supabase/server";
 import { isOwnerEmail } from "@/lib/adminAccess";
 
 export const dynamic = "force-dynamic";
-
-// Même modèle que /api/carousel-story — un seul endroit à mettre à jour
-// si le nom de modèle change un jour serait plus simple, mais on garde les
-// deux routes indépendantes par design (voir CLAUDE.md du projet).
-const MODEL = process.env.ANTHROPIC_MODEL ?? "claude-sonnet-4-5-20250929";
 
 type MatchRecapBody = {
   kind: "matchRecap";
@@ -46,60 +41,45 @@ type TeamBreakdownBody = {
 
 type RequestBody = MatchRecapBody | TopLeadersBody | TeamBreakdownBody;
 
-const MATCH_RECAP_TOOL = {
-  name: "generate_match_storyline",
-  description:
-    "Fournit une phrase d'accroche éditoriale pour un récap de match de basketball.",
-  input_schema: {
-    type: "object" as const,
-    properties: {
-      storyline: {
-        type: "string",
-        description:
-          "Une phrase qui résume le sens du match (dynamique du score, performance décisive, retournement, etc.), 140 caractères max, ton analyste sportif pro (façon ESPN/NBA), jamais générique.",
-      },
+const MATCH_RECAP_SCHEMA: GeminiSchema = {
+  type: "OBJECT",
+  properties: {
+    storyline: {
+      type: "STRING",
+      description:
+        "Une phrase qui résume le sens du match (dynamique du score, performance décisive, retournement, etc.), 140 caractères max, ton analyste sportif pro (façon ESPN/NBA), jamais générique.",
     },
-    required: ["storyline"],
   },
+  required: ["storyline"],
 };
 
-const TOP_LEADERS_TOOL = {
-  name: "generate_leaderboard_insight",
-  description:
-    "Fournit une phrase d'accroche éditoriale pour un classement de statistiques de basketball.",
-  input_schema: {
-    type: "object" as const,
-    properties: {
-      insight: {
-        type: "string",
-        description:
-          "Une phrase qui met en relief ce classement (écart en tête, régularité, nouveau nom qui monte, etc.), 140 caractères max, ton analyste sportif pro (façon ESPN/NBA), jamais générique.",
-      },
+const TOP_LEADERS_SCHEMA: GeminiSchema = {
+  type: "OBJECT",
+  properties: {
+    insight: {
+      type: "STRING",
+      description:
+        "Une phrase qui met en relief ce classement (écart en tête, régularité, nouveau nom qui monte, etc.), 140 caractères max, ton analyste sportif pro (façon ESPN/NBA), jamais générique.",
     },
-    required: ["insight"],
   },
+  required: ["insight"],
 };
 
-const TEAM_BREAKDOWN_TOOL = {
-  name: "generate_team_breakdown_copy",
-  description:
-    "Fournit le texte d'accroche et de conclusion pour un carrousel Instagram d'analyse d'équipe de basketball.",
-  input_schema: {
-    type: "object" as const,
-    properties: {
-      hook: {
-        type: "string",
-        description:
-          "Phrase d'accroche pour la première slide, 1 phrase, 140 caractères max, ton analyste sportif pro (façon ESPN/NBA), s'appuie sur un fait concret propre à cette équipe — jamais générique.",
-      },
-      outro: {
-        type: "string",
-        description:
-          "Phrase de conclusion pour la dernière slide, 1 phrase, 160 caractères max, ton analyste sportif pro, qui synthétise la dynamique de l'équipe cette saison.",
-      },
+const TEAM_BREAKDOWN_SCHEMA: GeminiSchema = {
+  type: "OBJECT",
+  properties: {
+    hook: {
+      type: "STRING",
+      description:
+        "Phrase d'accroche pour la première slide, 1 phrase, 140 caractères max, ton analyste sportif pro (façon ESPN/NBA), s'appuie sur un fait concret propre à cette équipe — jamais générique.",
     },
-    required: ["hook", "outro"],
+    outro: {
+      type: "STRING",
+      description:
+        "Phrase de conclusion pour la dernière slide, 1 phrase, 160 caractères max, ton analyste sportif pro, qui synthétise la dynamique de l'équipe cette saison.",
+    },
   },
+  required: ["hook", "outro"],
 };
 
 function buildTeamBreakdownPrompt(body: TeamBreakdownBody): string {
@@ -192,9 +172,9 @@ Contraintes strictes :
 }
 
 export async function POST(req: Request) {
-  if (!process.env.ANTHROPIC_API_KEY) {
+  if (!process.env.GEMINI_API_KEY) {
     return NextResponse.json(
-      { error: "ANTHROPIC_API_KEY n'est pas configurée sur le serveur." },
+      { error: "GEMINI_API_KEY n'est pas configurée sur le serveur." },
       { status: 500 }
     );
   }
@@ -215,8 +195,7 @@ export async function POST(req: Request) {
   }
 
   let prompt: string;
-  let tool: typeof MATCH_RECAP_TOOL | typeof TOP_LEADERS_TOOL | typeof TEAM_BREAKDOWN_TOOL;
-  let toolName: string;
+  let schema: GeminiSchema;
   let outputKeys: string[];
 
   if (body.kind === "matchRecap") {
@@ -224,51 +203,31 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Données de match incomplètes." }, { status: 400 });
     }
     prompt = buildMatchRecapPrompt(body);
-    tool = MATCH_RECAP_TOOL;
-    toolName = MATCH_RECAP_TOOL.name;
+    schema = MATCH_RECAP_SCHEMA;
     outputKeys = ["storyline"];
   } else if (body.kind === "topLeaders") {
     if (!body.leaders?.length) {
       return NextResponse.json({ error: "Données de classement incomplètes." }, { status: 400 });
     }
     prompt = buildTopLeadersPrompt(body);
-    tool = TOP_LEADERS_TOOL;
-    toolName = TOP_LEADERS_TOOL.name;
+    schema = TOP_LEADERS_SCHEMA;
     outputKeys = ["insight"];
   } else if (body.kind === "teamBreakdown") {
     if (!body.teamName) {
       return NextResponse.json({ error: "Données d'équipe incomplètes." }, { status: 400 });
     }
     prompt = buildTeamBreakdownPrompt(body);
-    tool = TEAM_BREAKDOWN_TOOL;
-    toolName = TEAM_BREAKDOWN_TOOL.name;
+    schema = TEAM_BREAKDOWN_SCHEMA;
     outputKeys = ["hook", "outro"];
   } else {
     return NextResponse.json({ error: "Type de requête inconnu." }, { status: 400 });
   }
 
   try {
-    const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
-    const message = await anthropic.messages.create({
-      model: MODEL,
-      max_tokens: 300,
-      tools: [tool],
-      tool_choice: { type: "tool", name: toolName },
-      messages: [{ role: "user", content: prompt }],
-    });
-
-    const toolUse = message.content.find(
-      (block): block is Anthropic.ToolUseBlock => block.type === "tool_use"
-    );
-
-    if (!toolUse) {
-      return NextResponse.json({ error: "Pas de réponse structurée du modèle." }, { status: 502 });
-    }
-
-    const input = toolUse.input as Record<string, string>;
+    const result = await generateStructuredCopy(prompt, schema);
     const output: Record<string, string> = {};
     outputKeys.forEach((key) => {
-      output[key] = input[key];
+      output[key] = result[key];
     });
     return NextResponse.json(output);
   } catch (err) {
