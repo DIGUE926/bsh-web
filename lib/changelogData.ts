@@ -14,6 +14,7 @@ export type ChangelogEntry = {
 };
 
 export const changelogEntries: ChangelogEntry[] = [
+  { hash: "10e19a2", date: "2026-08-20T22:31:00+00:00", title: "feat: staff équipe plus visible + bilan V-D au clic sur le coach", details: "- CoachStaffLine.tsx : texte plus contrasté (white/70 au lieu de white/35), coach/assistant cliquables, révèle le bilan V-D + % de victoires au clic\n- ajout coach/assistant pour Louverture Hoopers et Pont Tambour Guardians" },
   { hash: "e535dba", date: "2026-08-20T21:56:19+00:00", title: "feat: texte IA pour Match Recap/Top Leaders, staff équipes, Team Breakdown", details: "- nouvelle route /api/social-copy (généralise carousel-story) : storyline pour Match Recap, insight pour Top Leaders, hook+outro pour Team Breakdown\n- head_coach/assistant_coach sur teams, affiché discrètement sur la page équipe publique, éditable dans le nouvel écran /admin/equipes\n- nouveau générateur social Team Breakdown : carrousel 4 slides (accroche, bilan V-D/PPG, top 3 joueurs, outro)" },
   { hash: "8c0d02c", date: "2026-08-20T16:17:57+00:00", title: "fix: comparateur - autocomplete dès 1 lettre au lieu de 2", details: "résultats triés par ordre alphabétique" },
   { hash: "022150f", date: "2026-08-20T16:13:35+00:00", title: "feat: accueil - seulement le match playoff + % chances de victoire", details: "- retire DERNIERS RÉSULTATS et À VENIR, garde juste le bloc PLAYOFFS\n- barre % chances de victoire sous le match, basée sur le bilan V-D réel en saison régulière" },
