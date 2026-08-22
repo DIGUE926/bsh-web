@@ -1,8 +1,8 @@
 import { supabase } from "@/lib/supabase";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import Breadcrumb from "@/app/Breadcrumb";
 import ClassementTabs from "../ClassementTabs";
+import RankingsTable from "../RankingsTable";
 
 export const revalidate = 60;
 
@@ -42,50 +42,12 @@ export default async function ClassementJoueursBPGPage({
 
       <ClassementTabs slug={slug} />
 
-      {rankings && rankings.length > 0 ? (
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse text-sm">
-            <thead>
-              <tr className="border-b border-white/20 text-white/50 uppercase">
-                <th className="py-2 pr-4">#</th>
-                <th className="py-2 pr-4">Joueur</th>
-                <th className="py-2 pr-4">Équipe</th>
-                <th className="py-2 px-2 text-center text-bsh-orange">BPG</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rankings.map((r: Record<string, unknown>, i: number) => (
-                <tr key={i} className="border-b border-white/5">
-                  <td className="py-3 pr-4 text-bsh-gold font-display">
-                    {i + 1}
-                  </td>
-                  <td className="py-3 pr-4 font-semibold whitespace-nowrap">
-                    {r.player_id && r.league_slug ? (
-                      <Link
-                        href={`/${String(r.league_slug)}/joueur/${String(r.player_id)}`}
-                        className="hover:text-bsh-orange"
-                      >
-                        {String(r.player_name ?? "—")}
-                      </Link>
-                    ) : (
-                      String(r.player_name ?? "—")
-                    )}
-                  </td>
-                  <td className="py-3 pr-4 text-white/60 whitespace-nowrap">
-                    {String(r.team_name ?? "—")}
-                  </td>
-                  <td className="py-3 px-2 text-center text-bsh-orange font-bold">
-                    {r.bpg != null ? Number(r.bpg).toFixed(1) : "-"}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      ) : (
-        <p className="text-white/50">
-          {error ? "Erreur de chargement des données." : "Pas encore de données disponibles."}
-        </p>
+      {error && <p className="text-white/50">Erreur de chargement des données.</p>}
+      {!error && (
+        <RankingsTable
+          rankings={rankings ?? []}
+          columns={[{ key: "bpg", label: "BPG", highlight: true }]}
+        />
       )}
     </div>
   );

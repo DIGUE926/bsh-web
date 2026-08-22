@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { isOwnerEmail } from "@/lib/adminAccess";
-import TeamsStaffEditor from "./TeamsStaffEditor";
+import EquipesTabs from "./EquipesTabs";
 
 export default async function EquipesAdminPage() {
   const supabase = await createClient();
@@ -10,5 +10,5 @@ export default async function EquipesAdminPage() {
   } = await supabase.auth.getUser();
   if (!isOwnerEmail(user?.email)) redirect("/admin");
 
-  return <TeamsStaffEditor />;
+  return <EquipesTabs />;
 }
