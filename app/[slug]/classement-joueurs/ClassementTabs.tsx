@@ -8,6 +8,7 @@ export default function ClassementTabs({ slug }: { slug: string }) {
 
   const tabs = [
     { href: `/${slug}/classement-joueurs`, label: "Général" },
+    { href: `/${slug}/classement-joueurs/positions`, label: "Par position" },
     { href: `/${slug}/classement-joueurs/ppg`, label: "PPG" },
     { href: `/${slug}/classement-joueurs/rpg`, label: "RPG" },
     { href: `/${slug}/classement-joueurs/apg`, label: "APG" },

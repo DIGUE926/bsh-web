@@ -28,11 +28,13 @@ function formatStat(value: unknown) {
 export default function RankingsTable({
   rankings,
   columns,
+  defaultPosition = "all",
 }: {
   rankings: Row[];
   columns: Column[];
+  defaultPosition?: string;
 }) {
-  const [position, setPosition] = useState<string>("all");
+  const [position, setPosition] = useState<string>(defaultPosition);
 
   const filtered =
     position === "all" ? rankings : rankings.filter((r) => r.position === position);
