@@ -163,7 +163,6 @@ export default async function PlayerPage({
               <tr className="border-b border-white/20 text-white/50 uppercase">
                 <th className="py-2 pr-4">Date</th>
                 <th className="py-2 pr-4">Match</th>
-                <th className="py-2 px-2 text-center">MIN</th>
                 <th className="py-2 px-2 text-center">PTS</th>
                 <th className="py-2 px-2 text-center">REB</th>
                 <th className="py-2 px-2 text-center">AST</th>
@@ -188,7 +187,6 @@ export default async function PlayerPage({
                         {g.home_team?.name} vs {g.away_team?.name}
                       </Link>
                     </td>
-                    <td className="py-2 px-2 text-center">{row.min ?? "-"}</td>
                     <td className="py-2 px-2 text-center text-bsh-orange font-bold">
                       {row.pts ?? "-"}
                     </td>
