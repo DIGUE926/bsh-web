@@ -14,6 +14,7 @@ export type ChangelogEntry = {
 };
 
 export const changelogEntries: ChangelogEntry[] = [
+  { hash: "44f2b7d", date: "2026-08-24T16:45:20+00:00", title: "feat: réactive Matchs + Classement équipes pour AHBB", details: "retire les guards notFound()/liens masqués sur /ahbb/matchs et /ahbb/classement (page ligue, matchs, classement, archives, breadcrumb match, NavMenu, sitemap) — AHBB est la ligue avec le plus d'audience (130 joueurs), ces sections étaient en 404 depuis le masquage du 2026-08-20" },
   { hash: "169cfe2", date: "2026-08-22T13:00:36+00:00", title: "feat: filtre par position (PG/SG/SF/PF/C) sur les classements joueurs", details: "- nettoyage des positions en base (mélange 'PG'/'Point Guard'/etc.) vers 5 codes canoniques\n- pills de filtre par position sur les 6 pages de classement joueurs\n- nouvel onglet Positions dans /admin/equipes pour assigner le poste de chaque joueur" },
   { hash: "0838698", date: "2026-08-21T17:54:30+00:00", title: "feat: métadonnées SEO par page (titres/descriptions ciblés par ligue)", details: "classement, classement joueurs, playoffs, matchs, page ligue et comparateur ont maintenant chacun un titre/description unique avec des mots-clés pertinents, au lieu de partager le titre générique du site — objectif : mieux ressortir sur des recherches type 'classement basketball haiti'" },
   { hash: "481184a", date: "2026-08-21T17:44:48+00:00", title: "feat: fichier de vérification Google Search Console", details: "propriété validée, sitemap.xml soumis" },
