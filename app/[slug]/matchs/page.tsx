@@ -41,7 +41,6 @@ export default async function MatchsPage({
     .single();
 
   if (!league) notFound();
-  if (league.slug === "ahbb") notFound();
 
   const { data: games } = await supabase
     .from("games")
@@ -75,11 +74,9 @@ export default async function MatchsPage({
         <Link href={`/${slug}/archives`} className="hover:text-bsh-orange">
           Archives
         </Link>
-        {slug !== "ahbb" && (
-          <Link href={`/${slug}/classement`} className="hover:text-bsh-orange">
-            Classement
-          </Link>
-        )}
+        <Link href={`/${slug}/classement`} className="hover:text-bsh-orange">
+          Classement
+        </Link>
       </div>
 
       <GamesList

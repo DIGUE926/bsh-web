@@ -139,15 +139,13 @@ export default function NavMenu({ leagues }: { leagues: League[] }) {
                       >
                         Équipes
                       </Link>
-                      {league.slug !== "ahbb" && (
-                        <Link
-                          href={`/${league.slug}/matchs`}
-                          onClick={closeMenu}
-                          className="block px-1.5 py-1 text-[11px] text-white/60 hover:text-bsh-orange rounded"
-                        >
-                          Matchs
-                        </Link>
-                      )}
+                      <Link
+                        href={`/${league.slug}/matchs`}
+                        onClick={closeMenu}
+                        className="block px-1.5 py-1 text-[11px] text-white/60 hover:text-bsh-orange rounded"
+                      >
+                        Matchs
+                      </Link>
                       <Link
                         href={`/${league.slug}/archives`}
                         onClick={closeMenu}
@@ -155,15 +153,13 @@ export default function NavMenu({ leagues }: { leagues: League[] }) {
                       >
                         Archives
                       </Link>
-                      {league.slug !== "ahbb" && (
-                        <Link
-                          href={`/${league.slug}/classement`}
-                          onClick={closeMenu}
-                          className="block px-1.5 py-1 text-[11px] text-white/60 hover:text-bsh-orange rounded"
-                        >
-                          Classement équipes
-                        </Link>
-                      )}
+                      <Link
+                        href={`/${league.slug}/classement`}
+                        onClick={closeMenu}
+                        className="block px-1.5 py-1 text-[11px] text-white/60 hover:text-bsh-orange rounded"
+                      >
+                        Classement équipes
+                      </Link>
                       <Link
                         href={`/${league.slug}/classement-joueurs`}
                         onClick={closeMenu}
