@@ -137,6 +137,16 @@ export default function PlayerCarouselGenerator() {
     return Math.round((below / values.length) * 100);
   }
 
+  // Rang (1-based) du joueur sur une stat donnée au sein de sa ligue — plus
+  // haut = meilleur classement (ex: 1 = premier de la ligue sur cette stat).
+  function rankFor(stat: keyof PlayerRow, value: number | null): number | null {
+    if (value == null) return null;
+    const values = players.map((p) => p[stat]).filter((v): v is number => v != null);
+    if (values.length === 0) return null;
+    const better = values.filter((v) => Number(v) > value).length;
+    return better + 1;
+  }
+
   // Force/faiblesse relative du joueur, réutilisé par le radar ET par le prompt IA.
   function strengthAndWeakness(player: PlayerRow) {
     const pcts = PROFILE_STATS.map((s) => ({ ...s, pct: percentile(s.key, player[s.key]) }));
@@ -313,12 +323,29 @@ export default function PlayerCarouselGenerator() {
     ctx.textAlign = "left";
     ctx.fillText(player.player_name.toUpperCase(), PADDING, 560);
 
+    // Légende IA promue en gros titre narratif juste sous le nom (au lieu
+    // d'une petite ligne italique en bas de slide) — pousse la grille plus
+    // bas pour lui laisser la place.
+    let statsGridStartY = 630;
+    if (aiStatsCaption.trim()) {
+      ctx.fillStyle = COLORS.gold;
+      ctx.font = "800 23px Montserrat, sans-serif";
+      ctx.textAlign = "left";
+      const headlineLines = wrapLines(ctx, aiStatsCaption.trim(), WIDTH - PADDING * 2).slice(0, 2);
+      let hy = 600;
+      headlineLines.forEach((line) => {
+        ctx.fillText(line, PADDING, hy);
+        hy += 30;
+      });
+      statsGridStartY = hy + 20;
+    }
+
     // Grille de stats 2 colonnes — remontée en bas de slide, cf. note plus haut.
     const cols = 2;
     const gap = 18;
     const cardW = (WIDTH - PADDING * 2 - gap) / cols;
     const cardH = 140;
-    const startY = 590;
+    const startY = statsGridStartY;
 
     STAT_GRID.forEach((stat, i) => {
       const col = i % cols;
@@ -344,6 +371,14 @@ export default function PlayerCarouselGenerator() {
       ctx.fillStyle = "rgba(255,255,255,0.55)";
       ctx.font = "700 15px Montserrat, sans-serif";
       ctx.fillText(stat.label, x + 22, y + 104);
+
+      const rank = rankFor(stat.key, raw != null ? Number(raw) : null);
+      if (rank != null) {
+        ctx.fillStyle = "rgba(255,255,255,0.5)";
+        ctx.font = "800 13px Montserrat, sans-serif";
+        ctx.textAlign = "right";
+        ctx.fillText(`#${rank} LIGUE`, x + cardW - 18, y + 28);
+      }
     });
 
     const gpY = startY + Math.ceil(STAT_GRID.length / cols) * (cardH + gap) + 26;
@@ -355,18 +390,6 @@ export default function PlayerCarouselGenerator() {
       WIDTH / 2,
       gpY
     );
-
-    if (aiStatsCaption.trim()) {
-      ctx.fillStyle = COLORS.gold;
-      ctx.font = "600 italic 19px Montserrat, sans-serif";
-      ctx.textAlign = "center";
-      const capLines = wrapLines(ctx, aiStatsCaption.trim(), WIDTH - PADDING * 2);
-      let cy = HEIGHT - 110;
-      capLines.slice(0, 2).forEach((line) => {
-        ctx.fillText(line, WIDTH / 2, cy);
-        cy += 26;
-      });
-    }
 
     paintFooter(ctx, WIDTH, HEIGHT);
   }
@@ -404,11 +427,27 @@ export default function PlayerCarouselGenerator() {
       return { ...stat, value, avg, diffPct };
     });
 
+    // Légende IA promue en gros titre narratif juste sous le sous-titre —
+    // pousse les barres plus bas pour lui laisser la place.
+    let barsStartY = 450;
+    if (aiComparisonCaption.trim()) {
+      ctx.fillStyle = COLORS.gold;
+      ctx.font = "800 22px Montserrat, sans-serif";
+      ctx.textAlign = "left";
+      const headlineLines = wrapLines(ctx, aiComparisonCaption.trim(), WIDTH - PADDING * 2).slice(0, 2);
+      let hy = 410;
+      headlineLines.forEach((line) => {
+        ctx.fillText(line, PADDING, hy);
+        hy += 29;
+      });
+      barsStartY = hy + 28;
+    }
+
     const maxVal = Math.max(...rows.map((r) => Math.max(r.value, r.avg)), 1);
     const barAreaX = PADDING + 160;
     const barAreaW = WIDTH - PADDING - barAreaX - 110;
     const rowH = 128;
-    const startY = 410;
+    const startY = barsStartY;
 
     rows.forEach((r, i) => {
       const y = startY + i * rowH;
@@ -445,22 +484,16 @@ export default function PlayerCarouselGenerator() {
       ctx.textAlign = "left";
       ctx.fillText(r.value.toFixed(1), barAreaX + barAreaW + 14, y + 50);
 
+      // % d'écart chiffré vs moyenne ligue — réintroduit à la demande de Digue.
+      const diffLabel = `${r.diffPct >= 0 ? "+" : ""}${r.diffPct}%`;
+      ctx.fillStyle = isAbove ? "rgba(110,231,150,0.95)" : "rgba(255,120,120,0.95)";
+      ctx.font = "800 15px Montserrat, sans-serif";
+      ctx.fillText(diffLabel, barAreaX + barAreaW + 14, y + 72);
+
       ctx.fillStyle = "rgba(255,255,255,0.35)";
       ctx.font = "600 13px Montserrat, sans-serif";
-      ctx.fillText(`moy. ${r.avg.toFixed(1)}`, barAreaX, y + 88);
+      ctx.fillText(`moy. ${r.avg.toFixed(1)}`, barAreaX, y + 96);
     });
-
-    if (aiComparisonCaption.trim()) {
-      ctx.fillStyle = COLORS.gold;
-      ctx.font = "600 italic 19px Montserrat, sans-serif";
-      ctx.textAlign = "left";
-      const capLines = wrapLines(ctx, aiComparisonCaption.trim(), WIDTH - PADDING * 2);
-      let cy = HEIGHT - 130;
-      capLines.slice(0, 2).forEach((line) => {
-        ctx.fillText(line, PADDING, cy);
-        cy += 24;
-      });
-    }
 
     ctx.fillStyle = "rgba(255,255,255,0.4)";
     ctx.font = "600 15px Montserrat, sans-serif";
@@ -594,8 +627,25 @@ export default function PlayerCarouselGenerator() {
     const weakness = sorted[sorted.length - 1];
     const fmt = (v: number | null) => (v != null ? Number(v).toFixed(1) : "-");
 
+    const strengthRank = rankFor(strength.key, strength.val);
+    const weaknessRank = rankFor(weakness.key, weakness.val);
+
     const calloutY = HEIGHT - 190;
     ctx.textBaseline = "alphabetic";
+
+    // Légende IA promue en gros titre narratif, entre le radar et le nom
+    // (remplace l'ancienne légende discrète en bas de slide).
+    if (aiRadarCaption.trim()) {
+      ctx.textAlign = "center";
+      ctx.fillStyle = COLORS.gold;
+      ctx.font = "800 22px Montserrat, sans-serif";
+      const headlineLines = wrapLines(ctx, aiRadarCaption.trim(), WIDTH - PADDING * 2).slice(0, 2);
+      let hy = calloutY - 150;
+      headlineLines.forEach((line) => {
+        ctx.fillText(line, cx, hy);
+        hy += 28;
+      });
+    }
 
     // Nom du joueur, juste au-dessus des callouts (déplacé du haut de la
     // slide — cf. note en tête de fonction).
@@ -613,7 +663,11 @@ export default function PlayerCarouselGenerator() {
     ctx.fillText("POINT FORT", PADDING, calloutY);
     ctx.fillStyle = COLORS.white;
     ctx.font = "700 18px Montserrat, sans-serif";
-    ctx.fillText(`${strength.label} — ${fmt(strength.val)}`, PADDING, calloutY + 26);
+    ctx.fillText(
+      `${strength.label} — ${fmt(strength.val)}${strengthRank ? ` (#${strengthRank} ligue)` : ""}`,
+      PADDING,
+      calloutY + 26
+    );
 
     ctx.textAlign = "right";
     ctx.fillStyle = "rgba(255,120,120,0.9)";
@@ -621,19 +675,11 @@ export default function PlayerCarouselGenerator() {
     ctx.fillText("À TRAVAILLER", WIDTH - PADDING, calloutY);
     ctx.fillStyle = COLORS.white;
     ctx.font = "700 18px Montserrat, sans-serif";
-    ctx.fillText(`${weakness.label} — ${fmt(weakness.val)}`, WIDTH - PADDING, calloutY + 26);
-
-    if (aiRadarCaption.trim()) {
-      ctx.fillStyle = COLORS.gold;
-      ctx.font = "600 italic 19px Montserrat, sans-serif";
-      ctx.textAlign = "center";
-      const capLines = wrapLines(ctx, aiRadarCaption.trim(), WIDTH - PADDING * 2);
-      let cy = HEIGHT - 110;
-      capLines.slice(0, 2).forEach((line) => {
-        ctx.fillText(line, WIDTH / 2, cy);
-        cy += 26;
-      });
-    }
+    ctx.fillText(
+      `${weakness.label} — ${fmt(weakness.val)}${weaknessRank ? ` (#${weaknessRank} ligue)` : ""}`,
+      WIDTH - PADDING,
+      calloutY + 26
+    );
 
     paintFooter(ctx, WIDTH, HEIGHT);
   }
