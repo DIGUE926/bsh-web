@@ -245,37 +245,29 @@ export default function PlayerCarouselGenerator() {
     ctx.textBaseline = "alphabetic";
     ctx.textAlign = "left";
 
+    // Bloc nom/accroche remonté en bas de slide (laisse le haut de l'image
+    // libre pour une future photo joueur en fond, cf. demande Digue 2026-08-24).
+
     // Équipe (kicker)
     ctx.fillStyle = COLORS.orange;
     ctx.font = "800 20px Montserrat, sans-serif";
-    ctx.fillText((player.team_name ?? "").toUpperCase(), PADDING, 115);
+    ctx.fillText((player.team_name ?? "").toUpperCase(), PADDING, 860);
 
     // Nom du joueur, aligné à gauche comme le reste des slides
     ctx.fillStyle = COLORS.white;
     ctx.font = "900 66px Anton, sans-serif";
     const nameLines = wrapLines(ctx, player.player_name.toUpperCase(), WIDTH - PADDING * 2);
-    let ny = 180;
+    let ny = 925;
     nameLines.forEach((line) => {
       ctx.fillText(line, PADDING, ny);
       ny += 66;
     });
 
-    const dividerY = ny + 14;
-    ctx.strokeStyle = "rgba(255,255,255,0.15)";
-    ctx.lineWidth = 1.5;
-    ctx.beginPath();
-    ctx.moveTo(PADDING, dividerY);
-    ctx.lineTo(WIDTH - PADDING, dividerY);
-    ctx.stroke();
-
     // Accroche — met en avant le PPG, chiffre le plus parlant pour capter l'attention.
     const ppgValue = player.ppg != null ? Number(player.ppg).toFixed(1) : null;
 
-    const hookY = dividerY + 60;
+    const hookY = ny + 40;
     ctx.textAlign = "left";
-    ctx.fillStyle = COLORS.gold;
-    ctx.font = "900 22px Anton, sans-serif";
-    ctx.fillText("│", PADDING, hookY);
     ctx.fillStyle = "rgba(255,255,255,0.8)";
     ctx.font = "500 24px Montserrat, sans-serif";
     const hookText =
@@ -283,15 +275,15 @@ export default function PlayerCarouselGenerator() {
       (ppgValue
         ? `${ppgValue} points de moyenne cette saison — un profil qui capte l'œil.`
         : `Zoom sur un joueur qui pèse dans le jeu de ${(player.team_name ?? "son équipe").toUpperCase()}.`);
-    const hookLines = wrapLines(ctx, hookText, WIDTH - PADDING * 2 - 24);
+    const hookLines = wrapLines(ctx, hookText, WIDTH - PADDING * 2);
     let hy = hookY;
     hookLines.forEach((line) => {
-      ctx.fillText(line, PADDING + 20, hy);
+      ctx.fillText(line, PADDING, hy);
       hy += 32;
     });
 
-    // Invite à swiper, en bas de slide
-    const swipeY = HEIGHT - 150;
+    // Invite à swiper, en bas de slide (pousse plus bas si l'accroche est longue)
+    const swipeY = Math.min(Math.max(HEIGHT - 150, hy + 50), HEIGHT - 90);
     ctx.textAlign = "left";
     ctx.fillStyle = COLORS.orange;
     ctx.font = "800 22px Montserrat, sans-serif";
@@ -319,21 +311,14 @@ export default function PlayerCarouselGenerator() {
     ctx.fillStyle = COLORS.white;
     ctx.font = "900 40px Anton, sans-serif";
     ctx.textAlign = "left";
-    ctx.fillText(player.player_name.toUpperCase(), PADDING, 105);
+    ctx.fillText(player.player_name.toUpperCase(), PADDING, 560);
 
-    ctx.strokeStyle = "rgba(255,255,255,0.15)";
-    ctx.lineWidth = 1.5;
-    ctx.beginPath();
-    ctx.moveTo(PADDING, 128);
-    ctx.lineTo(WIDTH - PADDING, 128);
-    ctx.stroke();
-
-    // Grille de stats 2 colonnes
+    // Grille de stats 2 colonnes — remontée en bas de slide, cf. note plus haut.
     const cols = 2;
     const gap = 18;
     const cardW = (WIDTH - PADDING * 2 - gap) / cols;
     const cardH = 140;
-    const startY = 160;
+    const startY = 590;
 
     STAT_GRID.forEach((stat, i) => {
       const col = i % cols;
@@ -406,11 +391,11 @@ export default function PlayerCarouselGenerator() {
     ctx.fillStyle = COLORS.white;
     ctx.font = "900 32px Anton, sans-serif";
     ctx.textAlign = "left";
-    ctx.fillText("LUI VS LA MOYENNE LIGUE", PADDING, 100);
+    ctx.fillText("LUI VS LA MOYENNE LIGUE", PADDING, 350);
 
     ctx.fillStyle = "rgba(255,255,255,0.4)";
     ctx.font = "600 17px Montserrat, sans-serif";
-    ctx.fillText(`Comparé aux ${players.length} joueurs de la ligue`, PADDING, 124);
+    ctx.fillText(`Comparé aux ${players.length} joueurs de la ligue`, PADDING, 374);
 
     const rows = PROFILE_STATS.map((stat) => {
       const value = Number(player[stat.key] ?? 0);
@@ -423,7 +408,7 @@ export default function PlayerCarouselGenerator() {
     const barAreaX = PADDING + 160;
     const barAreaW = WIDTH - PADDING - barAreaX - 110;
     const rowH = 128;
-    const startY = 165;
+    const startY = 410;
 
     rows.forEach((r, i) => {
       const y = startY + i * rowH;
@@ -480,7 +465,7 @@ export default function PlayerCarouselGenerator() {
     ctx.fillStyle = "rgba(255,255,255,0.4)";
     ctx.font = "600 15px Montserrat, sans-serif";
     ctx.textAlign = "left";
-    ctx.fillText("│ = moyenne de la ligue", PADDING, HEIGHT - 70);
+    ctx.fillText("Repère blanc = moyenne de la ligue", PADDING, HEIGHT - 70);
 
     paintFooter(ctx, WIDTH, HEIGHT);
   }
@@ -502,15 +487,10 @@ export default function PlayerCarouselGenerator() {
     paintCompactHeader(ctx, "PROFIL DE JOUEUR", contextLabel, WIDTH);
     paintSlideIndicator(ctx, 3, SLIDE_COUNT, WIDTH);
 
+    // Pas de titre en haut de cette slide (nom déplacé en bas, cf. note plus
+    // haut) — laisse toute la zone au-dessus du radar libre pour une future
+    // photo joueur en fond.
     ctx.textBaseline = "alphabetic";
-    ctx.fillStyle = COLORS.white;
-    ctx.font = "900 32px Anton, sans-serif";
-    ctx.textAlign = "left";
-    ctx.fillText(player.player_name.toUpperCase(), PADDING, 100);
-
-    ctx.fillStyle = "rgba(255,255,255,0.4)";
-    ctx.font = "600 17px Montserrat, sans-serif";
-    ctx.fillText("Forces et faiblesses relatives", PADDING, 124);
 
     const n = PROFILE_STATS.length;
     const cx = WIDTH / 2;
@@ -617,6 +597,16 @@ export default function PlayerCarouselGenerator() {
     const calloutY = HEIGHT - 190;
     ctx.textBaseline = "alphabetic";
 
+    // Nom du joueur, juste au-dessus des callouts (déplacé du haut de la
+    // slide — cf. note en tête de fonction).
+    ctx.textAlign = "center";
+    ctx.fillStyle = COLORS.white;
+    ctx.font = "900 28px Anton, sans-serif";
+    ctx.fillText(player.player_name.toUpperCase(), cx, calloutY - 46);
+    ctx.fillStyle = "rgba(255,255,255,0.4)";
+    ctx.font = "600 15px Montserrat, sans-serif";
+    ctx.fillText("Forces et faiblesses relatives", cx, calloutY - 22);
+
     ctx.textAlign = "left";
     ctx.fillStyle = COLORS.gold;
     ctx.font = "900 19px Anton, sans-serif";
@@ -666,26 +656,20 @@ export default function PlayerCarouselGenerator() {
     ctx.textBaseline = "alphabetic";
     ctx.textAlign = "left";
 
+    // Bloc nom/résumé remonté en bas de slide (même logique que l'accroche
+    // en slide 1, cf. note plus haut).
     ctx.fillStyle = COLORS.orange;
     ctx.font = "800 20px Montserrat, sans-serif";
-    ctx.fillText((player.team_name ?? "").toUpperCase(), PADDING, 115);
+    ctx.fillText((player.team_name ?? "").toUpperCase(), PADDING, 860);
 
     ctx.fillStyle = COLORS.white;
     ctx.font = "900 52px Anton, sans-serif";
     const lines = wrapLines(ctx, player.player_name.toUpperCase(), WIDTH - PADDING * 2);
-    let ny = 172;
+    let ny = 925;
     lines.forEach((line) => {
       ctx.fillText(line, PADDING, ny);
       ny += 54;
     });
-
-    const dividerY = ny + 14;
-    ctx.strokeStyle = "rgba(255,255,255,0.15)";
-    ctx.lineWidth = 1.5;
-    ctx.beginPath();
-    ctx.moveTo(PADDING, dividerY);
-    ctx.lineTo(WIDTH - PADDING, dividerY);
-    ctx.stroke();
 
     // Ligne de résumé — en chiffres parlants (PPG/REB/AST), pas en PIR ni percentile
     const ppg = player.ppg != null ? Number(player.ppg).toFixed(1) : "-";
@@ -698,15 +682,16 @@ export default function PlayerCarouselGenerator() {
       aiOutro.trim() ||
       `Cette saison : ${ppg} points, ${rpg} rebonds et ${apg} passes de moyenne par match.`;
     const recapLines = wrapLines(ctx, recapText, WIDTH - PADDING * 2);
-    let ry = dividerY + 40;
+    let ry = ny + 40;
     recapLines.forEach((line) => {
       ctx.fillText(line, PADDING, ry);
       ry += 28;
     });
 
-    // Carte CTA en bas, pas centrée pleine hauteur
-    const ctaY = HEIGHT - 280;
+    // Carte CTA en bas, pas centrée pleine hauteur (pousse plus bas si le
+    // résumé est long pour ne jamais chevaucher le texte au-dessus)
     const ctaH = 130;
+    const ctaY = Math.min(Math.max(HEIGHT - 280, ry + 30), HEIGHT - 200);
     ctx.fillStyle = "rgba(255,255,255,0.04)";
     ctx.strokeStyle = "rgba(255,214,10,0.25)";
     ctx.lineWidth = 1;
