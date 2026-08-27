@@ -109,6 +109,8 @@ Le carrousel Instagram a 5 slides. Écris un texte pour chacune :
 
 Contraintes strictes :
 - N'utilise JAMAIS les mots "percentile" ou "PIR" dans le texte — dis "impact" à la place si besoin.
+- Pour les moyennes par match, dis toujours "par match" — jamais "par soir" ou "par rencontre".
+- Ne mentionne jamais un "classement BSH" ou une comparaison toutes ligues confondues — BSH couvre plusieurs ligues (${body.leagueName} n'en est qu'une), donc tout classement évoqué est celui de la ligue ${body.leagueName} elle-même (dis "classement de la ${body.leagueName}" ou "classement de la ligue", jamais "classement BSH").
 - Français, ton pro et direct, mais écrit comme un vrai commentateur passionné qui regarde les matchs — pas comme une IA qui résume des chiffres. Zéro cliché creux ("un joueur exceptionnel", "un talent brut"), zéro tournure toute faite.
 - Développe un peu chaque idée (1 à 2 phrases) plutôt qu'une seule ligne sèche — reste dans les limites de caractères indiquées dans le schéma, mais utilise l'espace disponible.
 - Les 5 textes doivent être distincts, ne répète pas la même idée d'une slide à l'autre.`;

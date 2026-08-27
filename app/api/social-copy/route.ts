@@ -129,6 +129,8 @@ ${body.chiffreChoc ? `Match le plus explosif : ${body.chiffreChoc.homeTeam} vs $
 
 Contraintes strictes :
 - N'utilise JAMAIS les mots "percentile" ou "PIR" dans le texte — dis "impact" à la place si besoin.
+- Pour les moyennes par match, dis toujours "par match" — jamais "par soir" ou "par rencontre".
+- Ne mentionne jamais un "classement BSH" ou une comparaison toutes ligues confondues — BSH couvre plusieurs ligues (${body.leagueName} n'en est qu'une), donc tout classement évoqué est celui de la ligue ${body.leagueName} elle-même (dis "classement de la ${body.leagueName}" ou "classement de la ligue", jamais "classement BSH").
 - Français, ton pro et direct, mais écrit comme un vrai commentateur passionné qui a suivi la saison — pas comme une IA qui résume des stats. Zéro cliché creux, zéro tournure toute faite.
 - Développe un peu chaque idée (1 à 2 phrases) plutôt qu'une seule ligne sèche — utilise l'espace disponible dans les limites de caractères du schéma.`;
 }
@@ -160,6 +162,8 @@ ${perfLines || "Pas de données individuelles disponibles."}
 
 Contraintes strictes :
 - N'utilise JAMAIS les mots "percentile" ou "PIR" dans le texte — dis "impact" à la place si besoin.
+- Pour les moyennes par match, dis toujours "par match" — jamais "par soir" ou "par rencontre".
+- Ne mentionne jamais un "classement BSH" ou une comparaison toutes ligues confondues — BSH couvre plusieurs ligues (${body.leagueName} n'en est qu'une), donc tout classement évoqué est celui de la ligue ${body.leagueName} elle-même (dis "classement de la ${body.leagueName}" ou "classement de la ligue", jamais "classement BSH").
 - Français, ton pro et direct, mais écrit comme un vrai commentateur passionné, pas une IA qui liste des chiffres. Zéro cliché creux ("une équipe solide", "un collectif prometteur"), zéro tournure toute faite.
 - Développe un peu chaque idée (1 à 2 phrases) plutôt qu'une seule ligne sèche — utilise l'espace disponible dans les limites de caractères du schéma.`;
 }
@@ -193,6 +197,8 @@ ${perfLines || "Pas de données de performance individuelle disponibles."}
 Écris une phrase d'accroche éditoriale pour la slide de récap de ce match — donne le sens du résultat (écart serré, domination, performance individuelle décisive, etc.), pas juste "l'équipe X a gagné".
 
 Contraintes strictes :
+- Pour les moyennes par match, dis toujours "par match" — jamais "par soir" ou "par rencontre".
+- Ne mentionne jamais un "classement BSH" ou une comparaison toutes ligues confondues — BSH couvre plusieurs ligues (${body.leagueName} n'en est qu'une), donc tout classement évoqué est celui de la ligue ${body.leagueName} elle-même, jamais "classement BSH".
 - Français, ton pro et direct, zéro cliché creux ("un match intense", "une belle victoire").
 - Tient dans la limite de caractères indiquée dans le schéma — sois concis.`;
 }
@@ -218,6 +224,8 @@ ${leaderLines}
 
 Contraintes strictes :
 - N'utilise JAMAIS les mots "percentile" ou "PIR" dans le texte, même si la statistique classée est le PIR — dis "impact" à la place.
+- Pour les moyennes par match, dis toujours "par match" — jamais "par soir" ou "par rencontre".
+- Ne mentionne jamais un "classement BSH" ou une comparaison toutes ligues confondues — BSH couvre plusieurs ligues (${body.leagueName} n'en est qu'une), donc tout classement évoqué est celui de la ligue ${body.leagueName} elle-même, jamais "classement BSH".
 - Français, ton pro et direct, zéro cliché creux.
 - Tient dans la limite de caractères indiquée dans le schéma — sois concis.`;
 }
