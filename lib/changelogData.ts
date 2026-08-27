@@ -14,6 +14,7 @@ export type ChangelogEntry = {
 };
 
 export const changelogEntries: ChangelogEntry[] = [
+  { hash: "ee02fa5", date: "2026-08-27T01:23:12+00:00", title: "fix: textes IA - 'par match' au lieu de 'par soir', jamais de classement BSH toutes ligues confondues", details: "les 4 générateurs (carrousel joueur, récap de match, top leaders, team breakdown, season wrapped) instruisent maintenant Gemini d'utiliser toujours 'par match' et de ne jamais parler d'un classement BSH global -- BSH couvre plusieurs ligues, le classement mentionné est toujours celui de la ligue concernée (ex: SUBLE)" },
   { hash: "6e5a37a", date: "2026-08-27T01:03:20+00:00", title: "fix: retire les tirets cadratins dans les callouts point fort/à travailler du radar", details: "les textes \"REB — 9.4 (#2 ligue)\" affichaient un tiret cadratin lu comme un trait parasite -- remplacé par ':'" },
   { hash: "1a00c3f", date: "2026-08-27T00:43:38+00:00", title: "feat: outro du carrousel joueur centrée, texte IA plus long façon analyste ESPN/NBA", details: "slide de conclusion : nom, résumé et carte CTA tous centrés au lieu d'alignés à gauche ; le texte de conclusion généré par IA passe à 2-3 phrases développées (verdict final sur la saison du joueur), au lieu d'une ligne courte" },
   { hash: "0841283", date: "2026-08-27T00:36:26+00:00", title: "fix: footer des images sociales - @ballsohardx2 au lieu du slogan", details: "le texte en bas de chaque image générée (tous générateurs confondus) affiche maintenant le pseudo Instagram plutôt que le slogan complet" },
