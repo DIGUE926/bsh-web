@@ -14,6 +14,7 @@ export type ChangelogEntry = {
 };
 
 export const changelogEntries: ChangelogEntry[] = [
+  { hash: "0841283", date: "2026-08-27T00:36:26+00:00", title: "fix: footer des images sociales - @ballsohardx2 au lieu du slogan", details: "le texte en bas de chaque image générée (tous générateurs confondus) affiche maintenant le pseudo Instagram plutôt que le slogan complet" },
   { hash: "4311bf6", date: "2026-08-27T00:27:33+00:00", title: "fix: retire les traits dans Team Breakdown/Wrapped, textes IA plus longs et plus humains", details: "lignes de séparation retirées sur toutes les slides (même traitement que le carrousel joueur), prompts Gemini réécrits pour des textes plus développés (1-2 phrases) et un ton moins robotique, plus proche d'un vrai commentateur" },
   { hash: "8e791de", date: "2026-08-27T00:14:42+00:00", title: "fix: affiche STL/BLK dans la carte 'Joueur du match' quand ils comptent", details: "le calcul du joueur du match combinait déjà PTS+REB+AST+STL+BLK pour choisir le meilleur, mais l'affichage ne montrait que PTS/REB/AST -- un joueur pouvait être élu grâce à ses interceptions/contres sans que ça se voie, source de confusion. Ajouté sur les matchs classiques et playoffs." },
   { hash: "2115aac", date: "2026-08-24T22:46:27+00:00", title: "fix: retire la colonne MIN partout sur le site", details: "box score match courant, box score playoffs, historique des matchs sur la page joueur -- pas de donnée minutes fiable pour les box-scores AHBB scrapés, retiré pour tout le monde plutôt que d'afficher 0" },
