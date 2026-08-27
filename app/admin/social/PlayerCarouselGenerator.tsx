@@ -700,20 +700,23 @@ export default function PlayerCarouselGenerator() {
     paintSlideIndicator(ctx, 4, SLIDE_COUNT, WIDTH);
 
     ctx.textBaseline = "alphabetic";
-    ctx.textAlign = "left";
+    ctx.textAlign = "center";
 
-    // Bloc nom/résumé remonté en bas de slide (même logique que l'accroche
-    // en slide 1, cf. note plus haut).
+    const centerX = WIDTH / 2;
+    const textMaxWidth = WIDTH - PADDING * 2 - 80;
+
+    // Bloc nom/résumé centré (outro = slide de clôture, traitement distinct
+    // des autres slides alignées à gauche).
     ctx.fillStyle = COLORS.orange;
     ctx.font = "800 20px Montserrat, sans-serif";
-    ctx.fillText((player.team_name ?? "").toUpperCase(), PADDING, 860);
+    ctx.fillText((player.team_name ?? "").toUpperCase(), centerX, 860);
 
     ctx.fillStyle = COLORS.white;
     ctx.font = "900 52px Anton, sans-serif";
-    const lines = wrapLines(ctx, player.player_name.toUpperCase(), WIDTH - PADDING * 2);
+    const lines = wrapLines(ctx, player.player_name.toUpperCase(), textMaxWidth);
     let ny = 925;
     lines.forEach((line) => {
-      ctx.fillText(line, PADDING, ny);
+      ctx.fillText(line, centerX, ny);
       ny += 54;
     });
 
@@ -727,17 +730,18 @@ export default function PlayerCarouselGenerator() {
     const recapText =
       aiOutro.trim() ||
       `Cette saison : ${ppg} points, ${rpg} rebonds et ${apg} passes de moyenne par match.`;
-    const recapLines = wrapLines(ctx, recapText, WIDTH - PADDING * 2);
+    const recapLines = wrapLines(ctx, recapText, textMaxWidth);
     let ry = ny + 40;
     recapLines.forEach((line) => {
-      ctx.fillText(line, PADDING, ry);
+      ctx.fillText(line, centerX, ry);
       ry += 28;
     });
 
-    // Carte CTA en bas, pas centrée pleine hauteur (pousse plus bas si le
-    // résumé est long pour ne jamais chevaucher le texte au-dessus)
+    // Carte CTA en bas, centrée (pousse plus bas si le résumé est long pour
+    // ne jamais chevaucher le texte au-dessus)
     const ctaH = 130;
     const ctaY = Math.min(Math.max(HEIGHT - 280, ry + 30), HEIGHT - 200);
+    ctx.textAlign = "center";
     ctx.fillStyle = "rgba(255,255,255,0.04)";
     ctx.strokeStyle = "rgba(255,214,10,0.25)";
     ctx.lineWidth = 1;
@@ -747,11 +751,11 @@ export default function PlayerCarouselGenerator() {
 
     ctx.fillStyle = COLORS.orange;
     ctx.font = "800 18px Montserrat, sans-serif";
-    ctx.fillText("PLUS D'ANALYSES SUR", PADDING + 28, ctaY + 48);
+    ctx.fillText("PLUS D'ANALYSES SUR", centerX, ctaY + 48);
 
     ctx.fillStyle = COLORS.white;
     ctx.font = "900 40px Anton, sans-serif";
-    ctx.fillText("@BALLSOHARDX2", PADDING + 28, ctaY + 96);
+    ctx.fillText("@BALLSOHARDX2", centerX, ctaY + 96);
 
     paintFooter(ctx, WIDTH, HEIGHT);
   }

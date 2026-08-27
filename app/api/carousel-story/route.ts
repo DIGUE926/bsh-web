@@ -44,7 +44,7 @@ const COPY_SCHEMA: GeminiSchema = {
     outro: {
       type: "STRING",
       description:
-        "Texte de conclusion pour la slide 5 (dernière), 1 à 2 phrases, 220 caractères max, ton analyste sportif pro, qui synthétise l'impact du joueur cette saison avec une vraie prise de position.",
+        "Texte de conclusion pour la slide 5 (dernière, slide de clôture centrée), 2 à 3 phrases, 320 caractères max, exactement le ton d'un analyste ESPN/NBA en fin de segment qui livre son verdict sur la saison du joueur — développé, précis, avec une vraie prise de position analytique, jamais une seule ligne sèche.",
     },
   },
   required: ["hook", "statsCaption", "comparisonCaption", "radarCaption", "outro"],
@@ -105,7 +105,7 @@ Le carrousel Instagram a 5 slides. Écris un texte pour chacune :
 2. Slide 2 (grille de stats brutes) — une légende courte qui met en avant le chiffre le plus parlant.
 3. Slide 3 (comparaison vs moyenne de la ligue) — une légende courte sur l'écart le plus frappant avec la moyenne.
 4. Slide 4 (profil radar forces/faiblesses) — une légende courte qui contraste le point fort et le point à travailler.
-5. Slide 5 (conclusion) — résume ce qui définit sa saison, avec une vraie prise de position analytique.
+5. Slide 5 (conclusion, slide de clôture centrée) — écris comme un analyste ESPN/NBA qui livre son verdict final sur la saison du joueur : 2 à 3 phrases développées, qui résument ce qui définit sa saison avec une vraie prise de position analytique. C'est le texte le plus long et le plus travaillé des 5.
 
 Contraintes strictes :
 - N'utilise JAMAIS les mots "percentile" ou "PIR" dans le texte — dis "impact" à la place si besoin.
