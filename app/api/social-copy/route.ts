@@ -88,7 +88,7 @@ const TEAM_BREAKDOWN_SCHEMA: GeminiSchema = {
     outro: {
       type: "STRING",
       description:
-        "Texte de conclusion pour la dernière slide, 1 à 2 phrases, 240 caractères max, ton analyste sportif pro, qui synthétise la dynamique de l'équipe cette saison avec une vraie prise de position.",
+        "Texte de conclusion pour la dernière slide (slide de clôture centrée), 2 à 3 phrases, 320 caractères max, exactement le ton d'un analyste ESPN/NBA en fin de segment qui livre son verdict sur la saison de l'équipe — développé, précis, avec une vraie prise de position analytique, jamais une seule ligne sèche.",
     },
   },
   required: ["hook", "outro"],
@@ -158,7 +158,7 @@ ${perfLines || "Pas de données individuelles disponibles."}
 
 Écris :
 1. Une phrase d'accroche pour la slide d'ouverture du carrousel — donne envie de swiper, s'appuie sur un fait concret et spécifique à cette équipe (bilan, dynamique, style de jeu suggéré par les chiffres).
-2. Une phrase de conclusion pour la dernière slide — résume ce qui définit la saison de cette équipe, avec une vraie prise de position analytique.
+2. Le texte de conclusion pour la dernière slide (slide de clôture centrée) — écris comme un analyste ESPN/NBA qui livre son verdict final sur la saison de l'équipe : 2 à 3 phrases développées, qui résument ce qui définit sa saison avec une vraie prise de position analytique. C'est le texte le plus long et le plus travaillé des deux.
 
 Contraintes strictes :
 - N'utilise JAMAIS les mots "percentile" ou "PIR" dans le texte — dis "impact" à la place si besoin.

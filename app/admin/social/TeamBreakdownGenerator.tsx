@@ -466,14 +466,17 @@ export default function TeamBreakdownGenerator() {
     paintSlideIndicator(ctx, 3, SLIDE_COUNT, WIDTH);
 
     ctx.textBaseline = "alphabetic";
-    ctx.textAlign = "left";
+    ctx.textAlign = "center";
+
+    const centerX = WIDTH / 2;
+    const textMaxWidth = WIDTH - PADDING * 2 - 80;
 
     ctx.fillStyle = COLORS.white;
     ctx.font = "900 50px Anton, sans-serif";
-    const lines = wrapLines(ctx, team.name.toUpperCase(), WIDTH - PADDING * 2);
-    let ny = 155;
+    const lines = wrapLines(ctx, team.name.toUpperCase(), textMaxWidth);
+    let ny = 860;
     lines.forEach((line) => {
-      ctx.fillText(line, PADDING, ny);
+      ctx.fillText(line, centerX, ny);
       ny += 52;
     });
 
@@ -486,7 +489,7 @@ export default function TeamBreakdownGenerator() {
       ]
         .filter(Boolean)
         .join("  ·  ");
-      ctx.fillText(staffLine, PADDING, ny + 8);
+      ctx.fillText(staffLine, centerX, ny + 8);
       ny += 8;
     }
 
@@ -495,10 +498,10 @@ export default function TeamBreakdownGenerator() {
     const recapText =
       aiOutro.trim() ||
       `Cette saison : ${stats.wins}V-${stats.losses}D, ${stats.ppg != null ? stats.ppg.toFixed(1) : "-"} points de moyenne par match.`;
-    const recapLines = wrapLines(ctx, recapText, WIDTH - PADDING * 2);
+    const recapLines = wrapLines(ctx, recapText, textMaxWidth);
     let ry = ny + 50;
     recapLines.forEach((line) => {
-      ctx.fillText(line, PADDING, ry);
+      ctx.fillText(line, centerX, ry);
       ry += 28;
     });
 
@@ -511,13 +514,14 @@ export default function TeamBreakdownGenerator() {
     ctx.fill();
     ctx.stroke();
 
+    ctx.textAlign = "center";
     ctx.fillStyle = COLORS.orange;
     ctx.font = "800 18px Montserrat, sans-serif";
-    ctx.fillText("PLUS D'ANALYSES SUR", PADDING + 28, ctaY + 48);
+    ctx.fillText("PLUS D'ANALYSES SUR", centerX, ctaY + 48);
 
     ctx.fillStyle = COLORS.white;
     ctx.font = "900 40px Anton, sans-serif";
-    ctx.fillText("@BALLSOHARDX2", PADDING + 28, ctaY + 96);
+    ctx.fillText("@BALLSOHARDX2", centerX, ctaY + 96);
 
     paintFooter(ctx, WIDTH, HEIGHT);
   }
