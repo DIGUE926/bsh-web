@@ -664,7 +664,7 @@ export default function PlayerCarouselGenerator() {
     ctx.fillStyle = COLORS.white;
     ctx.font = "700 18px Montserrat, sans-serif";
     ctx.fillText(
-      `${strength.label} — ${fmt(strength.val)}${strengthRank ? ` (#${strengthRank} ligue)` : ""}`,
+      `${strength.label} : ${fmt(strength.val)}${strengthRank ? ` (#${strengthRank} ligue)` : ""}`,
       PADDING,
       calloutY + 26
     );
@@ -676,7 +676,7 @@ export default function PlayerCarouselGenerator() {
     ctx.fillStyle = COLORS.white;
     ctx.font = "700 18px Montserrat, sans-serif";
     ctx.fillText(
-      `${weakness.label} — ${fmt(weakness.val)}${weaknessRank ? ` (#${weaknessRank} ligue)` : ""}`,
+      `${weakness.label} : ${fmt(weakness.val)}${weaknessRank ? ` (#${weaknessRank} ligue)` : ""}`,
       WIDTH - PADDING,
       calloutY + 26
     );
