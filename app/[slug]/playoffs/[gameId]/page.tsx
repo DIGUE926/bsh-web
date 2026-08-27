@@ -220,8 +220,13 @@ export default async function PlayoffMatchPage({
               {playerOfGame.player.name}
             </p>
             <p className="text-sm text-white/60">
-              {playerOfGame.pts ?? 0} PTS · {playerOfGame.reb ?? 0} REB ·{" "}
-              {playerOfGame.ast ?? 0} AST
+              {[
+                `${playerOfGame.pts ?? 0} PTS`,
+                `${playerOfGame.reb ?? 0} REB`,
+                `${playerOfGame.ast ?? 0} AST`,
+                ...(playerOfGame.stl ? [`${playerOfGame.stl} STL`] : []),
+                ...(playerOfGame.blk ? [`${playerOfGame.blk} BLK`] : []),
+              ].join(" · ")}
             </p>
           </div>
         </div>
