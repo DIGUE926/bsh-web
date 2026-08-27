@@ -129,7 +129,7 @@ export function paintFooter(
   ctx: CanvasRenderingContext2D,
   width = CANVAS_WIDTH,
   height = CANVAS_HEIGHT,
-  label = "BallsoHard — La donnée du basket haïtien"
+  label = "@ballsohardx2"
 ) {
   ctx.fillStyle = "rgba(255,255,255,0.35)";
   ctx.font = "600 20px Montserrat, sans-serif";
