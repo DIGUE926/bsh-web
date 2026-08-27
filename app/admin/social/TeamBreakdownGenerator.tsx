@@ -271,18 +271,7 @@ export default function TeamBreakdownGenerator() {
       ny += 44;
     }
 
-    const dividerY = ny + 30;
-    ctx.strokeStyle = "rgba(255,255,255,0.15)";
-    ctx.lineWidth = 1.5;
-    ctx.beginPath();
-    ctx.moveTo(PADDING, dividerY);
-    ctx.lineTo(WIDTH - PADDING, dividerY);
-    ctx.stroke();
-
-    const hookY = dividerY + 60;
-    ctx.fillStyle = COLORS.gold;
-    ctx.font = "900 22px Anton, sans-serif";
-    ctx.fillText("│", PADDING, hookY);
+    const hookY = ny + 60;
     ctx.fillStyle = "rgba(255,255,255,0.8)";
     ctx.font = "500 24px Montserrat, sans-serif";
     const hookText =
@@ -290,16 +279,17 @@ export default function TeamBreakdownGenerator() {
       (stats.ppg != null
         ? `${stats.ppg.toFixed(1)} points marqués par match cette saison.`
         : `Zoom sur ${team.name}.`);
-    const hookLines = wrapLines(ctx, hookText, WIDTH - PADDING * 2 - 24);
+    const hookLines = wrapLines(ctx, hookText, WIDTH - PADDING * 2);
     let hy = hookY;
     hookLines.forEach((line) => {
-      ctx.fillText(line, PADDING + 20, hy);
+      ctx.fillText(line, PADDING, hy);
       hy += 32;
     });
 
+    const swipeY = Math.min(Math.max(HEIGHT - 150, hy + 50), HEIGHT - 90);
     ctx.fillStyle = COLORS.orange;
     ctx.font = "800 22px Montserrat, sans-serif";
-    ctx.fillText("GLISSE POUR VOIR LE BILAN →", PADDING, HEIGHT - 150);
+    ctx.fillText("GLISSE POUR VOIR LE BILAN →", PADDING, swipeY);
 
     paintFooter(ctx, WIDTH, HEIGHT);
   }
@@ -500,21 +490,13 @@ export default function TeamBreakdownGenerator() {
       ny += 8;
     }
 
-    const dividerY = ny + 30;
-    ctx.strokeStyle = "rgba(255,255,255,0.15)";
-    ctx.lineWidth = 1.5;
-    ctx.beginPath();
-    ctx.moveTo(PADDING, dividerY);
-    ctx.lineTo(WIDTH - PADDING, dividerY);
-    ctx.stroke();
-
     ctx.fillStyle = "rgba(255,255,255,0.7)";
     ctx.font = "500 20px Montserrat, sans-serif";
     const recapText =
       aiOutro.trim() ||
       `Cette saison : ${stats.wins}V-${stats.losses}D, ${stats.ppg != null ? stats.ppg.toFixed(1) : "-"} points de moyenne par match.`;
     const recapLines = wrapLines(ctx, recapText, WIDTH - PADDING * 2);
-    let ry = dividerY + 40;
+    let ry = ny + 50;
     recapLines.forEach((line) => {
       ctx.fillText(line, PADDING, ry);
       ry += 28;

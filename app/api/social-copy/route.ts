@@ -83,12 +83,12 @@ const TEAM_BREAKDOWN_SCHEMA: GeminiSchema = {
     hook: {
       type: "STRING",
       description:
-        "Phrase d'accroche pour la première slide, 1 phrase, 140 caractères max, ton analyste sportif pro (façon ESPN/NBA), s'appuie sur un fait concret propre à cette équipe — jamais générique.",
+        "Texte d'accroche pour la première slide, 1 à 2 phrases, 220 caractères max, ton analyste sportif pro (façon ESPN/NBA) mais écrit comme un vrai commentateur, pas une IA — s'appuie sur un fait concret propre à cette équipe, jamais générique.",
     },
     outro: {
       type: "STRING",
       description:
-        "Phrase de conclusion pour la dernière slide, 1 phrase, 160 caractères max, ton analyste sportif pro, qui synthétise la dynamique de l'équipe cette saison.",
+        "Texte de conclusion pour la dernière slide, 1 à 2 phrases, 240 caractères max, ton analyste sportif pro, qui synthétise la dynamique de l'équipe cette saison avec une vraie prise de position.",
     },
   },
   required: ["hook", "outro"],
@@ -100,12 +100,12 @@ const SEASON_WRAPPED_SCHEMA: GeminiSchema = {
     hook: {
       type: "STRING",
       description:
-        "Phrase d'accroche pour la slide de couverture du Wrapped BSH, 1 phrase, 140 caractères max, ton événementiel et impactant (façon récap de fin de saison ESPN/NBA), donne envie de swiper — jamais générique.",
+        "Texte d'accroche pour la slide de couverture du Wrapped BSH, 1 à 2 phrases, 220 caractères max, ton événementiel et impactant (façon récap de fin de saison ESPN/NBA) mais écrit comme un humain enthousiaste, pas une IA — donne envie de swiper, jamais générique.",
     },
     outro: {
       type: "STRING",
       description:
-        "Phrase de conclusion pour la dernière slide, 1 phrase, 160 caractères max, ton analyste sportif pro, qui résume l'esprit de la saison BSH (les deux ligues confondues) et invite à suivre la suite.",
+        "Texte de conclusion pour la dernière slide, 1 à 2 phrases, 240 caractères max, ton analyste sportif pro, qui résume l'esprit de la saison de cette ligue et invite à suivre la suite.",
     },
   },
   required: ["hook", "outro"],
@@ -129,8 +129,8 @@ ${body.chiffreChoc ? `Match le plus explosif : ${body.chiffreChoc.homeTeam} vs $
 
 Contraintes strictes :
 - N'utilise JAMAIS les mots "percentile" ou "PIR" dans le texte — dis "impact" à la place si besoin.
-- Français, ton pro et direct, zéro cliché creux.
-- Chaque phrase doit tenir dans les limites de caractères indiquées dans le schéma — sois concis.`;
+- Français, ton pro et direct, mais écrit comme un vrai commentateur passionné qui a suivi la saison — pas comme une IA qui résume des stats. Zéro cliché creux, zéro tournure toute faite.
+- Développe un peu chaque idée (1 à 2 phrases) plutôt qu'une seule ligne sèche — utilise l'espace disponible dans les limites de caractères du schéma.`;
 }
 
 function buildTeamBreakdownPrompt(body: TeamBreakdownBody): string {
@@ -160,8 +160,8 @@ ${perfLines || "Pas de données individuelles disponibles."}
 
 Contraintes strictes :
 - N'utilise JAMAIS les mots "percentile" ou "PIR" dans le texte — dis "impact" à la place si besoin.
-- Français, ton pro et direct, zéro cliché creux ("une équipe solide", "un collectif prometteur").
-- Chaque phrase doit tenir dans les limites de caractères indiquées dans le schéma — sois concis.`;
+- Français, ton pro et direct, mais écrit comme un vrai commentateur passionné, pas une IA qui liste des chiffres. Zéro cliché creux ("une équipe solide", "un collectif prometteur"), zéro tournure toute faite.
+- Développe un peu chaque idée (1 à 2 phrases) plutôt qu'une seule ligne sèche — utilise l'espace disponible dans les limites de caractères du schéma.`;
 }
 
 function buildMatchRecapPrompt(body: MatchRecapBody): string {

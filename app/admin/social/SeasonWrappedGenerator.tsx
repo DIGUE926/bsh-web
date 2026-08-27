@@ -324,28 +324,21 @@ export default function SeasonWrappedGenerator() {
     ctx.fillStyle = COLORS.gold;
     ctx.fillText("WRAPPED", PADDING, 480);
 
-    const dividerY = 520;
-    ctx.strokeStyle = "rgba(255,255,255,0.15)";
-    ctx.lineWidth = 1.5;
-    ctx.beginPath();
-    ctx.moveTo(PADDING, dividerY);
-    ctx.lineTo(WIDTH - PADDING, dividerY);
-    ctx.stroke();
-
     ctx.fillStyle = "rgba(255,255,255,0.8)";
     ctx.font = "500 24px Montserrat, sans-serif";
     const hookText =
       aiHook.trim() || `Le récap complet de la saison ${selectedLeague?.name ?? ""}.`;
     const hookLines = wrapLines(ctx, hookText, WIDTH - PADDING * 2);
-    let hy = dividerY + 50;
+    let hy = 560;
     hookLines.forEach((line) => {
       ctx.fillText(line, PADDING, hy);
       hy += 32;
     });
 
+    const swipeY = Math.min(Math.max(HEIGHT - 150, hy + 50), HEIGHT - 90);
     ctx.fillStyle = COLORS.orange;
     ctx.font = "800 22px Montserrat, sans-serif";
-    ctx.fillText("GLISSE POUR DÉCOUVRIR →", PADDING, HEIGHT - 150);
+    ctx.fillText("GLISSE POUR DÉCOUVRIR →", PADDING, swipeY);
 
     paintFooter(ctx, WIDTH, HEIGHT);
   }
@@ -388,30 +381,16 @@ export default function SeasonWrappedGenerator() {
       ny += 62;
     });
 
-    const dividerY = ny + 20;
-    ctx.strokeStyle = "rgba(255,255,255,0.15)";
-    ctx.lineWidth = 1.5;
-    ctx.beginPath();
-    ctx.moveTo(PADDING, dividerY);
-    ctx.lineTo(WIDTH - PADDING, dividerY);
-    ctx.stroke();
-
+    const statY = ny + 40;
     ctx.fillStyle = COLORS.gold;
     ctx.font = "900 56px Anton, sans-serif";
-    ctx.fillText(valueText, PADDING, dividerY + 80);
+    ctx.fillText(valueText, PADDING, statY + 80);
     ctx.fillStyle = "rgba(255,255,255,0.45)";
     ctx.font = "700 18px Montserrat, sans-serif";
-    ctx.fillText(valueLabel.toUpperCase(), PADDING, dividerY + 108);
+    ctx.fillText(valueLabel.toUpperCase(), PADDING, statY + 108);
 
     if (extraStats && extraStats.length > 0) {
-      const rowY = dividerY + 170;
-      ctx.strokeStyle = "rgba(255,255,255,0.15)";
-      ctx.lineWidth = 1.5;
-      ctx.beginPath();
-      ctx.moveTo(PADDING, rowY - 30);
-      ctx.lineTo(WIDTH - PADDING, rowY - 30);
-      ctx.stroke();
-
+      const rowY = statY + 170;
       const colWidth = (WIDTH - PADDING * 2) / extraStats.length;
       extraStats.forEach((stat, i) => {
         const x = PADDING + i * colWidth;
@@ -453,24 +432,17 @@ export default function SeasonWrappedGenerator() {
       ny += 62;
     });
 
-    const dividerY = ny + 20;
-    ctx.strokeStyle = "rgba(255,255,255,0.15)";
-    ctx.lineWidth = 1.5;
-    ctx.beginPath();
-    ctx.moveTo(PADDING, dividerY);
-    ctx.lineTo(WIDTH - PADDING, dividerY);
-    ctx.stroke();
-
+    const statY = ny + 40;
     const winPct = dominantTeam
       ? Math.round((dominantTeam.wins / (dominantTeam.wins + dominantTeam.losses)) * 100)
       : 0;
 
     ctx.fillStyle = COLORS.gold;
     ctx.font = "900 56px Anton, sans-serif";
-    ctx.fillText(dominantTeam ? `${dominantTeam.wins}V-${dominantTeam.losses}D` : "—", PADDING, dividerY + 80);
+    ctx.fillText(dominantTeam ? `${dominantTeam.wins}V-${dominantTeam.losses}D` : "—", PADDING, statY + 80);
     ctx.fillStyle = "rgba(255,255,255,0.45)";
     ctx.font = "700 18px Montserrat, sans-serif";
-    ctx.fillText(`${winPct}% DE VICTOIRES`, PADDING, dividerY + 108);
+    ctx.fillText(`${winPct}% DE VICTOIRES`, PADDING, statY + 108);
 
     paintFooter(ctx, WIDTH, HEIGHT);
   }
@@ -506,20 +478,13 @@ export default function SeasonWrappedGenerator() {
         ny += 46;
       });
 
-      const dividerY = ny + 20;
-      ctx.strokeStyle = "rgba(255,255,255,0.15)";
-      ctx.lineWidth = 1.5;
-      ctx.beginPath();
-      ctx.moveTo(PADDING, dividerY);
-      ctx.lineTo(WIDTH - PADDING, dividerY);
-      ctx.stroke();
-
+      const statY = ny + 40;
       ctx.fillStyle = COLORS.gold;
       ctx.font = "900 64px Anton, sans-serif";
-      ctx.fillText(`${chiffreChoc.homeScore} - ${chiffreChoc.awayScore}`, PADDING, dividerY + 90);
+      ctx.fillText(`${chiffreChoc.homeScore} - ${chiffreChoc.awayScore}`, PADDING, statY + 90);
       ctx.fillStyle = "rgba(255,255,255,0.45)";
       ctx.font = "700 18px Montserrat, sans-serif";
-      ctx.fillText(`${chiffreChoc.totalPoints} POINTS CUMULÉS`, PADDING, dividerY + 120);
+      ctx.fillText(`${chiffreChoc.totalPoints} POINTS CUMULÉS`, PADDING, statY + 120);
     } else {
       ctx.fillStyle = "rgba(255,255,255,0.5)";
       ctx.font = "600 24px Montserrat, sans-serif";

@@ -24,27 +24,27 @@ const COPY_SCHEMA: GeminiSchema = {
     hook: {
       type: "STRING",
       description:
-        "Phrase d'accroche pour la slide 1 (ouverture), 1 phrase, 140 caractères max, ton analyste sportif pro (façon ESPN/NBA), percutante et spécifique au joueur — jamais générique.",
+        "Texte d'accroche pour la slide 1 (ouverture), 1 à 2 phrases, 220 caractères max, ton analyste sportif pro (façon ESPN/NBA) mais écrit comme un humain qui suit vraiment la ligue — percutant et spécifique au joueur, jamais générique, jamais robotique.",
     },
     statsCaption: {
       type: "STRING",
       description:
-        "Légende courte pour la slide 2 (grille de stats brutes), 1 phrase, 100 caractères max, met en relief le chiffre le plus parlant de la grille — jamais générique.",
+        "Légende pour la slide 2 (grille de stats brutes), 1 à 2 phrases, 170 caractères max, met en relief le chiffre le plus parlant de la grille avec du contexte — jamais générique.",
     },
     comparisonCaption: {
       type: "STRING",
       description:
-        "Légende courte pour la slide 3 (comparaison vs moyenne de la ligue), 1 phrase, 100 caractères max, souligne l'écart le plus frappant avec la moyenne — jamais générique.",
+        "Légende pour la slide 3 (comparaison vs moyenne de la ligue), 1 à 2 phrases, 170 caractères max, souligne l'écart le plus frappant avec la moyenne et ce que ça dit du joueur — jamais générique.",
     },
     radarCaption: {
       type: "STRING",
       description:
-        "Légende courte pour la slide 4 (profil radar forces/faiblesses), 1 phrase, 100 caractères max, commente le contraste entre le point fort et le point à travailler — jamais générique.",
+        "Légende pour la slide 4 (profil radar forces/faiblesses), 1 à 2 phrases, 170 caractères max, commente le contraste entre le point fort et le point à travailler avec une vraie lecture du jeu — jamais générique.",
     },
     outro: {
       type: "STRING",
       description:
-        "Phrase de conclusion/résumé pour la slide 5 (dernière), 1 phrase, 160 caractères max, ton analyste sportif pro, qui synthétise l'impact du joueur cette saison.",
+        "Texte de conclusion pour la slide 5 (dernière), 1 à 2 phrases, 220 caractères max, ton analyste sportif pro, qui synthétise l'impact du joueur cette saison avec une vraie prise de position.",
     },
   },
   required: ["hook", "statsCaption", "comparisonCaption", "radarCaption", "outro"],
@@ -109,8 +109,8 @@ Le carrousel Instagram a 5 slides. Écris un texte pour chacune :
 
 Contraintes strictes :
 - N'utilise JAMAIS les mots "percentile" ou "PIR" dans le texte — dis "impact" à la place si besoin.
-- Français, ton pro et direct, zéro cliché creux ("un joueur exceptionnel", "un talent brut").
-- Chaque phrase doit tenir dans les limites de caractères indiquées dans le schéma — sois concis.
+- Français, ton pro et direct, mais écrit comme un vrai commentateur passionné qui regarde les matchs — pas comme une IA qui résume des chiffres. Zéro cliché creux ("un joueur exceptionnel", "un talent brut"), zéro tournure toute faite.
+- Développe un peu chaque idée (1 à 2 phrases) plutôt qu'une seule ligne sèche — reste dans les limites de caractères indiquées dans le schéma, mais utilise l'espace disponible.
 - Les 5 textes doivent être distincts, ne répète pas la même idée d'une slide à l'autre.`;
 
   try {
