@@ -5,6 +5,7 @@ import BackButton from "./BackButton";
 import NavMenu from "./NavMenu";
 import { supabase } from "@/lib/supabase";
 import ServiceWorkerRegister from "./ServiceWorkerRegister";
+import InstallPrompt from "./InstallPrompt";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://bsh-web-one.vercel.app"),
@@ -91,6 +92,7 @@ export default async function RootLayout({
         </footer>
         <Analytics />
         <ServiceWorkerRegister />
+        <InstallPrompt />
       </body>
     </html>
   );
