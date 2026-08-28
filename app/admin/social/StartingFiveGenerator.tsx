@@ -11,6 +11,7 @@ import {
   paintBackground,
   paintCourtPattern,
   paintPhotoBackground,
+  paintFittedPhoto,
   paintCompactHeader,
   paintFooter,
   downloadCanvasPng,
@@ -27,6 +28,7 @@ type PlayerRow = {
   rpg: number | null;
   apg: number | null;
   pir: number | null;
+  photo_url: string | null;
 };
 
 const MAX_STARTERS = 5;
@@ -82,7 +84,21 @@ export default function StartingFiveGenerator() {
         .select("player_id, player_name, position, ppg, rpg, apg, pir")
         .eq("team_name", team!.name)
         .order("player_name");
-      setRoster((data ?? []) as PlayerRow[]);
+      const rows = (data ?? []) as Omit<PlayerRow, "photo_url">[];
+
+      // global_rankings/playoff_player_totals n'exposent pas photo_url --
+      // requête séparée sur players plutôt que de toucher à ces vues.
+      const ids = rows.map((r) => r.player_id);
+      const photosById = new Map<string, string | null>();
+      if (ids.length > 0) {
+        const { data: photoRows } = await supabase
+          .from("players")
+          .select("id, photo_url")
+          .in("id", ids);
+        (photoRows ?? []).forEach((p) => photosById.set(p.id, p.photo_url));
+      }
+
+      setRoster(rows.map((r) => ({ ...r, photo_url: photosById.get(r.player_id) ?? null })));
       setStarterIds([]);
       setReady(false);
     }
@@ -166,70 +182,115 @@ export default function StartingFiveGenerator() {
 
     const rows = 5;
     const startY = ny + 40;
-    const gap = 16;
+    const gap = 18;
     const rowH = (HEIGHT - startY - 180 - gap * (rows - 1)) / rows;
 
-    starters.forEach((p, i) => {
+    for (let i = 0; i < starters.length; i++) {
+      const p = starters[i];
       const y = startY + i * (rowH + gap);
 
-      ctx.fillStyle = "rgba(255,255,255,0.045)";
+      // Carte avec léger dégradé + accent orange sur le bord gauche.
+      ctx.fillStyle = "rgba(255,255,255,0.05)";
       ctx.strokeStyle = "rgba(255,255,255,0.12)";
       ctx.lineWidth = 1;
-      roundRect(ctx, PADDING, y, WIDTH - PADDING * 2, rowH, 16);
+      roundRect(ctx, PADDING, y, WIDTH - PADDING * 2, rowH, 18);
       ctx.fill();
       ctx.stroke();
-
-      // Badge numéroté à gauche
-      const badgeCx = PADDING + 48;
-      const badgeCy = y + rowH / 2;
-      ctx.beginPath();
-      ctx.arc(badgeCx, badgeCy, 30, 0, Math.PI * 2);
-      ctx.fillStyle = "rgba(255,107,0,0.12)";
-      ctx.fill();
-      ctx.strokeStyle = COLORS.orange;
-      ctx.lineWidth = 2;
-      ctx.stroke();
+      ctx.save();
+      roundRect(ctx, PADDING, y, WIDTH - PADDING * 2, rowH, 18);
+      ctx.clip();
       ctx.fillStyle = COLORS.orange;
-      ctx.font = "900 26px Anton, sans-serif";
+      ctx.fillRect(PADDING, y, 5, rowH);
+      ctx.restore();
+
+      // Portrait carré à coins arrondis à gauche, ou avatar dégradé avec
+      // initiales si aucune photo n'est renseignée.
+      const photoSize = rowH - 20;
+      const photoX = PADDING + 20;
+      const photoY = y + (rowH - photoSize) / 2;
+
+      if (p.photo_url) {
+        await paintFittedPhoto(ctx, p.photo_url, photoX, photoY, photoSize, photoSize, 14);
+      } else {
+        const grad = ctx.createLinearGradient(photoX, photoY, photoX + photoSize, photoY + photoSize);
+        grad.addColorStop(0, "rgba(255,107,0,0.35)");
+        grad.addColorStop(1, "rgba(255,214,10,0.18)");
+        ctx.fillStyle = grad;
+        roundRect(ctx, photoX, photoY, photoSize, photoSize, 14);
+        ctx.fill();
+        ctx.fillStyle = "rgba(255,255,255,0.85)";
+        ctx.font = "900 30px Anton, sans-serif";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(initials(p.player_name), photoX + photoSize / 2, photoY + photoSize / 2 + 2);
+        ctx.textBaseline = "alphabetic";
+      }
+
+      // Badge numéroté, chevauche le coin bas-droit du portrait.
+      const badgeR = 18;
+      const badgeCx = photoX + photoSize - 2;
+      const badgeCy = photoY + photoSize - 2;
+      ctx.beginPath();
+      ctx.arc(badgeCx, badgeCy, badgeR, 0, Math.PI * 2);
+      ctx.fillStyle = COLORS.orange;
+      ctx.fill();
+      ctx.strokeStyle = COLORS.black;
+      ctx.lineWidth = 3;
+      ctx.stroke();
+      ctx.fillStyle = COLORS.black;
+      ctx.font = "900 18px Anton, sans-serif";
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
-      ctx.fillText(String(i + 1), badgeCx, badgeCy + 2);
+      ctx.fillText(String(i + 1), badgeCx, badgeCy + 1);
       ctx.textBaseline = "alphabetic";
 
       // Nom + poste
-      const textX = PADDING + 96;
+      const textX = photoX + photoSize + 24;
       ctx.textAlign = "left";
       ctx.fillStyle = COLORS.white;
-      ctx.font = "800 26px Montserrat, sans-serif";
-      ctx.fillText(p.player_name, textX, y + rowH / 2 - 6);
+      ctx.font = "800 25px Montserrat, sans-serif";
+      ctx.fillText(p.player_name, textX, y + rowH / 2 - 8);
 
       if (p.position) {
+        const pillW = ctx.measureText(p.position).width + 20;
+        const pillY = y + rowH / 2 + 4;
+        ctx.fillStyle = "rgba(255,214,10,0.15)";
+        roundRect(ctx, textX, pillY, pillW, 24, 12);
+        ctx.fill();
         ctx.fillStyle = COLORS.gold;
-        ctx.font = "700 14px Montserrat, sans-serif";
-        ctx.fillText(p.position, textX, y + rowH / 2 + 20);
+        ctx.font = "800 13px Montserrat, sans-serif";
+        ctx.fillText(p.position, textX + 10, pillY + 17);
       }
 
-      // Stats à droite : PTS / REB / AST
-      const statBlocks: { label: string; value: string }[] = [
+      // Stats à droite : PTS / REB / AST / IMPACT
+      const statBlocks: { label: string; value: string; accent?: boolean }[] = [
         { label: "PTS", value: p.ppg != null ? p.ppg.toFixed(1) : "-" },
         { label: "REB", value: p.rpg != null ? p.rpg.toFixed(1) : "-" },
         { label: "AST", value: p.apg != null ? p.apg.toFixed(1) : "-" },
+        { label: "IMPACT", value: p.pir != null ? p.pir.toFixed(1) : "-", accent: true },
       ];
-      const statW = 88;
+      const statW = 74;
       const statsRightX = WIDTH - PADDING - 24;
       statBlocks.forEach((s, si) => {
         const sx = statsRightX - (statBlocks.length - 1 - si) * statW;
         ctx.textAlign = "center";
-        ctx.fillStyle = COLORS.white;
-        ctx.font = "800 24px Montserrat, sans-serif";
+        ctx.fillStyle = s.accent ? COLORS.gold : COLORS.white;
+        ctx.font = "800 22px Montserrat, sans-serif";
         ctx.fillText(s.value, sx, y + rowH / 2 - 4);
         ctx.fillStyle = "rgba(255,255,255,0.4)";
-        ctx.font = "700 11px Montserrat, sans-serif";
+        ctx.font = "700 10px Montserrat, sans-serif";
         ctx.fillText(s.label, sx, y + rowH / 2 + 16);
       });
-    });
+    }
 
     paintFooter(ctx, WIDTH, HEIGHT);
+  }
+
+  function initials(name: string): string {
+    const parts = name.trim().split(/\s+/).filter(Boolean);
+    if (parts.length === 0) return "?";
+    if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
   }
 
   function wrapLines(ctx: CanvasRenderingContext2D, text: string, maxWidth: number): string[] {

@@ -103,6 +103,70 @@ export async function paintPhotoBackground(
   });
 }
 
+// Portrait recadré en "cover" dans une zone rectangulaire à coins arrondis
+// (ex: photo d'un joueur dans une carte). Silencieux si l'image ne charge
+// pas -- l'appelant garde son fallback (avatar/initiales) en dessous.
+export async function paintFittedPhoto(
+  ctx: CanvasRenderingContext2D,
+  url: string,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  radius = 0
+) {
+  await new Promise<void>((resolve) => {
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.onload = () => {
+      try {
+        ctx.save();
+        roundRectPath(ctx, x, y, w, h, radius);
+        ctx.clip();
+
+        const imgRatio = img.width / img.height;
+        const targetRatio = w / h;
+        let drawW = w;
+        let drawH = h;
+        if (imgRatio > targetRatio) {
+          drawH = h;
+          drawW = h * imgRatio;
+        } else {
+          drawW = w;
+          drawH = w / imgRatio;
+        }
+        const dx = x + (w - drawW) / 2;
+        const dy = y + (h - drawH) / 2;
+        ctx.drawImage(img, dx, dy, drawW, drawH);
+        ctx.restore();
+      } catch {
+        // "tainted canvas" si l'hôte de l'image ne renvoie pas d'en-têtes
+        // CORS -- pas de crash, l'appelant garde son fallback.
+      }
+      resolve();
+    };
+    img.onerror = () => resolve();
+    img.src = url;
+  });
+}
+
+function roundRectPath(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  r: number
+) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.arcTo(x + w, y, x + w, y + h, r);
+  ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r);
+  ctx.arcTo(x, y, x + w, y, r);
+  ctx.closePath();
+}
+
 export async function paintCourtPattern(
   ctx: CanvasRenderingContext2D,
   width = CANVAS_WIDTH,

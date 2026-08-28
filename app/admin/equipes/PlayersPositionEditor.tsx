@@ -9,6 +9,7 @@ type Player = {
   team_id: string | null;
   league_id: string;
   position: string | null;
+  photo_url: string | null;
 };
 type Team = { id: string; name: string; league_id: string };
 type League = { id: string; slug: string; name: string };
@@ -21,6 +22,8 @@ export default function PlayersPositionEditor() {
   const [players, setPlayers] = useState<Player[]>([]);
   const [leagueFilter, setLeagueFilter] = useState<string>("all");
   const [savingId, setSavingId] = useState<string | null>(null);
+  const [photoDrafts, setPhotoDrafts] = useState<Record<string, string>>({});
+  const [savedPhotoId, setSavedPhotoId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const supabase = createClient();
 
@@ -29,11 +32,20 @@ export default function PlayersPositionEditor() {
       const [{ data: leagueRows }, { data: teamRows }, { data: playerRows }] = await Promise.all([
         supabase.from("leagues").select("id, slug, name").order("name"),
         supabase.from("teams").select("id, name, league_id").order("name"),
-        supabase.from("players").select("id, name, team_id, league_id, position").order("name"),
+        supabase
+          .from("players")
+          .select("id, name, team_id, league_id, position, photo_url")
+          .order("name"),
       ]);
       setLeagues(leagueRows ?? []);
       setTeams(teamRows ?? []);
-      setPlayers((playerRows ?? []) as Player[]);
+      const rows = (playerRows ?? []) as Player[];
+      setPlayers(rows);
+      const initialPhotos: Record<string, string> = {};
+      rows.forEach((p) => {
+        initialPhotos[p.id] = p.photo_url ?? "";
+      });
+      setPhotoDrafts(initialPhotos);
     }
     load();
   }, [supabase]);
@@ -54,6 +66,25 @@ export default function PlayersPositionEditor() {
     setPlayers((prev) => prev.map((p) => (p.id === player.id ? { ...p, position: value } : p)));
   }
 
+  async function savePhoto(player: Player) {
+    const value = (photoDrafts[player.id] ?? "").trim();
+    setError(null);
+    setSavingId(player.id);
+    const { error: updateError } = await supabase
+      .from("players")
+      .update({ photo_url: value || null })
+      .eq("id", player.id);
+    setSavingId(null);
+    if (updateError) {
+      setError(`Échec pour ${player.name} : ${updateError.message}`);
+      return;
+    }
+    setPlayers((prev) =>
+      prev.map((p) => (p.id === player.id ? { ...p, photo_url: value || null } : p))
+    );
+    setSavedPhotoId(player.id);
+  }
+
   const teamsById = new Map(teams.map((t) => [t.id, t]));
   const visibleLeagues =
     leagueFilter === "all" ? leagues : leagues.filter((l) => l.id === leagueFilter);
@@ -64,8 +95,9 @@ export default function PlayersPositionEditor() {
         POSITIONS DES JOUEURS
       </h1>
       <p className="text-sm text-white/50 mb-4 max-w-xl">
-        Meneur (PG), arrière (SG), ailier (SF), ailier fort (PF), pivot (C). Sert de filtre sur
-        les classements publics — laisse sur &quot;—&quot; si inconnu.
+        Poste (PG/SG/SF/PF/C, sert de filtre sur les classements publics) et URL de photo par
+        joueur — utilisée sur la page publique du joueur et dans le générateur Cinq de départ
+        (/admin/social). Laisse vide si inconnu.
       </p>
 
       <div className="flex flex-wrap gap-2 mb-6">
@@ -107,30 +139,54 @@ export default function PlayersPositionEditor() {
                   return (
                     <div key={team.id}>
                       <p className="text-sm text-white/60 font-semibold mb-1.5">{team.name}</p>
-                      <div className="grid sm:grid-cols-2 gap-1.5">
-                        {teamPlayers.map((player) => (
-                          <div
-                            key={player.id}
-                            className="flex items-center gap-2 rounded-lg border border-white/5 bg-white/[0.02] px-3 py-2"
-                          >
-                            <span className="text-sm text-white/70 flex-1 truncate">
-                              {player.name}
-                            </span>
-                            <select
-                              value={player.position ?? ""}
-                              onChange={(e) => updatePosition(player, e.target.value)}
-                              disabled={savingId === player.id}
-                              className="bg-white/5 border border-white/10 rounded px-2 py-1 text-xs text-white/70 focus:border-bsh-orange outline-none disabled:opacity-40"
+                      <div className="space-y-1.5">
+                        {teamPlayers.map((player) => {
+                          const photoDraft = photoDrafts[player.id] ?? "";
+                          const photoDirty = photoDraft.trim() !== (player.photo_url ?? "");
+                          return (
+                            <div
+                              key={player.id}
+                              className="flex flex-wrap items-center gap-2 rounded-lg border border-white/5 bg-white/[0.02] px-3 py-2"
                             >
-                              <option value="">—</option>
-                              {POSITIONS.map((pos) => (
-                                <option key={pos} value={pos}>
-                                  {pos}
-                                </option>
-                              ))}
-                            </select>
-                          </div>
-                        ))}
+                              <span className="text-sm text-white/70 flex-1 min-w-[100px] truncate">
+                                {player.name}
+                              </span>
+                              <select
+                                value={player.position ?? ""}
+                                onChange={(e) => updatePosition(player, e.target.value)}
+                                disabled={savingId === player.id}
+                                className="bg-white/5 border border-white/10 rounded px-2 py-1 text-xs text-white/70 focus:border-bsh-orange outline-none disabled:opacity-40 shrink-0"
+                              >
+                                <option value="">—</option>
+                                {POSITIONS.map((pos) => (
+                                  <option key={pos} value={pos}>
+                                    {pos}
+                                  </option>
+                                ))}
+                              </select>
+                              <input
+                                value={photoDraft}
+                                onChange={(e) => {
+                                  setPhotoDrafts((prev) => ({ ...prev, [player.id]: e.target.value }));
+                                  setSavedPhotoId(null);
+                                }}
+                                placeholder="URL photo joueur"
+                                className="flex-1 min-w-[140px] bg-transparent border-b border-white/10 px-1 py-1 text-xs text-white/60 placeholder:text-white/25 focus:border-bsh-orange outline-none"
+                              />
+                              <button
+                                onClick={() => savePhoto(player)}
+                                disabled={!photoDirty || savingId === player.id}
+                                className="shrink-0 text-xs font-semibold rounded-full px-2.5 py-1 bg-white/5 text-white/40 hover:text-bsh-orange disabled:opacity-30 disabled:hover:text-white/40"
+                              >
+                                {savingId === player.id
+                                  ? "..."
+                                  : savedPhotoId === player.id && !photoDirty
+                                    ? "✓"
+                                    : "Enregistrer"}
+                              </button>
+                            </div>
+                          );
+                        })}
                       </div>
                     </div>
                   );
