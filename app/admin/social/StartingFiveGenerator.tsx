@@ -40,6 +40,7 @@ export default function StartingFiveGenerator() {
   const [teams, setTeams] = useState<Team[]>([]);
   const [teamId, setTeamId] = useState("");
   const [roster, setRoster] = useState<PlayerRow[]>([]);
+  const [rosterSearch, setRosterSearch] = useState("");
   const [starterIds, setStarterIds] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -100,6 +101,7 @@ export default function StartingFiveGenerator() {
 
       setRoster(rows.map((r) => ({ ...r, photo_url: photosById.get(r.player_id) ?? null })));
       setStarterIds([]);
+      setRosterSearch("");
       setReady(false);
     }
     loadRoster();
@@ -335,6 +337,11 @@ export default function StartingFiveGenerator() {
     downloadCanvasPng(canvas, `bsh-${name}-cinq-de-depart.png`);
   }
 
+  const query = rosterSearch.trim().toLowerCase();
+  const visibleRoster = query
+    ? roster.filter((p) => p.player_name.toLowerCase().includes(query))
+    : roster;
+
   return (
     <div>
       <h1 className="font-display text-xl text-bsh-orange mb-1 tracking-wide">
@@ -390,14 +397,25 @@ export default function StartingFiveGenerator() {
       </div>
 
       <div className="border border-white/10 rounded-lg p-4 bg-white/5 mb-6 max-w-2xl">
-        <p className="text-sm font-semibold text-white/80 mb-2">
-          Titulaires ({starterIds.length}/{MAX_STARTERS})
-        </p>
+        <div className="flex items-center justify-between gap-3 mb-2 flex-wrap">
+          <p className="text-sm font-semibold text-white/80">
+            Titulaires ({starterIds.length}/{MAX_STARTERS})
+          </p>
+          <input
+            value={rosterSearch}
+            onChange={(e) => setRosterSearch(e.target.value)}
+            placeholder="Rechercher un joueur..."
+            className="bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 text-sm text-white/70 placeholder:text-white/30 focus:border-bsh-orange outline-none w-full sm:w-56"
+          />
+        </div>
         {roster.length === 0 && (
           <p className="text-xs text-white/30">Aucun joueur avec des stats pour cette équipe.</p>
         )}
+        {roster.length > 0 && visibleRoster.length === 0 && (
+          <p className="text-xs text-white/30">Aucun joueur ne correspond à &quot;{rosterSearch}&quot;.</p>
+        )}
         <div className="space-y-1 max-h-72 overflow-y-auto pr-1">
-          {roster.map((p) => {
+          {visibleRoster.map((p) => {
             const selected = starterIds.includes(p.player_id);
             return (
               <button
