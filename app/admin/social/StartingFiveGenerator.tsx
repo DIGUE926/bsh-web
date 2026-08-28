@@ -10,7 +10,6 @@ import {
   loadBrandFonts,
   paintBackground,
   paintCourtPattern,
-  paintPhotoBackground,
   paintFittedPhoto,
   paintCompactHeader,
   paintFooter,
@@ -19,7 +18,6 @@ import {
 
 type Competition = "season" | "playoffs";
 type League = { id: string; slug: string; name: string };
-type Team = { id: string; name: string; photo_url: string | null };
 type PlayerRow = {
   player_id: string;
   player_name: string;
@@ -38,8 +36,6 @@ export default function StartingFiveGenerator() {
   const [competition, setCompetition] = useState<Competition>("season");
   const [leagues, setLeagues] = useState<League[]>([]);
   const [leagueId, setLeagueId] = useState("");
-  const [teams, setTeams] = useState<Team[]>([]);
-  const [teamId, setTeamId] = useState("");
   const [roster, setRoster] = useState<PlayerRow[]>([]);
   const [rosterSearch, setRosterSearch] = useState("");
   const [starterIds, setStarterIds] = useState<string[]>([]);
@@ -60,23 +56,8 @@ export default function StartingFiveGenerator() {
     loadLeagues();
   }, [supabase]);
 
-  useEffect(() => {
-    if (!leagueId) return;
-    async function loadTeams() {
-      const { data } = await supabase
-        .from("teams")
-        .select("id, name, photo_url")
-        .eq("league_id", leagueId)
-        .order("name");
-      const rows = (data ?? []) as Team[];
-      setTeams(rows);
-      setTeamId(rows[0]?.id ?? "");
-    }
-    loadTeams();
-  }, [leagueId, supabase]);
-
-  // Recherche générale : tous les joueurs de la ligue, pas juste l'équipe
-  // sélectionnée -- choisir un joueur remplit l'équipe automatiquement.
+  // Recherche générale : tous les joueurs de la ligue, pas de notion
+  // d'équipe -- c'est le cinq de départ de la saison, pas d'une équipe.
   useEffect(() => {
     if (!leagueId) return;
     const league = leagues.find((l) => l.id === leagueId);
@@ -110,30 +91,20 @@ export default function StartingFiveGenerator() {
     loadRoster();
   }, [leagueId, competition, leagues, supabase]);
 
-  function selectTeam(id: string) {
-    setTeamId(id);
-    setReady(false);
-  }
-
-  function toggleStarter(player: PlayerRow) {
+  function toggleStarter(playerId: string) {
     setStarterIds((prev) => {
-      if (prev.includes(player.player_id)) return prev.filter((id) => id !== player.player_id);
+      if (prev.includes(playerId)) return prev.filter((id) => id !== playerId);
       if (prev.length >= MAX_STARTERS) return prev;
-      // Le premier joueur choisi fixe l'équipe (photo de fond, nom affiché).
-      if (prev.length === 0 && player.team_name) {
-        const match = teams.find((t) => t.name === player.team_name);
-        if (match) setTeamId(match.id);
-      }
-      return [...prev, player.player_id];
+      return [...prev, playerId];
     });
     setReady(false);
   }
 
   async function generate() {
     setError(null);
-    const team = teams.find((t) => t.id === teamId);
-    if (!team) {
-      setError("Sélectionne une équipe.");
+    const league = leagues.find((l) => l.id === leagueId);
+    if (!league) {
+      setError("Sélectionne une ligue.");
       return;
     }
     if (starterIds.length !== MAX_STARTERS) {
@@ -142,20 +113,19 @@ export default function StartingFiveGenerator() {
     }
 
     setLoading(true);
-    const league = leagues.find((l) => l.id === leagueId);
-    const contextLabel = `${(league?.slug ?? "").toUpperCase()} · ${
+    const contextLabel = `${league.slug.toUpperCase()} · ${
       competition === "season" ? "SAISON RÉGULIÈRE" : "PLAYOFFS"
     }`;
     const starters = starterIds
       .map((id) => roster.find((p) => p.player_id === id))
       .filter((p): p is PlayerRow => !!p);
 
-    await drawStartingFive(team, starters, contextLabel);
+    await drawStartingFive(league, starters, contextLabel);
     setLoading(false);
     setReady(true);
   }
 
-  async function drawStartingFive(team: Team, starters: PlayerRow[], contextLabel: string) {
+  async function drawStartingFive(league: League, starters: PlayerRow[], contextLabel: string) {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
@@ -166,12 +136,8 @@ export default function StartingFiveGenerator() {
     await loadBrandFonts();
 
     paintBackground(ctx, WIDTH, HEIGHT);
-    if (team.photo_url) {
-      await paintPhotoBackground(ctx, team.photo_url, WIDTH, HEIGHT, 0.72);
-    } else {
-      await paintCourtPattern(ctx, WIDTH, HEIGHT, 0.08);
-    }
-    paintCompactHeader(ctx, "CINQ DE DÉPART", contextLabel, WIDTH);
+    await paintCourtPattern(ctx, WIDTH, HEIGHT, 0.08);
+    paintCompactHeader(ctx, "CINQ DE LA SAISON", contextLabel, WIDTH);
 
     ctx.textBaseline = "alphabetic";
     ctx.textAlign = "center";
@@ -183,7 +149,7 @@ export default function StartingFiveGenerator() {
 
     ctx.fillStyle = COLORS.white;
     ctx.font = "900 46px Anton, sans-serif";
-    const nameLines = wrapLines(ctx, team.name.toUpperCase(), WIDTH - PADDING * 2 - 60);
+    const nameLines = wrapLines(ctx, league.name.toUpperCase(), WIDTH - PADDING * 2 - 60);
     let ny = 195;
     nameLines.forEach((line) => {
       ctx.fillText(line, centerX, ny);
@@ -254,22 +220,26 @@ export default function StartingFiveGenerator() {
       ctx.fillText(String(i + 1), badgeCx, badgeCy + 1);
       ctx.textBaseline = "alphabetic";
 
-      // Nom + poste
+      // Nom + équipe + poste
       const textX = photoX + photoSize + 24;
       ctx.textAlign = "left";
       ctx.fillStyle = COLORS.white;
       ctx.font = "800 25px Montserrat, sans-serif";
-      ctx.fillText(p.player_name, textX, y + rowH / 2 - 8);
+      ctx.fillText(p.player_name, textX, y + rowH / 2 - 12);
+
+      ctx.fillStyle = "rgba(255,255,255,0.45)";
+      ctx.font = "600 14px Montserrat, sans-serif";
+      ctx.fillText(p.team_name ?? "", textX, y + rowH / 2 + 8);
 
       if (p.position) {
         const pillW = ctx.measureText(p.position).width + 20;
-        const pillY = y + rowH / 2 + 4;
+        const pillY = y + rowH / 2 + 16;
         ctx.fillStyle = "rgba(255,214,10,0.15)";
-        roundRect(ctx, textX, pillY, pillW, 24, 12);
+        roundRect(ctx, textX, pillY, pillW, 22, 11);
         ctx.fill();
         ctx.fillStyle = COLORS.gold;
-        ctx.font = "800 13px Montserrat, sans-serif";
-        ctx.fillText(p.position, textX + 10, pillY + 17);
+        ctx.font = "800 12px Montserrat, sans-serif";
+        ctx.fillText(p.position, textX + 10, pillY + 15);
       }
 
       // Stats à droite : PTS / REB / AST / IMPACT
@@ -340,9 +310,8 @@ export default function StartingFiveGenerator() {
   function downloadImage() {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const team = teams.find((t) => t.id === teamId);
-    const name = (team?.name ?? "equipe").replace(/\s+/g, "-");
-    downloadCanvasPng(canvas, `bsh-${name}-cinq-de-depart.png`);
+    const league = leagues.find((l) => l.id === leagueId);
+    downloadCanvasPng(canvas, `bsh-${league?.slug ?? "ligue"}-cinq-de-la-saison.png`);
   }
 
   const query = rosterSearch.trim().toLowerCase();
@@ -353,11 +322,11 @@ export default function StartingFiveGenerator() {
   return (
     <div>
       <h1 className="font-display text-xl text-bsh-orange mb-1 tracking-wide">
-        CINQ DE DÉPART
+        CINQ DE LA SAISON
       </h1>
       <p className="text-sm text-white/50 mb-6 max-w-xl">
-        Cherche et choisis manuellement 5 titulaires (recherche sur toute la ligue, pas besoin de
-        choisir l&apos;équipe d&apos;abord) — une seule image générée avec leurs stats.
+        Cherche et choisis manuellement les 5 meilleurs joueurs de la saison, toutes équipes
+        confondues — une seule image générée avec leurs stats.
       </p>
 
       <div className="flex flex-wrap gap-4 mb-6 max-w-2xl">
@@ -387,23 +356,6 @@ export default function StartingFiveGenerator() {
             <option value="playoffs">Playoffs</option>
           </select>
         </div>
-
-        <div className="flex-1 min-w-[220px]">
-          <label className="block text-sm text-white/60 mb-1">
-            Équipe <span className="text-white/30">(remplie auto au 1er choix)</span>
-          </label>
-          <select
-            value={teamId}
-            onChange={(e) => selectTeam(e.target.value)}
-            className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 focus:border-bsh-orange outline-none"
-          >
-            {teams.map((t) => (
-              <option key={t.id} value={t.id}>
-                {t.name}
-              </option>
-            ))}
-          </select>
-        </div>
       </div>
 
       <div className="border border-white/10 rounded-lg p-4 bg-white/5 mb-6 max-w-2xl">
@@ -419,7 +371,7 @@ export default function StartingFiveGenerator() {
           />
         </div>
         {roster.length === 0 && (
-          <p className="text-xs text-white/30">Aucun joueur avec des stats pour cette équipe.</p>
+          <p className="text-xs text-white/30">Aucun joueur avec des stats pour cette ligue.</p>
         )}
         {roster.length > 0 && visibleRoster.length === 0 && (
           <p className="text-xs text-white/30">Aucun joueur ne correspond à &quot;{rosterSearch}&quot;.</p>
@@ -431,7 +383,7 @@ export default function StartingFiveGenerator() {
               <button
                 key={p.player_id}
                 type="button"
-                onClick={() => toggleStarter(p)}
+                onClick={() => toggleStarter(p.player_id)}
                 disabled={!selected && starterIds.length >= MAX_STARTERS}
                 className={`w-full flex items-center justify-between gap-2 text-left text-sm rounded px-3 py-2 border transition-colors disabled:opacity-30 ${
                   selected

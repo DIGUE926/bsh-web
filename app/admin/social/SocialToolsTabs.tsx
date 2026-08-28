@@ -16,7 +16,7 @@ const TABS: { key: Tab; label: string }[] = [
   { key: "carousel", label: "Carrousel joueur" },
   { key: "team", label: "Team Breakdown" },
   { key: "wrapped", label: "Season Wrapped" },
-  { key: "five", label: "Cinq de départ" },
+  { key: "five", label: "Cinq de la saison" },
 ];
 
 export default function SocialToolsTabs() {
