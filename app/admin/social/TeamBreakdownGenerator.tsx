@@ -11,6 +11,7 @@ import {
   loadBrandFonts,
   paintBackground,
   paintCourtPattern,
+  paintPhotoBackground,
   paintCompactHeader,
   paintFooter,
   paintSlideIndicator,
@@ -24,7 +25,19 @@ type Team = {
   name: string;
   head_coach: string | null;
   assistant_coach: string | null;
+  photo_url: string | null;
 };
+
+// Fond partagé par les 4 slides : photo d'équipe assombrie si elle est
+// renseignée (/admin/equipes), sinon le fond uni + motif terrain habituel.
+async function paintSlideBackground(ctx: CanvasRenderingContext2D, team: Team) {
+  paintBackground(ctx, WIDTH, HEIGHT);
+  if (team.photo_url) {
+    await paintPhotoBackground(ctx, team.photo_url, WIDTH, HEIGHT);
+  } else {
+    await paintCourtPattern(ctx, WIDTH, HEIGHT, 0.08);
+  }
+}
 type TopPlayer = {
   player_name: string;
   ppg: number | null;
@@ -83,7 +96,7 @@ export default function TeamBreakdownGenerator() {
     async function loadTeams() {
       const { data } = await supabase
         .from("teams")
-        .select("id, name, head_coach, assistant_coach")
+        .select("id, name, head_coach, assistant_coach, photo_url")
         .eq("league_id", leagueId)
         .order("name");
       const rows = (data ?? []) as Team[];
@@ -241,8 +254,7 @@ export default function TeamBreakdownGenerator() {
     canvas.height = HEIGHT;
     await loadBrandFonts();
 
-    paintBackground(ctx, WIDTH, HEIGHT);
-    await paintCourtPattern(ctx, WIDTH, HEIGHT, 0.08);
+    await paintSlideBackground(ctx, team);
     paintCompactHeader(ctx, "ÉQUIPE À SUIVRE", contextLabel, WIDTH);
     paintSlideIndicator(ctx, 0, SLIDE_COUNT, WIDTH);
 
@@ -304,8 +316,7 @@ export default function TeamBreakdownGenerator() {
     canvas.height = HEIGHT;
     await loadBrandFonts();
 
-    paintBackground(ctx, WIDTH, HEIGHT);
-    await paintCourtPattern(ctx, WIDTH, HEIGHT);
+    await paintSlideBackground(ctx, team);
     paintCompactHeader(ctx, "BILAN DE SAISON", contextLabel, WIDTH);
     paintSlideIndicator(ctx, 1, SLIDE_COUNT, WIDTH);
 
@@ -382,8 +393,7 @@ export default function TeamBreakdownGenerator() {
     canvas.height = HEIGHT;
     await loadBrandFonts();
 
-    paintBackground(ctx, WIDTH, HEIGHT);
-    await paintCourtPattern(ctx, WIDTH, HEIGHT, 0.08);
+    await paintSlideBackground(ctx, team);
     paintCompactHeader(ctx, "MEILLEURS JOUEURS", contextLabel, WIDTH);
     paintSlideIndicator(ctx, 2, SLIDE_COUNT, WIDTH);
 
@@ -460,8 +470,7 @@ export default function TeamBreakdownGenerator() {
     canvas.height = HEIGHT;
     await loadBrandFonts();
 
-    paintBackground(ctx, WIDTH, HEIGHT);
-    await paintCourtPattern(ctx, WIDTH, HEIGHT, 0.08);
+    await paintSlideBackground(ctx, team);
     paintCompactHeader(ctx, "EN RÉSUMÉ", contextLabel, WIDTH);
     paintSlideIndicator(ctx, 3, SLIDE_COUNT, WIDTH);
 

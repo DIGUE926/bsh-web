@@ -9,13 +9,15 @@ type Team = {
   league_id: string;
   head_coach: string | null;
   assistant_coach: string | null;
+  photo_url: string | null;
 };
 type League = { id: string; slug: string; name: string };
+type Draft = { head_coach: string; assistant_coach: string; photo_url: string };
 
 export default function TeamsStaffEditor() {
   const [leagues, setLeagues] = useState<League[]>([]);
   const [teams, setTeams] = useState<Team[]>([]);
-  const [drafts, setDrafts] = useState<Record<string, { head_coach: string; assistant_coach: string }>>({});
+  const [drafts, setDrafts] = useState<Record<string, Draft>>({});
   const [savingId, setSavingId] = useState<string | null>(null);
   const [savedId, setSavedId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -27,16 +29,17 @@ export default function TeamsStaffEditor() {
         supabase.from("leagues").select("id, slug, name").order("name"),
         supabase
           .from("teams")
-          .select("id, name, league_id, head_coach, assistant_coach")
+          .select("id, name, league_id, head_coach, assistant_coach, photo_url")
           .order("name"),
       ]);
       setLeagues(leagueRows ?? []);
       setTeams((teamRows ?? []) as Team[]);
-      const initialDrafts: Record<string, { head_coach: string; assistant_coach: string }> = {};
+      const initialDrafts: Record<string, Draft> = {};
       (teamRows ?? []).forEach((t) => {
         initialDrafts[t.id] = {
           head_coach: t.head_coach ?? "",
           assistant_coach: t.assistant_coach ?? "",
+          photo_url: t.photo_url ?? "",
         };
       });
       setDrafts(initialDrafts);
@@ -44,7 +47,7 @@ export default function TeamsStaffEditor() {
     load();
   }, [supabase]);
 
-  function updateDraft(teamId: string, field: "head_coach" | "assistant_coach", value: string) {
+  function updateDraft(teamId: string, field: keyof Draft, value: string) {
     setDrafts((prev) => ({
       ...prev,
       [teamId]: { ...prev[teamId], [field]: value },
@@ -57,7 +60,8 @@ export default function TeamsStaffEditor() {
     if (!draft) return false;
     return (
       draft.head_coach !== (team.head_coach ?? "") ||
-      draft.assistant_coach !== (team.assistant_coach ?? "")
+      draft.assistant_coach !== (team.assistant_coach ?? "") ||
+      draft.photo_url !== (team.photo_url ?? "")
     );
   }
 
@@ -72,6 +76,7 @@ export default function TeamsStaffEditor() {
       .update({
         head_coach: draft.head_coach.trim() || null,
         assistant_coach: draft.assistant_coach.trim() || null,
+        photo_url: draft.photo_url.trim() || null,
       })
       .eq("id", team.id);
 
@@ -84,7 +89,12 @@ export default function TeamsStaffEditor() {
     setTeams((prev) =>
       prev.map((t) =>
         t.id === team.id
-          ? { ...t, head_coach: draft.head_coach.trim() || null, assistant_coach: draft.assistant_coach.trim() || null }
+          ? {
+              ...t,
+              head_coach: draft.head_coach.trim() || null,
+              assistant_coach: draft.assistant_coach.trim() || null,
+              photo_url: draft.photo_url.trim() || null,
+            }
           : t
       )
     );
@@ -102,8 +112,9 @@ export default function TeamsStaffEditor() {
         STAFF DES ÉQUIPES
       </h1>
       <p className="text-sm text-white/50 mb-6 max-w-xl">
-        Nom du coach et de l&apos;assistant coach par équipe. Laisse vide si inconnu — rien ne
-        s&apos;affiche publiquement tant que le champ est vide.
+        Nom du coach et de l&apos;assistant coach par équipe, plus une URL de photo utilisée comme
+        fond d&apos;image dans le générateur Team Breakdown (/admin/social). Laisse vide si inconnu
+        — rien ne s&apos;affiche publiquement tant que le champ est vide.
       </p>
 
       {error && <p className="text-red-400 text-sm mb-4">{error}</p>}
@@ -116,7 +127,7 @@ export default function TeamsStaffEditor() {
             </h2>
             <div className="space-y-1.5">
               {leagueTeams.map((team) => {
-                const draft = drafts[team.id] ?? { head_coach: "", assistant_coach: "" };
+                const draft = drafts[team.id] ?? { head_coach: "", assistant_coach: "", photo_url: "" };
                 const dirty = isDirty(team);
                 return (
                   <div
@@ -137,6 +148,12 @@ export default function TeamsStaffEditor() {
                       onChange={(e) => updateDraft(team.id, "assistant_coach", e.target.value)}
                       placeholder="Assistant coach"
                       className="flex-1 min-w-[140px] bg-transparent border-b border-white/10 px-1 py-1 text-sm text-white/70 placeholder:text-white/25 focus:border-bsh-orange outline-none"
+                    />
+                    <input
+                      value={draft.photo_url}
+                      onChange={(e) => updateDraft(team.id, "photo_url", e.target.value)}
+                      placeholder="URL photo (fond Team Breakdown)"
+                      className="flex-1 min-w-[220px] bg-transparent border-b border-white/10 px-1 py-1 text-sm text-white/70 placeholder:text-white/25 focus:border-bsh-orange outline-none"
                     />
                     <button
                       onClick={() => save(team)}

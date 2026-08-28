@@ -51,6 +51,58 @@ export function paintBackground(
   ctx.fillRect(0, 0, width, height);
 }
 
+// Photo d'équipe en fond (pleine page, recadrée en "cover"), assombrie par
+// un voile + dégradé pour que le texte reste lisible par-dessus. Si l'image
+// ne charge pas (URL invalide, CORS, etc.), se contente de ne rien peindre
+// -- l'appelant garde le fond uni existant (paintBackground) en dessous.
+export async function paintPhotoBackground(
+  ctx: CanvasRenderingContext2D,
+  url: string,
+  width = CANVAS_WIDTH,
+  height = CANVAS_HEIGHT,
+  darken = 0.62
+) {
+  await new Promise<void>((resolve) => {
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.onload = () => {
+      try {
+        const imgRatio = img.width / img.height;
+        const targetRatio = width / height;
+        let drawW = width;
+        let drawH = height;
+        if (imgRatio > targetRatio) {
+          drawH = height;
+          drawW = height * imgRatio;
+        } else {
+          drawW = width;
+          drawH = width / imgRatio;
+        }
+        const dx = (width - drawW) / 2;
+        const dy = (height - drawH) / 2;
+        ctx.drawImage(img, dx, dy, drawW, drawH);
+
+        // Voile sombre uniforme + dégradé plus marqué vers le bas (là où le
+        // texte est le plus dense sur nos slides).
+        ctx.fillStyle = `rgba(13,13,13,${darken})`;
+        ctx.fillRect(0, 0, width, height);
+        const fade = ctx.createLinearGradient(0, height * 0.35, 0, height);
+        fade.addColorStop(0, "rgba(13,13,13,0)");
+        fade.addColorStop(1, "rgba(13,13,13,0.75)");
+        ctx.fillStyle = fade;
+        ctx.fillRect(0, 0, width, height);
+      } catch {
+        // toDataURL/drawImage peut lever une exception "tainted canvas" si
+        // l'hôte de l'image ne renvoie pas d'en-têtes CORS -- dans ce cas on
+        // laisse juste le fond uni existant, pas de crash du générateur.
+      }
+      resolve();
+    };
+    img.onerror = () => resolve();
+    img.src = url;
+  });
+}
+
 export async function paintCourtPattern(
   ctx: CanvasRenderingContext2D,
   width = CANVAS_WIDTH,
