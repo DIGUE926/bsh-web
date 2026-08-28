@@ -23,6 +23,7 @@ type Team = { id: string; name: string; photo_url: string | null };
 type PlayerRow = {
   player_id: string;
   player_name: string;
+  team_name: string | null;
   position: string | null;
   ppg: number | null;
   rpg: number | null;
@@ -74,16 +75,18 @@ export default function StartingFiveGenerator() {
     loadTeams();
   }, [leagueId, supabase]);
 
+  // Recherche générale : tous les joueurs de la ligue, pas juste l'équipe
+  // sélectionnée -- choisir un joueur remplit l'équipe automatiquement.
   useEffect(() => {
-    if (!teamId) return;
-    const team = teams.find((t) => t.id === teamId);
-    if (!team) return;
+    if (!leagueId) return;
+    const league = leagues.find((l) => l.id === leagueId);
+    if (!league) return;
     async function loadRoster() {
       const table = competition === "season" ? "global_rankings" : "playoff_player_totals";
       const { data } = await supabase
         .from(table)
-        .select("player_id, player_name, position, ppg, rpg, apg, pir")
-        .eq("team_name", team!.name)
+        .select("player_id, player_name, team_name, position, ppg, rpg, apg, pir")
+        .eq("league_slug", league!.slug)
         .order("player_name");
       const rows = (data ?? []) as Omit<PlayerRow, "photo_url">[];
 
@@ -105,18 +108,23 @@ export default function StartingFiveGenerator() {
       setReady(false);
     }
     loadRoster();
-  }, [teamId, competition, teams, supabase]);
+  }, [leagueId, competition, leagues, supabase]);
 
   function selectTeam(id: string) {
     setTeamId(id);
     setReady(false);
   }
 
-  function toggleStarter(playerId: string) {
+  function toggleStarter(player: PlayerRow) {
     setStarterIds((prev) => {
-      if (prev.includes(playerId)) return prev.filter((id) => id !== playerId);
+      if (prev.includes(player.player_id)) return prev.filter((id) => id !== player.player_id);
       if (prev.length >= MAX_STARTERS) return prev;
-      return [...prev, playerId];
+      // Le premier joueur choisi fixe l'équipe (photo de fond, nom affiché).
+      if (prev.length === 0 && player.team_name) {
+        const match = teams.find((t) => t.name === player.team_name);
+        if (match) setTeamId(match.id);
+      }
+      return [...prev, player.player_id];
     });
     setReady(false);
   }
@@ -348,8 +356,8 @@ export default function StartingFiveGenerator() {
         CINQ DE DÉPART
       </h1>
       <p className="text-sm text-white/50 mb-6 max-w-xl">
-        Choisis manuellement les 5 titulaires d&apos;une équipe, une seule image générée avec leurs
-        stats.
+        Cherche et choisis manuellement 5 titulaires (recherche sur toute la ligue, pas besoin de
+        choisir l&apos;équipe d&apos;abord) — une seule image générée avec leurs stats.
       </p>
 
       <div className="flex flex-wrap gap-4 mb-6 max-w-2xl">
@@ -381,7 +389,9 @@ export default function StartingFiveGenerator() {
         </div>
 
         <div className="flex-1 min-w-[220px]">
-          <label className="block text-sm text-white/60 mb-1">Équipe</label>
+          <label className="block text-sm text-white/60 mb-1">
+            Équipe <span className="text-white/30">(remplie auto au 1er choix)</span>
+          </label>
           <select
             value={teamId}
             onChange={(e) => selectTeam(e.target.value)}
@@ -421,7 +431,7 @@ export default function StartingFiveGenerator() {
               <button
                 key={p.player_id}
                 type="button"
-                onClick={() => toggleStarter(p.player_id)}
+                onClick={() => toggleStarter(p)}
                 disabled={!selected && starterIds.length >= MAX_STARTERS}
                 className={`w-full flex items-center justify-between gap-2 text-left text-sm rounded px-3 py-2 border transition-colors disabled:opacity-30 ${
                   selected
@@ -431,9 +441,10 @@ export default function StartingFiveGenerator() {
               >
                 <span>
                   {p.player_name}
+                  {p.team_name ? ` · ${p.team_name}` : ""}
                   {p.position ? ` · ${p.position}` : ""}
                 </span>
-                <span className="text-xs text-white/40">
+                <span className="text-xs text-white/40 shrink-0">
                   {p.ppg != null ? `${p.ppg.toFixed(1)} PTS` : "-"}
                 </span>
               </button>
