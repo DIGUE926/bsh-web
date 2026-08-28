@@ -1,82 +1,24 @@
-// BSH — service worker minimal pour la démo PWA.
-// Objectif : app installable + shell dispo hors-ligne. Volontairement
-// simple : ne met en cache QUE des assets statiques stables (icônes,
-// polices, logos, _next/static) et une page de secours hors-ligne.
-// Ne touche jamais /admin, /api, /live ou les pages dynamiques (ISR côté
-// serveur, données live) — celles-ci restent toujours réseau direct pour
-// ne jamais servir de stats périmées.
-const CACHE_VERSION = "bsh-pwa-v1";
-const OFFLINE_URL = "/offline.html";
-
-const PRECACHE_URLS = [
-  OFFLINE_URL,
-  "/icons/icon-192.png",
-  "/icons/icon-512.png",
-];
-
-self.addEventListener("install", (event) => {
-  event.waitUntil(
-    caches.open(CACHE_VERSION).then((cache) => cache.addAll(PRECACHE_URLS)).then(() => self.skipWaiting())
-  );
+// BSH — service worker désactivé.
+// La PWA (installable "Ajouter à l'écran d'accueil") a été retirée du site
+// principal le 2026-08-28 à la demande de Digue — seule l'app bsh-scoreboard
+// (déploiement séparé) reste installable désormais. Ce fichier n'est plus
+// enregistré par aucune page (voir app/layout.tsx), mais un navigateur qui
+// avait déjà installé l'ancienne version continuera de vérifier /sw.js
+// périodiquement — ce script prend le relais pour s'auto-désinstaller
+// proprement et vider le cache, plutôt que de laisser tourner l'ancienne
+// version indéfiniment.
+self.addEventListener("install", () => {
+  self.skipWaiting();
 });
 
 self.addEventListener("activate", (event) => {
   event.waitUntil(
-    caches
-      .keys()
-      .then((keys) => Promise.all(keys.filter((k) => k !== CACHE_VERSION).map((k) => caches.delete(k))))
-      .then(() => self.clients.claim())
+    (async () => {
+      const keys = await caches.keys();
+      await Promise.all(keys.map((k) => caches.delete(k)));
+      await self.registration.unregister();
+      const clients = await self.clients.matchAll({ type: "window" });
+      clients.forEach((client) => client.navigate(client.url));
+    })()
   );
-});
-
-function isStaticAsset(url) {
-  return (
-    url.pathname.startsWith("/_next/static/") ||
-    url.pathname.startsWith("/icons/") ||
-    url.pathname.startsWith("/logos/") ||
-    url.pathname.startsWith("/fonts/")
-  );
-}
-
-function isNeverCached(url) {
-  return (
-    url.pathname.startsWith("/api/") ||
-    url.pathname.startsWith("/admin") ||
-    url.pathname.startsWith("/live") ||
-    url.pathname.startsWith("/login")
-  );
-}
-
-self.addEventListener("fetch", (event) => {
-  const { request } = event;
-  if (request.method !== "GET") return;
-
-  const url = new URL(request.url);
-  if (url.origin !== self.location.origin) return;
-  if (isNeverCached(url)) return; // laisse passer tel quel, réseau direct
-
-  // Navigation (chargement de page) : réseau d'abord, secours hors-ligne sinon.
-  if (request.mode === "navigate") {
-    event.respondWith(
-      fetch(request).catch(() => caches.match(OFFLINE_URL))
-    );
-    return;
-  }
-
-  // Assets statiques stables : cache d'abord, réseau en secours + mise à jour silencieuse.
-  if (isStaticAsset(url)) {
-    event.respondWith(
-      caches.match(request).then((cached) => {
-        const network = fetch(request)
-          .then((response) => {
-            if (response && response.status === 200) {
-              caches.open(CACHE_VERSION).then((cache) => cache.put(request, response.clone()));
-            }
-            return response;
-          })
-          .catch(() => cached);
-        return cached || network;
-      })
-    );
-  }
 });

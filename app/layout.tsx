@@ -4,8 +4,6 @@ import { Analytics } from "@vercel/analytics/next";
 import BackButton from "./BackButton";
 import NavMenu from "./NavMenu";
 import { supabase } from "@/lib/supabase";
-import ServiceWorkerRegister from "./ServiceWorkerRegister";
-import InstallPrompt from "./InstallPrompt";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://bsh-web-one.vercel.app"),
@@ -23,13 +21,6 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "BSH | BallSoHard",
     description: "La plateforme de stats basketball multi-ligues en Haïti, avec l'AHBB, la SUBLE et plus à venir.",
-  },
-  // PWA: rend l'app installable ("Ajouter à l'écran d'accueil") sur
-  // iOS/Android/desktop sans passer par l'App Store / Play Store.
-  appleWebApp: {
-    capable: true,
-    statusBarStyle: "black-translucent",
-    title: "BSH",
   },
   icons: {
     icon: [{ url: "/icons/icon-192.png", sizes: "192x192", type: "image/png" }],
@@ -91,8 +82,6 @@ export default async function RootLayout({
           </a>
         </footer>
         <Analytics />
-        <ServiceWorkerRegister />
-        <InstallPrompt />
       </body>
     </html>
   );
