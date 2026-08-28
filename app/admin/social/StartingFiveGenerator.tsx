@@ -39,6 +39,9 @@ export default function StartingFiveGenerator() {
   const [roster, setRoster] = useState<PlayerRow[]>([]);
   const [rosterSearch, setRosterSearch] = useState("");
   const [starterIds, setStarterIds] = useState<string[]>([]);
+  const [photoDrafts, setPhotoDrafts] = useState<Record<string, string>>({});
+  const [savingPhotoId, setSavingPhotoId] = useState<string | null>(null);
+  const [savedPhotoId, setSavedPhotoId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [ready, setReady] = useState(false);
@@ -97,6 +100,30 @@ export default function StartingFiveGenerator() {
       if (prev.length >= MAX_STARTERS) return prev;
       return [...prev, playerId];
     });
+    setReady(false);
+  }
+
+  function photoDraftFor(player: PlayerRow) {
+    return photoDrafts[player.player_id] ?? player.photo_url ?? "";
+  }
+
+  async function savePhoto(player: PlayerRow) {
+    const value = photoDraftFor(player).trim();
+    setError(null);
+    setSavingPhotoId(player.player_id);
+    const { error: updateError } = await supabase
+      .from("players")
+      .update({ photo_url: value || null })
+      .eq("id", player.player_id);
+    setSavingPhotoId(null);
+    if (updateError) {
+      setError(`Échec photo pour ${player.player_name} : ${updateError.message}`);
+      return;
+    }
+    setRoster((prev) =>
+      prev.map((p) => (p.player_id === player.player_id ? { ...p, photo_url: value || null } : p))
+    );
+    setSavedPhotoId(player.player_id);
     setReady(false);
   }
 
@@ -404,6 +431,54 @@ export default function StartingFiveGenerator() {
           })}
         </div>
       </div>
+
+      {starterIds.length > 0 && (
+        <div className="border border-white/10 rounded-lg p-4 bg-white/5 mb-6 max-w-2xl">
+          <p className="text-sm font-semibold text-white/80 mb-1">Photos des titulaires choisis</p>
+          <p className="text-xs text-white/40 mb-3">
+            Colle une URL et enregistre — utilisée dans l&apos;image générée et sur la page
+            publique du joueur.
+          </p>
+          <div className="space-y-1.5">
+            {starterIds.map((id) => {
+              const player = roster.find((p) => p.player_id === id);
+              if (!player) return null;
+              const draft = photoDraftFor(player);
+              const dirty = draft.trim() !== (player.photo_url ?? "");
+              return (
+                <div
+                  key={id}
+                  className="flex flex-wrap items-center gap-2 rounded-lg border border-white/5 bg-white/[0.02] px-3 py-2"
+                >
+                  <span className="text-sm text-white/70 w-full sm:w-40 shrink-0 truncate">
+                    {player.player_name}
+                  </span>
+                  <input
+                    value={draft}
+                    onChange={(e) => {
+                      setPhotoDrafts((prev) => ({ ...prev, [id]: e.target.value }));
+                      setSavedPhotoId(null);
+                    }}
+                    placeholder="URL photo joueur"
+                    className="flex-1 min-w-[160px] bg-transparent border-b border-white/10 px-1 py-1 text-xs text-white/60 placeholder:text-white/25 focus:border-bsh-orange outline-none"
+                  />
+                  <button
+                    onClick={() => savePhoto(player)}
+                    disabled={!dirty || savingPhotoId === id}
+                    className="shrink-0 text-xs font-semibold rounded-full px-2.5 py-1 bg-white/5 text-white/40 hover:text-bsh-orange disabled:opacity-30 disabled:hover:text-white/40"
+                  >
+                    {savingPhotoId === id
+                      ? "..."
+                      : savedPhotoId === id && !dirty
+                        ? "✓"
+                        : "Enregistrer"}
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       <div className="flex items-center gap-3 mb-6 flex-wrap">
         <button
