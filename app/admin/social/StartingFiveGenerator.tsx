@@ -163,28 +163,63 @@ export default function StartingFiveGenerator() {
     await loadBrandFonts();
 
     paintBackground(ctx, WIDTH, HEIGHT);
-    await paintCourtPattern(ctx, WIDTH, HEIGHT, 0.08);
+    await paintCourtPattern(ctx, WIDTH, HEIGHT, 0.1);
+
+    // Halo doré discret derrière le titre, pour donner un peu de relief à
+    // l'affiche avant même le texte.
+    const glow = ctx.createRadialGradient(WIDTH / 2, 170, 0, WIDTH / 2, 170, 420);
+    glow.addColorStop(0, "rgba(255,214,10,0.10)");
+    glow.addColorStop(1, "rgba(255,214,10,0)");
+    ctx.fillStyle = glow;
+    ctx.fillRect(0, 0, WIDTH, 420);
+
     paintCompactHeader(ctx, "CINQ DE LA SAISON", contextLabel, WIDTH);
 
     ctx.textBaseline = "alphabetic";
     ctx.textAlign = "center";
     const centerX = WIDTH / 2;
 
+    // Pastille "STARTING FIVE" au lieu d'un simple kicker texte.
+    ctx.font = "800 18px Montserrat, sans-serif";
+    const tagText = "STARTING FIVE";
+    const tagW = ctx.measureText(tagText).width + 36;
+    const tagX = centerX - tagW / 2;
+    const tagY = 108;
+    ctx.fillStyle = "rgba(255,107,0,0.14)";
+    ctx.strokeStyle = "rgba(255,107,0,0.5)";
+    ctx.lineWidth = 1.5;
+    roundRect(ctx, tagX, tagY, tagW, 34, 17);
+    ctx.fill();
+    ctx.stroke();
     ctx.fillStyle = COLORS.orange;
-    ctx.font = "800 20px Montserrat, sans-serif";
-    ctx.fillText("STARTING FIVE", centerX, 140);
+    ctx.fillText(tagText, centerX, tagY + 23);
 
     ctx.fillStyle = COLORS.white;
     ctx.font = "900 46px Anton, sans-serif";
     const nameLines = wrapLines(ctx, league.name.toUpperCase(), WIDTH - PADDING * 2 - 60);
-    let ny = 195;
+    let ny = 200;
     nameLines.forEach((line) => {
       ctx.fillText(line, centerX, ny);
       ny += 48;
     });
 
+    // Trait d'accent dégradé sous le nom de la ligue.
+    const underlineW = 90;
+    const underlineY = ny + 10;
+    const underlineGrad = ctx.createLinearGradient(
+      centerX - underlineW / 2,
+      0,
+      centerX + underlineW / 2,
+      0
+    );
+    underlineGrad.addColorStop(0, "rgba(255,107,0,0)");
+    underlineGrad.addColorStop(0.5, COLORS.gold);
+    underlineGrad.addColorStop(1, "rgba(255,107,0,0)");
+    ctx.fillStyle = underlineGrad;
+    ctx.fillRect(centerX - underlineW / 2, underlineY, underlineW, 3);
+
     const rows = 5;
-    const startY = ny + 40;
+    const startY = underlineY + 46;
     const gap = 18;
     const rowH = (HEIGHT - startY - 180 - gap * (rows - 1)) / rows;
 
@@ -192,9 +227,20 @@ export default function StartingFiveGenerator() {
       const p = starters[i];
       const y = startY + i * (rowH + gap);
 
-      // Carte avec léger dégradé + accent orange sur le bord gauche.
-      ctx.fillStyle = "rgba(255,255,255,0.05)";
-      ctx.strokeStyle = "rgba(255,255,255,0.12)";
+      // Ombre douce simulée (rects décalés, alpha dégressif) pour un effet
+      // de carte "posée" plutôt que plate.
+      for (let s = 3; s >= 1; s--) {
+        ctx.fillStyle = `rgba(0,0,0,${0.05 * s})`;
+        roundRect(ctx, PADDING, y + s * 2, WIDTH - PADDING * 2, rowH, 18);
+        ctx.fill();
+      }
+
+      // Carte avec léger dégradé + accent orange->or sur le bord gauche.
+      const cardGrad = ctx.createLinearGradient(PADDING, y, WIDTH - PADDING, y);
+      cardGrad.addColorStop(0, "rgba(255,255,255,0.065)");
+      cardGrad.addColorStop(1, "rgba(255,255,255,0.035)");
+      ctx.fillStyle = cardGrad;
+      ctx.strokeStyle = "rgba(255,255,255,0.14)";
       ctx.lineWidth = 1;
       roundRect(ctx, PADDING, y, WIDTH - PADDING * 2, rowH, 18);
       ctx.fill();
@@ -202,7 +248,10 @@ export default function StartingFiveGenerator() {
       ctx.save();
       roundRect(ctx, PADDING, y, WIDTH - PADDING * 2, rowH, 18);
       ctx.clip();
-      ctx.fillStyle = COLORS.orange;
+      const accentGrad = ctx.createLinearGradient(0, y, 0, y + rowH);
+      accentGrad.addColorStop(0, COLORS.gold);
+      accentGrad.addColorStop(1, COLORS.orange);
+      ctx.fillStyle = accentGrad;
       ctx.fillRect(PADDING, y, 5, rowH);
       ctx.restore();
 
@@ -228,6 +277,12 @@ export default function StartingFiveGenerator() {
         ctx.fillText(initials(p.player_name), photoX + photoSize / 2, photoY + photoSize / 2 + 2);
         ctx.textBaseline = "alphabetic";
       }
+
+      // Fin liseré doré autour du portrait pour le détacher de la carte.
+      ctx.strokeStyle = "rgba(255,214,10,0.35)";
+      ctx.lineWidth = 1.5;
+      roundRect(ctx, photoX, photoY, photoSize, photoSize, 14);
+      ctx.stroke();
 
       // Badge numéroté, chevauche le coin bas-droit du portrait.
       const badgeR = 18;
@@ -289,6 +344,20 @@ export default function StartingFiveGenerator() {
         ctx.fillText(s.label, sx, y + rowH / 2 + 16);
       });
     }
+
+    // Trait d'accent bas, écho de celui sous le titre.
+    const bottomLineY = startY + rows * rowH + (rows - 1) * gap + 34;
+    const bottomLineGrad = ctx.createLinearGradient(
+      centerX - underlineW / 2,
+      0,
+      centerX + underlineW / 2,
+      0
+    );
+    bottomLineGrad.addColorStop(0, "rgba(255,214,10,0)");
+    bottomLineGrad.addColorStop(0.5, "rgba(255,214,10,0.4)");
+    bottomLineGrad.addColorStop(1, "rgba(255,214,10,0)");
+    ctx.fillStyle = bottomLineGrad;
+    ctx.fillRect(centerX - underlineW / 2, bottomLineY, underlineW, 2);
 
     paintFooter(ctx, WIDTH, HEIGHT);
   }
