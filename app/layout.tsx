@@ -1,9 +1,10 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { Analytics } from "@vercel/analytics/next";
 import BackButton from "./BackButton";
 import NavMenu from "./NavMenu";
 import { supabase } from "@/lib/supabase";
+import ServiceWorkerRegister from "./ServiceWorkerRegister";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://bsh-web-one.vercel.app"),
@@ -22,6 +23,23 @@ export const metadata: Metadata = {
     title: "BSH | BallSoHard",
     description: "La plateforme de stats basketball multi-ligues en Haïti, avec l'AHBB, la SUBLE et plus à venir.",
   },
+  // PWA: rend l'app installable ("Ajouter à l'écran d'accueil") sur
+  // iOS/Android/desktop sans passer par l'App Store / Play Store.
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "BSH",
+  },
+  icons: {
+    icon: [{ url: "/icons/icon-192.png", sizes: "192x192", type: "image/png" }],
+    apple: [{ url: "/icons/apple-touch-icon.png", sizes: "180x180", type: "image/png" }],
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#0D0D0D",
+  width: "device-width",
+  initialScale: 1,
 };
 
 export default async function RootLayout({
@@ -72,6 +90,7 @@ export default async function RootLayout({
           </a>
         </footer>
         <Analytics />
+        <ServiceWorkerRegister />
       </body>
     </html>
   );
