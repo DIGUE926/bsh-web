@@ -42,6 +42,7 @@ export default function StartingFiveGenerator() {
   const [photoDrafts, setPhotoDrafts] = useState<Record<string, string>>({});
   const [savingPhotoId, setSavingPhotoId] = useState<string | null>(null);
   const [savedPhotoId, setSavedPhotoId] = useState<string | null>(null);
+  const [uploadingPhotoId, setUploadingPhotoId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [ready, setReady] = useState(false);
@@ -123,6 +124,51 @@ export default function StartingFiveGenerator() {
     setRoster((prev) =>
       prev.map((p) => (p.player_id === player.player_id ? { ...p, photo_url: value || null } : p))
     );
+    setSavedPhotoId(player.player_id);
+    setReady(false);
+  }
+
+  async function uploadPhoto(player: PlayerRow, file: File) {
+    setError(null);
+    if (!file.type.startsWith("image/")) {
+      setError("Le fichier choisi n'est pas une image.");
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      setError("Image trop lourde (5 Mo max).");
+      return;
+    }
+
+    setUploadingPhotoId(player.player_id);
+    const ext = file.name.split(".").pop() || "jpg";
+    const path = `${player.player_id}-${Date.now()}.${ext}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from("player-photos")
+      .upload(path, file, { upsert: true });
+    if (uploadError) {
+      setUploadingPhotoId(null);
+      setError(`Échec de l'import pour ${player.player_name} : ${uploadError.message}`);
+      return;
+    }
+
+    const { data: publicUrlData } = supabase.storage.from("player-photos").getPublicUrl(path);
+    const url = publicUrlData.publicUrl;
+
+    const { error: updateError } = await supabase
+      .from("players")
+      .update({ photo_url: url })
+      .eq("id", player.player_id);
+    setUploadingPhotoId(null);
+    if (updateError) {
+      setError(`Échec photo pour ${player.player_name} : ${updateError.message}`);
+      return;
+    }
+
+    setRoster((prev) =>
+      prev.map((p) => (p.player_id === player.player_id ? { ...p, photo_url: url } : p))
+    );
+    setPhotoDrafts((prev) => ({ ...prev, [player.player_id]: url }));
     setSavedPhotoId(player.player_id);
     setReady(false);
   }
@@ -505,8 +551,8 @@ export default function StartingFiveGenerator() {
         <div className="border border-white/10 rounded-lg p-4 bg-white/5 mb-6 max-w-2xl">
           <p className="text-sm font-semibold text-white/80 mb-1">Photos des titulaires choisis</p>
           <p className="text-xs text-white/40 mb-3">
-            Colle une URL et enregistre — utilisée dans l&apos;image générée et sur la page
-            publique du joueur.
+            Importe une photo depuis ton ordinateur, ou colle une URL — utilisée dans l&apos;image
+            générée et sur la page publique du joueur.
           </p>
           <div className="space-y-1.5">
             {starterIds.map((id) => {
@@ -514,6 +560,7 @@ export default function StartingFiveGenerator() {
               if (!player) return null;
               const draft = photoDraftFor(player);
               const dirty = draft.trim() !== (player.photo_url ?? "");
+              const uploading = uploadingPhotoId === id;
               return (
                 <div
                   key={id}
@@ -533,7 +580,7 @@ export default function StartingFiveGenerator() {
                   />
                   <button
                     onClick={() => savePhoto(player)}
-                    disabled={!dirty || savingPhotoId === id}
+                    disabled={!dirty || savingPhotoId === id || uploading}
                     className="shrink-0 text-xs font-semibold rounded-full px-2.5 py-1 bg-white/5 text-white/40 hover:text-bsh-orange disabled:opacity-30 disabled:hover:text-white/40"
                   >
                     {savingPhotoId === id
@@ -542,6 +589,23 @@ export default function StartingFiveGenerator() {
                         ? "✓"
                         : "Enregistrer"}
                   </button>
+                  <label
+                    className={`shrink-0 text-xs font-semibold rounded-full px-2.5 py-1 bg-bsh-orange/10 text-bsh-orange cursor-pointer hover:bg-bsh-orange/20 ${
+                      uploading ? "opacity-40 pointer-events-none" : ""
+                    }`}
+                  >
+                    {uploading ? "Import..." : "Importer un fichier"}
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        e.target.value = "";
+                        if (file) uploadPhoto(player, file);
+                      }}
+                    />
+                  </label>
                 </div>
               );
             })}
