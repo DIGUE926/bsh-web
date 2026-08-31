@@ -70,7 +70,7 @@ export default async function MatchsPage({
           Équipes
         </Link>
         <span className="text-bsh-gold font-semibold">Matchs</span>
-        <Link href={`/${slug}/archives`} className="hover:text-bsh-orange">
+        <Link href={`/archives?ligue=${slug}`} className="hover:text-bsh-orange">
           Archives
         </Link>
         <Link href={`/${slug}/classement`} className="hover:text-bsh-orange">

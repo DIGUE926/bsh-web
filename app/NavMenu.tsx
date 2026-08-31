@@ -82,6 +82,13 @@ export default function NavMenu({ leagues }: { leagues: League[] }) {
                   Comparateur de joueurs
                 </Link>
                 <Link
+                  href="/archives"
+                  onClick={closeMenu}
+                  className="block px-3 py-2 hover:bg-white/5 font-semibold text-xs"
+                >
+                  Archives
+                </Link>
+                <Link
                   href="/rejoindre"
                   onClick={closeMenu}
                   className="block px-3 py-2 hover:bg-white/5 font-semibold text-xs text-bsh-orange"
@@ -147,13 +154,6 @@ export default function NavMenu({ leagues }: { leagues: League[] }) {
                         className="block px-1.5 py-1 text-[11px] text-white/60 hover:text-bsh-orange rounded"
                       >
                         Matchs
-                      </Link>
-                      <Link
-                        href={`/${league.slug}/archives`}
-                        onClick={closeMenu}
-                        className="block px-1.5 py-1 text-[11px] text-white/60 hover:text-bsh-orange rounded"
-                      >
-                        Archives
                       </Link>
                       <Link
                         href={`/${league.slug}/classement`}

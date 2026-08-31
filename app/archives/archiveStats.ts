@@ -6,6 +6,7 @@ export type ArchiveGame = {
   id: string;
   game_date: string;
   status: string;
+  phase: string | null;
   home_score: number | null;
   away_score: number | null;
   home_team: { name: string } | null;

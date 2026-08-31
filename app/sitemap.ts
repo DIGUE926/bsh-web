@@ -15,6 +15,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const staticRoutes: MetadataRoute.Sitemap = [
     { url: `${BASE_URL}/`, changeFrequency: "daily", priority: 1 },
     { url: `${BASE_URL}/live`, changeFrequency: "always", priority: 0.8 },
+    { url: `${BASE_URL}/archives`, changeFrequency: "weekly", priority: 0.5 },
   ];
 
   const leagueRoutes: MetadataRoute.Sitemap = (leagues ?? []).flatMap((l) => [
@@ -22,7 +23,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${BASE_URL}/${l.slug}/matchs`, changeFrequency: "daily" as const, priority: 0.7 },
     { url: `${BASE_URL}/${l.slug}/classement`, changeFrequency: "daily" as const, priority: 0.7 },
     { url: `${BASE_URL}/${l.slug}/classement-joueurs`, changeFrequency: "daily" as const, priority: 0.7 },
-    { url: `${BASE_URL}/${l.slug}/archives`, changeFrequency: "weekly" as const, priority: 0.5 },
     { url: `${BASE_URL}/${l.slug}/playoffs`, changeFrequency: "daily" as const, priority: 0.6 },
     { url: `${BASE_URL}/${l.slug}/playoffs/classement`, changeFrequency: "daily" as const, priority: 0.5 },
   ]);

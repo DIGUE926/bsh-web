@@ -1,16 +1,15 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import GamesList, { type Game } from "@/app/[slug]/GamesList";
+import GamesList from "@/app/[slug]/GamesList";
 import { displaySeasonLabel } from "@/lib/season";
 import ArchiveSeasonStats from "./ArchiveSeasonStats";
 import type {
+  ArchiveGame,
   ArchivePlayerGameStat,
   ArchivePlayoffGame,
   ArchivePlayoffPlayerStat,
 } from "./archiveStats";
-
-type ArchiveGameRow = Game & { id: string; home_team_id: string; away_team_id: string };
 
 export default function ArchivesSeasonPicker({
   slug,
@@ -21,7 +20,7 @@ export default function ArchivesSeasonPicker({
   pastSeasons,
 }: {
   slug: string;
-  games: ArchiveGameRow[];
+  games: ArchiveGame[];
   playoffGames: ArchivePlayoffGame[];
   playerGameStats: ArchivePlayerGameStat[];
   playoffPlayerStats: ArchivePlayoffPlayerStat[];
@@ -30,7 +29,7 @@ export default function ArchivesSeasonPicker({
   const [selectedSeason, setSelectedSeason] = useState<string>(
     pastSeasons[0] ?? ""
   );
-  const [tab, setTab] = useState<"matchs" | "stats">("matchs");
+  const [tab, setTab] = useState<"matchs" | "stats">("stats");
 
   const filteredGames = useMemo(
     () => games.filter((g) => displaySeasonLabel(slug, g.game_date) === selectedSeason),
