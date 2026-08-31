@@ -14,6 +14,7 @@ export type ChangelogEntry = {
 };
 
 export const changelogEntries: ChangelogEntry[] = [
+  { hash: "3b4ccc0", date: "2026-08-31T21:27:19+00:00", title: "feat: classement des coachs dans Stats générale (archive)", details: "nouveau tableau \"Classement des coachs\" (bilan V-D) entre le classement d'équipes et les leaders joueurs, dérivé du head_coach de chaque équipe -- une équipe sans coach renseigné n'apparaît juste pas" },
   { hash: "b581c48", date: "2026-08-31T21:22:58+00:00", title: "refactor: Archives devient une section top-level du site", details: "n'est plus nichée dans le sous-menu de chaque ligue -- nouveau lien \"Archives\" dans le menu principal, page /archives avec un sélecteur de ligue en haut. L'onglet \"Stats générale\" s'ouvre maintenant par défaut plutôt que \"Matchs\"" },
   { hash: "4ed2849", date: "2026-08-31T21:10:09+00:00", title: "fix: label saison archivée SUBLE -> \"SUBLE Août 2026\"", details: "Digue voulait le nom de la ligue dans le label plutôt que juste le mois" },
   { hash: "95e9d16", date: "2026-08-31T21:05:48+00:00", title: "feat: archive la saison SUBLE (Août 2026) + stats générale saison+playoffs", details: "la saison SUBLE juillet-août 2026 passe dans l'archive sous un label dédié (SUBLE tourne par sessions courtes, pas par année scolaire comme AHBB). Nouvel onglet \"Stats générale\" dans l'archive : classement final d'équipes + leaders joueurs, saison régulière et playoffs combinés. Nettoyage au passage d'un match de test (Équipe A/B) laissé par une vérification technique, qui aurait pollué le classement" },
