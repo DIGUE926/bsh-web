@@ -92,6 +92,14 @@ export default async function AdminLayout({
             Demandes
           </Link>
         )}
+        {isOwner && (
+          <Link
+            href="/admin/notifications"
+            className="shrink-0 px-2.5 py-1.5 rounded-full bg-white/5 text-white/60 hover:text-bsh-orange"
+          >
+            Notifs
+          </Link>
+        )}
       </nav>
       {children}
     </div>

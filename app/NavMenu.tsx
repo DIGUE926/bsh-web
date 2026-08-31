@@ -5,6 +5,7 @@ import Link from "next/link";
 import Avatar from "./Avatar";
 import U20Badge from "./U20Badge";
 import SearchOverlay from "./SearchOverlay";
+import NotificationBell from "./NotificationBell";
 
 type League = { name: string; slug: string; logo_url?: string | null };
 
@@ -87,6 +88,7 @@ export default function NavMenu({ leagues }: { leagues: League[] }) {
                 >
                   Ta ligue veut rejoindre BSH ?
                 </Link>
+                <NotificationBell onNavigate={closeMenu} />
               </div>
 
               <div className="border-t border-white/10">
