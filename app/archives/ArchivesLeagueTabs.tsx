@@ -60,6 +60,12 @@ export default function ArchivesLeagueTabs({
 
       {current ? (
         <ArchivesSeasonPicker
+          // key force le remontage complet quand on change de ligue --
+          // sinon useState(pastSeasons[0] ?? "") dans ArchivesSeasonPicker
+          // ne se réinitialise pas (son initializer ne tourne qu'au tout
+          // premier montage), et la saison sélectionnée reste celle de
+          // l'ancienne ligue (souvent vide) : plus aucune stat ne matche.
+          key={current.slug}
           slug={current.slug}
           teams={current.teams}
           games={current.games}

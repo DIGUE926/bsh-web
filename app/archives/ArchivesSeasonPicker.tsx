@@ -28,9 +28,11 @@ export default function ArchivesSeasonPicker({
   playoffPlayerStats: ArchivePlayoffPlayerStat[];
   pastSeasons: string[];
 }) {
-  const [selectedSeason, setSelectedSeason] = useState<string>(
-    pastSeasons[0] ?? ""
-  );
+  // Pas de saison présélectionnée -- Digue: "j'ai pas besoin d'avoir match
+  // et stats generale alors que j'ai meme pas clique sur suble 2026", donc
+  // les onglets Matchs/Stats générale ne s'affichent qu'après un clic
+  // explicite sur une saison.
+  const [selectedSeason, setSelectedSeason] = useState<string>("");
   const [tab, setTab] = useState<"matchs" | "stats">("stats");
 
   const filteredGames = useMemo(
@@ -85,45 +87,49 @@ export default function ArchivesSeasonPicker({
         ))}
       </div>
 
-      <div className="flex gap-2 mb-6 text-sm font-semibold">
-        <button
-          onClick={() => setTab("matchs")}
-          className={`px-4 py-2 rounded-lg whitespace-nowrap transition-colors ${
-            tab === "matchs"
-              ? "bg-bsh-orange text-black"
-              : "bg-white/5 text-white/60 hover:bg-white/10"
-          }`}
-        >
-          Matchs
-        </button>
-        <button
-          onClick={() => setTab("stats")}
-          className={`px-4 py-2 rounded-lg whitespace-nowrap transition-colors ${
-            tab === "stats"
-              ? "bg-bsh-orange text-black"
-              : "bg-white/5 text-white/60 hover:bg-white/10"
-          }`}
-        >
-          Stats générale
-        </button>
-      </div>
+      {selectedSeason && (
+        <>
+          <div className="flex gap-2 mb-6 text-sm font-semibold">
+            <button
+              onClick={() => setTab("matchs")}
+              className={`px-4 py-2 rounded-lg whitespace-nowrap transition-colors ${
+                tab === "matchs"
+                  ? "bg-bsh-orange text-black"
+                  : "bg-white/5 text-white/60 hover:bg-white/10"
+              }`}
+            >
+              Matchs
+            </button>
+            <button
+              onClick={() => setTab("stats")}
+              className={`px-4 py-2 rounded-lg whitespace-nowrap transition-colors ${
+                tab === "stats"
+                  ? "bg-bsh-orange text-black"
+                  : "bg-white/5 text-white/60 hover:bg-white/10"
+              }`}
+            >
+              Stats générale
+            </button>
+          </div>
 
-      {tab === "matchs" ? (
-        <GamesList
-          slug={slug}
-          games={filteredGames}
-          emptyMessage={`Aucun match pour la saison ${selectedSeason}.`}
-        />
-      ) : (
-        <ArchiveSeasonStats
-          slug={slug}
-          seasonLabel={selectedSeason}
-          teams={teams}
-          games={filteredGames}
-          playoffGames={filteredPlayoffGames}
-          playerGameStats={filteredPlayerGameStats}
-          playoffPlayerStats={filteredPlayoffPlayerStats}
-        />
+          {tab === "matchs" ? (
+            <GamesList
+              slug={slug}
+              games={filteredGames}
+              emptyMessage={`Aucun match pour la saison ${selectedSeason}.`}
+            />
+          ) : (
+            <ArchiveSeasonStats
+              slug={slug}
+              seasonLabel={selectedSeason}
+              teams={teams}
+              games={filteredGames}
+              playoffGames={filteredPlayoffGames}
+              playerGameStats={filteredPlayerGameStats}
+              playoffPlayerStats={filteredPlayoffPlayerStats}
+            />
+          )}
+        </>
       )}
     </div>
   );
