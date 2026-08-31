@@ -32,7 +32,7 @@ type SeasonOverride = {
 };
 
 const SEASON_OVERRIDES: SeasonOverride[] = [
-  { leagueSlug: "suble", displayLabel: "Août 2026", upToDate: "2026-08-31" },
+  { leagueSlug: "suble", displayLabel: "SUBLE Août 2026", upToDate: "2026-08-31" },
 ];
 
 function overrideFor(leagueSlug: string, dateStr: string): SeasonOverride | null {
