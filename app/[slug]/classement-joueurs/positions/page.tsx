@@ -58,7 +58,7 @@ export default async function ClassementPositionsPage({
         ]}
       />
       <h1 className="font-display text-2xl text-bsh-orange mb-1 tracking-wide">
-        CLASSEMENT {league.name.toUpperCase()} — PAR POSITION
+        CLASSEMENT {league.name.toUpperCase()} : PAR POSITION
       </h1>
       <p className="text-white/50 mb-6">Filtre les joueurs par poste : PG, SG, SF, PF, C</p>
 

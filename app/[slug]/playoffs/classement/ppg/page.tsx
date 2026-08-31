@@ -39,7 +39,7 @@ export default async function PlayoffClassementPPGPage({
         ]}
       />
       <h1 className="font-display text-2xl text-bsh-orange mb-1 tracking-wide">
-        LEADERS PLAYOFFS — PPG
+        LEADERS PLAYOFFS : PPG
       </h1>
       <p className="text-white/50 mb-6">Meilleurs en points par match</p>
 

@@ -31,10 +31,10 @@ export default async function ClassementJoueursSPGPage({
   return (
     <div className="max-w-5xl mx-auto px-4 py-8">
       <Breadcrumb
-        items={[{ label: league.name, href: `/${slug}` }, { label: "Classement joueurs — SPG" }]}
+        items={[{ label: league.name, href: `/${slug}` }, { label: "Classement joueurs : SPG" }]}
       />
       <h1 className="font-display text-2xl text-bsh-orange mb-1 tracking-wide">
-        CLASSEMENT {league.name.toUpperCase()} — SPG
+        CLASSEMENT {league.name.toUpperCase()} : SPG
       </h1>
       <p className="text-white/50 mb-6">
         Meilleurs en interceptions par match

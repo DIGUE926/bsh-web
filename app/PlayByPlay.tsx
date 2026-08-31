@@ -18,15 +18,15 @@ function describe(ev: PlayByPlayEvent): string {
 
   switch (ev.event_type) {
     case "2PT":
-      return `${who} — Panier à 2 points ${ev.made ? "réussi" : "manqué"}`;
+      return `${who} : panier à 2 points ${ev.made ? "réussi" : "manqué"}`;
     case "3PT":
-      return `${who} — Panier à 3 points ${ev.made ? "réussi" : "manqué"}`;
+      return `${who} : panier à 3 points ${ev.made ? "réussi" : "manqué"}`;
     case "FT":
-      return `${who} — Lancer franc ${ev.made ? "réussi" : "manqué"}`;
+      return `${who} : lancer franc ${ev.made ? "réussi" : "manqué"}`;
     case "REB":
-      return `${who} — Rebond`;
+      return `${who} : rebond`;
     case "AST":
-      return `${who} — Passe décisive`;
+      return `${who} : passe décisive`;
     default:
       return who;
   }

@@ -39,7 +39,7 @@ export default async function PlayoffClassementAPGPage({
         ]}
       />
       <h1 className="font-display text-2xl text-bsh-orange mb-1 tracking-wide">
-        LEADERS PLAYOFFS — APG
+        LEADERS PLAYOFFS : APG
       </h1>
       <p className="text-white/50 mb-6">Meilleurs en passes décisives par match</p>
 
