@@ -5,6 +5,7 @@ import Breadcrumb from "@/app/Breadcrumb";
 import Avatar from "@/app/Avatar";
 import U20Badge from "@/app/U20Badge";
 import { getLeagueNameForSeo } from "@/lib/seo";
+import { displaySeasonLabel, isCurrentSeasonGame } from "@/lib/season";
 import type { Metadata } from "next";
 
 export const revalidate = 60;
@@ -54,6 +55,22 @@ export default async function LeaguePage({
     .eq("league_id", league.id)
     .eq("status", "completed");
 
+  // Juste pour savoir s'il existe une saison archivée à mettre en avant --
+  // pas besoin du détail ici, /archives calcule tout le reste.
+  const { data: allDatedGames } = await supabase
+    .from("games")
+    .select("game_date")
+    .eq("league_id", league.id);
+  const latestPastSeason = Array.from(
+    new Set(
+      (allDatedGames ?? [])
+        .filter((g) => !isCurrentSeasonGame(slug, g.game_date))
+        .map((g) => displaySeasonLabel(slug, g.game_date))
+    )
+  )
+    .sort()
+    .reverse()[0];
+
   const records = new Map<string, { wins: number; losses: number }>();
   (teams ?? []).forEach((t) => records.set(t.id, { wins: 0, losses: 0 }));
 
@@ -86,6 +103,16 @@ export default async function LeaguePage({
           <U20Badge slug={league.slug} />
         </h1>
       </div>
+
+      {latestPastSeason && (
+        <Link
+          href={`/archives?ligue=${slug}`}
+          className="inline-flex items-center gap-2 mb-4 px-3 py-1.5 rounded-full border border-bsh-orange/40 bg-bsh-orange/10 text-bsh-orange text-xs font-semibold hover:bg-bsh-orange/20 transition-colors"
+        >
+          📁 {latestPastSeason} — classement, coachs et leaders
+        </Link>
+      )}
+
       <div className="flex gap-4 text-sm text-white/50 mb-6">
         <span className="text-bsh-gold font-semibold">Équipes</span>
         <Link href={`/${slug}/matchs`} className="hover:text-bsh-orange">
