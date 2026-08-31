@@ -109,7 +109,7 @@ export default async function LeaguePage({
           href={`/archives?ligue=${slug}`}
           className="inline-flex items-center gap-2 mb-4 px-3 py-1.5 rounded-full border border-bsh-orange/40 bg-bsh-orange/10 text-bsh-orange text-xs font-semibold hover:bg-bsh-orange/20 transition-colors"
         >
-          📁 {latestPastSeason} — classement, coachs et leaders
+          📁 {latestPastSeason} : classement, coachs et leaders
         </Link>
       )}
 

@@ -97,7 +97,7 @@ export default async function ArchivesPage({
         Archives
       </h1>
       <p className="text-white/50 mb-6">
-        Les saisons passées, toutes ligues — classement final, leaders et
+        Les saisons passées, toutes ligues : classement final, leaders et
         matchs, saison régulière et playoffs.
       </p>
 
