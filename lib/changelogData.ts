@@ -14,6 +14,7 @@ export type ChangelogEntry = {
 };
 
 export const changelogEntries: ChangelogEntry[] = [
+  { hash: "e6572f2", date: "2026-08-31T21:35:31+00:00", title: "feat: lien direct vers la saison archivée depuis la page de la ligue", details: "badge cliquable sous le titre de la ligue (\"SUBLE Août 2026 -- classement, coachs et leaders\") quand une saison archivée existe -- un seul clic vers /archives avec la ligue, la saison et l'onglet stats déjà pré-sélectionnés" },
   { hash: "3b4ccc0", date: "2026-08-31T21:27:19+00:00", title: "feat: classement des coachs dans Stats générale (archive)", details: "nouveau tableau \"Classement des coachs\" (bilan V-D) entre le classement d'équipes et les leaders joueurs, dérivé du head_coach de chaque équipe -- une équipe sans coach renseigné n'apparaît juste pas" },
   { hash: "b581c48", date: "2026-08-31T21:22:58+00:00", title: "refactor: Archives devient une section top-level du site", details: "n'est plus nichée dans le sous-menu de chaque ligue -- nouveau lien \"Archives\" dans le menu principal, page /archives avec un sélecteur de ligue en haut. L'onglet \"Stats générale\" s'ouvre maintenant par défaut plutôt que \"Matchs\"" },
   { hash: "4ed2849", date: "2026-08-31T21:10:09+00:00", title: "fix: label saison archivée SUBLE -> \"SUBLE Août 2026\"", details: "Digue voulait le nom de la ligue dans le label plutôt que juste le mois" },
