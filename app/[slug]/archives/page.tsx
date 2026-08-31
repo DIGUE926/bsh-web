@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import Breadcrumb from "@/app/Breadcrumb";
 import ArchivesSeasonPicker from "./ArchivesSeasonPicker";
-import { seasonLabel, currentSeasonLabel } from "@/lib/season";
+import { displaySeasonLabel, isCurrentSeasonGame } from "@/lib/season";
 
 export const revalidate = 60;
 
@@ -30,14 +30,43 @@ export default async function ArchivesPage({
     .eq("league_id", league.id)
     .order("game_date", { ascending: false });
 
+  const { data: playoffGames } = await supabase
+    .from("playoff_games")
+    .select(
+      "*, home_team:team_home_id(name), away_team:team_away_id(name)"
+    )
+    .eq("league_id", league.id)
+    .order("game_date", { ascending: false });
+
   const allGames = games ?? [];
-  const current = currentSeasonLabel();
+  const allPlayoffGames = playoffGames ?? [];
+
+  const gameIds = allGames.map((g) => g.id);
+  const playoffGameIds = allPlayoffGames.map((g) => g.id);
+
+  const { data: playerGameStats } = gameIds.length
+    ? await supabase
+        .from("player_game_stats")
+        .select(
+          "*, player:player_id(name, position, team:team_id(name))"
+        )
+        .in("game_id", gameIds)
+    : { data: [] };
+
+  const { data: playoffPlayerStats } = playoffGameIds.length
+    ? await supabase
+        .from("playoff_player_stats")
+        .select(
+          "*, player:player_id(name, position, team:team_id(name))"
+        )
+        .eq("league_id", league.id)
+    : { data: [] };
 
   const pastSeasons = Array.from(
     new Set(
       allGames
-        .map((g) => seasonLabel(g.game_date))
-        .filter((s) => s !== current)
+        .filter((g) => !isCurrentSeasonGame(slug, g.game_date))
+        .map((g) => displaySeasonLabel(slug, g.game_date))
     )
   ).sort()
     .reverse();
@@ -69,6 +98,9 @@ export default async function ArchivesPage({
       <ArchivesSeasonPicker
         slug={slug}
         games={allGames}
+        playoffGames={allPlayoffGames}
+        playerGameStats={playerGameStats ?? []}
+        playoffPlayerStats={playoffPlayerStats ?? []}
         pastSeasons={pastSeasons}
       />
     </div>

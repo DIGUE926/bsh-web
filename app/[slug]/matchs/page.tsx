@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import Breadcrumb from "@/app/Breadcrumb";
 import GamesList from "@/app/[slug]/GamesList";
-import { seasonLabel, currentSeasonLabel } from "@/lib/season";
+import { isCurrentSeasonGame } from "@/lib/season";
 import { getLeagueNameForSeo } from "@/lib/seo";
 import type { Metadata } from "next";
 
@@ -50,9 +50,8 @@ export default async function MatchsPage({
     .eq("league_id", league.id)
     .order("game_date", { ascending: false });
 
-  const current = currentSeasonLabel();
-  const currentSeasonGames = (games ?? []).filter(
-    (g) => seasonLabel(g.game_date) === current
+  const currentSeasonGames = (games ?? []).filter((g) =>
+    isCurrentSeasonGame(slug, g.game_date)
   );
 
   return (
