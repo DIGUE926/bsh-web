@@ -13,6 +13,7 @@ import type {
 
 export default function ArchivesSeasonPicker({
   slug,
+  teams,
   games,
   playoffGames,
   playerGameStats,
@@ -20,6 +21,7 @@ export default function ArchivesSeasonPicker({
   pastSeasons,
 }: {
   slug: string;
+  teams: { id: string; name: string; head_coach: string | null }[];
   games: ArchiveGame[];
   playoffGames: ArchivePlayoffGame[];
   playerGameStats: ArchivePlayerGameStat[];
@@ -116,6 +118,7 @@ export default function ArchivesSeasonPicker({
         <ArchiveSeasonStats
           slug={slug}
           seasonLabel={selectedSeason}
+          teams={teams}
           games={filteredGames}
           playoffGames={filteredPlayoffGames}
           playerGameStats={filteredPlayerGameStats}

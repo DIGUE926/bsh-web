@@ -15,6 +15,11 @@ export const metadata: Metadata = {
 async function buildLeagueBundle(
   league: { id: string; slug: string; name: string }
 ): Promise<LeagueArchiveBundle> {
+  const { data: teams } = await supabase
+    .from("teams")
+    .select("id, name, head_coach")
+    .eq("league_id", league.id);
+
   const { data: games } = await supabase
     .from("games")
     .select("*, home_team:home_team_id(name), away_team:away_team_id(name)")
@@ -60,6 +65,7 @@ async function buildLeagueBundle(
   return {
     slug: league.slug,
     name: league.name,
+    teams: teams ?? [],
     games: allGames,
     playoffGames: allPlayoffGames,
     playerGameStats: playerGameStats ?? [],

@@ -149,6 +149,50 @@ export function computeCombinedStandings(
   });
 }
 
+export type CoachStanding = {
+  coachName: string;
+  teamNames: string[];
+  wins: number;
+  losses: number;
+  pointsFor: number;
+  pointsAgainst: number;
+};
+
+// Classement des coachs (bilan V-D) pour une saison archivée — dérivé du
+// classement d'équipes déjà calculé (`computeCombinedStandings`) en le
+// regroupant par `teams.head_coach`. Une équipe sans coach renseigné en
+// base n'apparaît simplement pas ici (pas de ligne vide).
+export function computeCoachStandings(
+  standings: TeamStanding[],
+  teams: { id: string; head_coach: string | null }[]
+): CoachStanding[] {
+  const coachByTeamId = new Map(teams.map((t) => [t.id, t.head_coach]));
+  const byCoach = new Map<string, CoachStanding>();
+
+  for (const s of standings) {
+    const coach = coachByTeamId.get(s.teamId);
+    if (!coach) continue;
+    let acc = byCoach.get(coach);
+    if (!acc) {
+      acc = { coachName: coach, teamNames: [], wins: 0, losses: 0, pointsFor: 0, pointsAgainst: 0 };
+      byCoach.set(coach, acc);
+    }
+    if (!acc.teamNames.includes(s.teamName)) acc.teamNames.push(s.teamName);
+    acc.wins += s.wins;
+    acc.losses += s.losses;
+    acc.pointsFor += s.pointsFor;
+    acc.pointsAgainst += s.pointsAgainst;
+  }
+
+  return Array.from(byCoach.values()).sort((a, b) => {
+    const pctA = a.wins + a.losses > 0 ? a.wins / (a.wins + a.losses) : 0;
+    const pctB = b.wins + b.losses > 0 ? b.wins / (b.wins + b.losses) : 0;
+    if (pctB !== pctA) return pctB - pctA;
+    if (b.wins !== a.wins) return b.wins - a.wins;
+    return b.pointsFor - b.pointsAgainst - (a.pointsFor - a.pointsAgainst);
+  });
+}
+
 export type LeaderRow = {
   player_id: string;
   player_name: string;

@@ -3,6 +3,7 @@
 import { useMemo } from "react";
 import RankingsTable from "@/app/[slug]/classement-joueurs/RankingsTable";
 import {
+  computeCoachStandings,
   computeCombinedLeaders,
   computeCombinedStandings,
   type ArchiveGame,
@@ -14,6 +15,7 @@ import {
 export default function ArchiveSeasonStats({
   slug,
   seasonLabel,
+  teams,
   games,
   playoffGames,
   playerGameStats,
@@ -21,6 +23,7 @@ export default function ArchiveSeasonStats({
 }: {
   slug: string;
   seasonLabel: string;
+  teams: { id: string; name: string; head_coach: string | null }[];
   games: ArchiveGame[];
   playoffGames: ArchivePlayoffGame[];
   playerGameStats: ArchivePlayerGameStat[];
@@ -29,6 +32,11 @@ export default function ArchiveSeasonStats({
   const standings = useMemo(
     () => computeCombinedStandings(games, playoffGames),
     [games, playoffGames]
+  );
+
+  const coachStandings = useMemo(
+    () => computeCoachStandings(standings, teams),
+    [standings, teams]
   );
 
   const leaders = useMemo(
@@ -103,6 +111,52 @@ export default function ArchiveSeasonStats({
           <p className="text-white/50">Pas de match terminé pour cette saison.</p>
         )}
       </div>
+
+      {coachStandings.length > 0 && (
+        <div>
+          <h2 className="font-display text-lg text-bsh-orange mb-1 tracking-wide">
+            Classement des coachs
+          </h2>
+          <p className="text-xs text-white/40 mb-4">
+            Bilan V-D de l&apos;équipe de chaque coach, saison et playoffs combinés.
+            {teams.length > coachStandings.length &&
+              " Une équipe sans coach renseigné n'apparaît pas ici."}
+          </p>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse text-sm">
+              <thead>
+                <tr className="border-b border-white/20 text-white/50 uppercase">
+                  <th className="py-2 pr-4">#</th>
+                  <th className="py-2 pr-4">Coach</th>
+                  <th className="py-2 pr-4">Équipe</th>
+                  <th className="py-2 px-2 text-center">V</th>
+                  <th className="py-2 px-2 text-center">D</th>
+                  <th className="py-2 px-2 text-center text-bsh-orange">Diff</th>
+                </tr>
+              </thead>
+              <tbody>
+                {coachStandings.map((c, i) => (
+                  <tr key={c.coachName} className="border-b border-white/5">
+                    <td className="py-3 pr-4 text-bsh-gold font-display">{i + 1}</td>
+                    <td className="py-3 pr-4 font-semibold whitespace-nowrap">
+                      {c.coachName}
+                    </td>
+                    <td className="py-3 pr-4 text-white/60 whitespace-nowrap">
+                      {c.teamNames.join(", ")}
+                    </td>
+                    <td className="py-3 px-2 text-center text-white/60">{c.wins}</td>
+                    <td className="py-3 px-2 text-center text-white/60">{c.losses}</td>
+                    <td className="py-3 px-2 text-center text-bsh-orange font-bold">
+                      {c.pointsFor - c.pointsAgainst >= 0 ? "+" : ""}
+                      {c.pointsFor - c.pointsAgainst}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
 
       <div>
         <h2 className="font-display text-lg text-bsh-orange mb-1 tracking-wide">

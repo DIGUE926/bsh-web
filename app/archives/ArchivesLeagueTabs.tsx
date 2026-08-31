@@ -12,6 +12,7 @@ import type {
 export type LeagueArchiveBundle = {
   slug: string;
   name: string;
+  teams: { id: string; name: string; head_coach: string | null }[];
   games: ArchiveGame[];
   playoffGames: ArchivePlayoffGame[];
   playerGameStats: ArchivePlayerGameStat[];
@@ -60,6 +61,7 @@ export default function ArchivesLeagueTabs({
       {current ? (
         <ArchivesSeasonPicker
           slug={current.slug}
+          teams={current.teams}
           games={current.games}
           playoffGames={current.playoffGames}
           playerGameStats={current.playerGameStats}
